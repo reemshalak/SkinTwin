@@ -114,7 +114,14 @@ function build(raw: (typeof RAW)[number], i: number): Product {
           { name: "Medium-deep", hex: "#9A6A48" },
           { name: "Deep", hex: "#6B452F" },
         ]
-      : undefined,
+      : raw.id === "solis-silk-lip"
+        ? [
+            { name: "Bare", hex: "#C98B7A" },
+            { name: "Rose", hex: "#C0566F" },
+            { name: "Berry", hex: "#8E2F4E" },
+            { name: "Coral", hex: "#E06B5C" },
+          ]
+        : undefined,
   };
 }
 

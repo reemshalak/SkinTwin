@@ -10,7 +10,7 @@ import { TopBar } from "./TopBar";
 // bottom tab bar on phones only.
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
-  const immersive = path === "/analysis";
+  const immersive = path === "/analysis" || path === "/mirror";
   const showBottom = path !== "/scan" && !immersive;
   return (
     <div className="min-h-dvh bg-blush-50">
