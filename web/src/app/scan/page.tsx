@@ -28,6 +28,10 @@ export default function ScanPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [camera, setCamera] = useState<"off" | "starting" | "on" | "denied">("off");
   const [light, setLight] = useState<Light>("unknown");
+  const [level, setLevel] = useState<number | null>(null); // live brightness 0-255
+  const [lastLevel, setLastLevel] = useState<number | null>(null); // last check-in's brightness
+  const [ghost, setGhost] = useState(true);
+  const lastPhoto = checkIn ? latest?.photo : undefined;
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +72,32 @@ export default function ScanPage() {
       let sum = 0;
       for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
       const avg = sum / (d.length / 4);
+      setLevel(avg);
       setLight(avg < 70 ? "dark" : avg > 205 ? "bright" : "ok");
     }, 500);
     return () => clearInterval(id);
   }, [camera]);
+
+  // Brightness of last week's photo, so this week's light can match it.
+  useEffect(() => {
+    if (!lastPhoto) return;
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 32;
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0, 32, 32);
+      const d = ctx.getImageData(0, 0, 32, 32).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+      setLastLevel(sum / (d.length / 4));
+    };
+    img.src = lastPhoto;
+  }, [lastPhoto]);
+
+  const lightMatch =
+    level === null || lastLevel === null ? null : Math.abs(level - lastLevel) <= 22 ? "Same light as last week" : level < lastLevel ? "Darker than last week" : "Brighter than last week";
 
   function capture() {
     const v = videoRef.current;
@@ -121,6 +147,11 @@ export default function ScanPage() {
           {camera === "on" && !preview && (
             <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
           )}
+          {/* Last check-in as a faint ghost, so this week's photo lines up */}
+          {camera === "on" && !preview && lastPhoto && ghost && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={lastPhoto} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-screen" />
+          )}
           {camera !== "on" && !preview && (
             <FaceAvatar src={sample.image} tone={sample.tone} alt="Example face position" className="absolute inset-0 h-full w-full opacity-60" />
           )}
@@ -143,11 +174,19 @@ export default function ScanPage() {
             </div>
           )}
 
-          <div className="absolute inset-x-4 top-4 flex justify-center">
+          <div className="absolute inset-x-4 top-4 flex flex-col items-center gap-1.5">
             <span className="rounded-full bg-plum/75 px-3 py-1 text-[11px] text-white backdrop-blur">
               {busy ? "Analysing 8 skin concerns…" : camera === "on" ? LIGHT_TEXT[light] : preview ? "Looks good" : "Face the camera, hair off forehead"}
             </span>
+            {camera === "on" && !preview && lightMatch && light === "ok" && (
+              <span className={`rounded-full px-3 py-1 text-[11px] text-white backdrop-blur ${lightMatch.startsWith("Same") ? "bg-good/80" : "bg-warn/80"}`}>{lightMatch}</span>
+            )}
           </div>
+          {camera === "on" && !preview && lastPhoto && (
+            <button onClick={() => setGhost((g) => !g)} className="absolute right-4 bottom-24 rounded-full bg-black/35 px-3 py-1.5 text-[11px] text-white backdrop-blur">
+              {ghost ? "Hide" : "Show"} last week&apos;s outline
+            </button>
+          )}
         </div>
 
         <div className="glass relative -mt-20 mx-3 flex items-center justify-between rounded-[1.75rem] bg-surface/60 px-5 py-4">
@@ -214,7 +253,11 @@ export default function ScanPage() {
         <PageTitle
           eyebrow={checkIn ? "Weekly check-in" : "Step 1 of 4"}
           title={checkIn ? "How's your skin this week?" : "Let's measure your skin"}
-          subtitle="One clear selfie is all it takes. YouCam AI scores 8 concerns so we can find people whose skin measures like yours."
+          subtitle={
+            checkIn
+              ? "Line your face up with last week's ghost and match the light, so the change you see is your skin, not the photo."
+              : "One clear selfie is all it takes. YouCam AI scores 8 concerns so we can find people whose skin measures like yours."
+          }
         />
         <ScanModeToggle className="mb-5 max-w-md" />
         <ul className="grid gap-3 sm:grid-cols-2">

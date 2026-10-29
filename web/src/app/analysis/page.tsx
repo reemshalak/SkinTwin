@@ -46,6 +46,8 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const started = useRef(false);
+  // A repeat scan: lead with what changed since last time.
+  const checkIn = Boolean(result && scans.length > 1 && result.id === scans[scans.length - 1].id);
 
   // Run the pending scan once; otherwise show the latest saved one.
   useEffect(() => {
@@ -148,8 +150,8 @@ export default function AnalysisPage() {
                   Tap any marker to see what it means, how you compare with your twins, and what helped them.
                 </p>
                 <div className="mt-5 hidden flex-col gap-2 lg:flex">
-                  <Link href="/twins" className="inline-flex items-center justify-center gap-2 rounded-full bg-surface px-6 py-3.5 text-sm font-medium text-plum-deep">
-                    Meet my skin twins <ArrowRight className="size-4" />
+                  <Link href={checkIn ? "/week" : "/twins"} className="inline-flex items-center justify-center gap-2 rounded-full bg-surface px-6 py-3.5 text-sm font-medium text-plum-deep">
+                    {checkIn ? "See this week's changes" : "Meet my skin twins"} <ArrowRight className="size-4" />
                   </Link>
                   <Link href="/report" className="rounded-full border border-white/30 px-6 py-3.5 text-center text-sm text-white/90 hover:bg-white/10">
                     Full report
@@ -260,8 +262,8 @@ export default function AnalysisPage() {
             <Link href="/report" className="rounded-full border border-white/30 py-3 text-center text-sm">
               Full report
             </Link>
-            <Link href="/twins" className="rounded-full bg-surface py-3 text-center text-sm font-medium text-plum-deep">
-              My twins
+            <Link href={checkIn ? "/week" : "/twins"} className="rounded-full bg-surface py-3 text-center text-sm font-medium text-plum-deep">
+              {checkIn ? "This week" : "My twins"}
             </Link>
           </motion.div>
         )}

@@ -83,6 +83,17 @@ export default function JournalPage() {
         }
       />
 
+      {scans.length > 1 && (
+        <Link href="/week" className="mb-6 flex items-center gap-3 rounded-[2rem] border border-line bg-surface p-4 text-sm transition hover:shadow-card">
+          <span className="grid size-10 place-items-center rounded-full bg-blush-100 text-plum">✦</span>
+          <span className="flex-1">
+            <span className="block font-medium">This week&apos;s check-in</span>
+            <span className="text-xs text-muted">What changed, what&apos;s working, and your pace vs your twins</span>
+          </span>
+          <span className="text-plum">→</span>
+        </Link>
+      )}
+
       <GoalCard />
 
       {scans.length > 1 && (
