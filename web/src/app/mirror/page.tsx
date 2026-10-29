@@ -38,6 +38,19 @@ const PINS: Record<ConcernKey, [number, "l" | "r"]> = {
 };
 
 type Mode = "skin" | "makeup";
+
+// The tracker prints routine "INFO:" lines through console.error, which the
+// dev overlay shows as errors. Drop just those.
+let quieted = false;
+function quietInfoLogs() {
+  if (quieted) return;
+  quieted = true;
+  const error = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && /^(INFO|W\d{4}|I\d{4}):?/.test(args[0])) return;
+    error(...args);
+  };
+}
 type Landmarker = { detectForVideo: (v: HTMLVideoElement, t: number) => { faceLandmarks: { x: number; y: number }[][] }; close: () => void };
 
 function Mirror() {
@@ -74,9 +87,12 @@ function Mirror() {
         return setState("denied");
       }
       try {
+        quietInfoLogs();
         const { FaceLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
         const files = await FilesetResolver.forVisionTasks(WASM);
-        lm = (await FaceLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: MODEL, delegate: "GPU" }, runningMode: "VIDEO", numFaces: 1 })) as unknown as Landmarker;
+        const make = (delegate: "GPU" | "CPU") => FaceLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: MODEL, delegate }, runningMode: "VIDEO", numFaces: 1 });
+        // Some browsers can't use the GPU path; the CPU one works everywhere, just slower.
+        lm = (await make("GPU").catch(() => make("CPU"))) as unknown as Landmarker;
       } catch {
         stream.getTracks().forEach((t) => t.stop());
         return setState("error");
