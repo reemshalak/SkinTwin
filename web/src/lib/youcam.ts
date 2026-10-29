@@ -98,26 +98,26 @@ export async function analyzeSkin(bytes: Buffer, contentType: string): Promise<{
   throw new Error("YouCam took too long to respond");
 }
 
-// YouCam Skin Simulation: a realistic preview of the same face with some concerns
-// improved. Intensities are 0-1 per concern. Cached by photo + settings.
-export async function simulateSkin(bytes: Buffer, contentType: string, intensities: Record<string, number>): Promise<{ image: string; cached: boolean }> {
-  const key = `sim-${photoKey(bytes)}-${createHash("sha256").update(JSON.stringify(intensities)).digest("hex").slice(0, 12)}`;
+// Runs a YouCam photo task (upload -> create -> poll) and returns the result
+// image as a data URL. Cached by photo + settings, so repeats cost nothing.
+async function imageTask(task: string, bytes: Buffer, contentType: string, payload: Record<string, unknown>): Promise<{ image: string; cached: boolean }> {
+  const key = `${task}-${photoKey(bytes)}-${createHash("sha256").update(JSON.stringify(payload)).digest("hex").slice(0, 12)}`;
   try {
     const hit = JSON.parse(await readFile(path.join(CACHE_DIR, `${key}.json`), "utf8")) as { image: string };
     return { image: hit.image, cached: true };
   } catch {}
 
   const file_id = await uploadFile(bytes, contentType);
-  const task = await api<{ data: { task_id: string } }>("POST", "/s2s/v2.0/task/skin-simulation", { src_file_id: file_id, ...intensities });
+  const created = await api<{ data: { task_id: string } }>("POST", `/s2s/v2.0/task/${task}`, { src_file_id: file_id, ...payload });
 
   const started = Date.now();
   while (Date.now() - started < 45_000) {
     await new Promise((r) => setTimeout(r, 1500));
-    const res = await api<{ data: { task_status: string; results?: unknown; url?: string; error?: string } }>("GET", `/s2s/v2.0/task/skin-simulation/${task.data.task_id}`);
+    const res = await api<{ data: { task_status: string; results?: unknown; url?: string; error?: string } }>("GET", `/s2s/v2.0/task/${task}/${created.data.task_id}`);
     if (res.data?.task_status === "success") {
       const r = res.data.results as { url?: string } | { url?: string }[] | undefined;
       const url = (Array.isArray(r) ? r[0]?.url : r?.url) ?? res.data.url;
-      if (!url) throw new Error("YouCam simulation returned no image");
+      if (!url) throw new Error(`YouCam ${task} returned no image`);
       // The result link expires, so keep the image itself.
       const img = await fetch(url);
       if (!img.ok) throw new Error(`YouCam result download failed (${img.status})`);
@@ -132,8 +132,14 @@ export async function simulateSkin(bytes: Buffer, contentType: string, intensiti
     if (res.data?.task_status === "error") {
       const code = String(res.data.error ?? "");
       const friendly = Object.entries(PHOTO_ERRORS).find(([k]) => code.includes(k))?.[1];
-      throw friendly ? new PhotoError(friendly) : new Error(`YouCam simulation error: ${code}`);
+      throw friendly ? new PhotoError(friendly) : new Error(`YouCam ${task} error: ${code}`);
     }
   }
   throw new Error("YouCam took too long to respond");
 }
+
+// Skin Simulation: the same face with some concerns improved (intensities 0-1).
+export const simulateSkin = (bytes: Buffer, contentType: string, intensities: Record<string, number>) => imageTask("skin-simulation", bytes, contentType, intensities);
+
+// Makeup Virtual Try-On: a product's shade rendered on the photo with real texture.
+export const makeupTryOn = (bytes: Buffer, contentType: string, effects: unknown[]) => imageTask("makeup-vto", bytes, contentType, { version: "1.0", effects });

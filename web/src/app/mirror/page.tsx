@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Camera, Loader2, ScanFace, Sparkles, X } from "lucide-react";
+import { Camera, Loader2, MoveHorizontal, ScanFace, ShoppingBag, Sparkles, X, Zap } from "lucide-react";
 import { CONCERNS } from "@/lib/concerns";
 import { predictMix } from "@/lib/mix";
-import { productById } from "@/lib/products";
+import { PRODUCTS, productById } from "@/lib/products";
+import type { Product } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import type { ConcernKey } from "@/lib/types";
 
@@ -55,20 +56,28 @@ type Landmarker = { detectForVideo: (v: HTMLVideoElement, t: number) => { faceLa
 
 function Mirror() {
   const params = useSearchParams();
-  const { latest, routine } = useStore();
+  const { latest, routine, liveScans } = useStore();
   const product = productById(params.get("product") ?? "");
-  const shades = product?.shades ?? productById("solis-silk-foundation")!.shades!;
-  const lipShades = productById("solis-silk-lip")!.shades!;
+  const shadeParam = params.get("shade");
+  // Only real products' shades: one row per makeup product.
+  const makeup = PRODUCTS.filter((p) => p.shades);
+  const isLip = (p: Product) => p.id.includes("lip");
+  const initial = (p: Product) => (product?.id === p.id ? (p.shades!.find((s) => s.name === shadeParam) ?? p.shades![1]) : null);
   const [mode, setMode] = useState<Mode>(product?.shades ? "makeup" : "skin");
-  const [face, setFace] = useState(shades.find((s) => s.name === params.get("shade")) ?? (product?.id.includes("lip") ? null : shades[2]));
-  const [lip, setLip] = useState(product?.id.includes("lip") ? (lipShades.find((s) => s.name === params.get("shade")) ?? lipShades[1]) : null);
+  const [picks, setPicks] = useState<Record<string, { name: string; hex: string } | null>>(() => Object.fromEntries(makeup.map((p) => [p.id, initial(p)])));
+  const [strength, setStrength] = useState(0.6);
+  const [shot, setShot] = useState<{ before: string; after?: string; preview: string; busy: boolean; live: boolean; note?: string } | null>(null);
+  const [split, setSplit] = useState(50);
+  const face = makeup.filter((p) => !isLip(p)).map((p) => picks[p.id]).find(Boolean) ?? null;
+  const lip = makeup.filter(isLip).map((p) => picks[p.id]).find(Boolean) ?? null;
   const [future, setFuture] = useState(false);
   const [state, setState] = useState<"idle" | "loading" | "on" | "denied" | "error">("idle");
   const [run, setRun] = useState(0); // bumps each time you tap "Turn on camera"
   const video = useRef<HTMLVideoElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const opts = useRef({ mode, face, lip, future });
-  opts.current = { mode, face, lip, future };
+  const opts = useRef({ mode, face, lip, future, strength });
+  opts.current = { mode, face, lip, future, strength };
+  const lastPts = useRef<{ x: number; y: number }[] | undefined>(undefined);
 
   const scores = latest?.scores;
   const delta = future && latest && routine.length ? predictMix(Array.from(new Set(routine.map((r) => r.productId))).slice(0, 3), latest.scores).delta : null;
@@ -113,7 +122,11 @@ function Mirror() {
             c.width = v.videoWidth;
             c.height = v.videoHeight;
           }
-          const pts = lm!.detectForVideo(v, performance.now()).faceLandmarks[0];
+          const raw = lm!.detectForVideo(v, performance.now()).faceLandmarks[0];
+          // Blend with the last frame to stop the overlay jittering.
+          const prev = lastPts.current;
+          const pts = raw && prev ? raw.map((p, i) => ({ x: prev[i].x * 0.45 + p.x * 0.55, y: prev[i].y * 0.45 + p.y * 0.55 })) : raw;
+          lastPts.current = pts;
           draw(c, pts, opts.current, values.current);
         }
         raf = requestAnimationFrame(loop);
@@ -127,6 +140,31 @@ function Mirror() {
       lm?.close();
     };
   }, [run]);
+
+  // Snapshot the current frame, paint the app's preview on it, and ask YouCam for a real render.
+  async function capture() {
+    const v = video.current;
+    const pts = lastPts.current;
+    if (!v || !pts || (!face && !lip)) return;
+    const scale = Math.min(1, 1024 / Math.max(v.videoWidth, v.videoHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(v.videoWidth * scale);
+    c.height = Math.round(v.videoHeight * scale);
+    const ctx = c.getContext("2d")!;
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    const before = c.toDataURL("image/jpeg", 0.9);
+    paintMakeup(ctx, pts, c.width, c.height, { face, lip, strength });
+    const preview = c.toDataURL("image/jpeg", 0.9);
+    setSplit(50);
+    setShot({ before, preview, busy: true, live: liveScans });
+    const res = await fetch("/api/makeup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageDataUrl: before, live: liveScans, foundation: face && { hex: face.hex, strength }, lip: lip && { hex: lip.hex, strength } }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { image?: string; note?: string };
+    setShot((s) => s && { ...s, busy: false, after: data.image, note: data.note });
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-ink text-white">
@@ -155,6 +193,39 @@ function Mirror() {
         )}
       </div>
 
+      {shot && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onClick={() => !shot.busy && setShot(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-[2rem] bg-ink p-4 sm:rounded-[2rem]">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-black">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={shot.before} alt="Before" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+              <div className="absolute inset-0" style={{ clipPath: `inset(0 ${split}% 0 0)` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={shot.after ?? shot.preview} alt="With makeup" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+              </div>
+              <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white" style={{ right: `${split}%` }}>
+                <span className="absolute top-1/2 left-1/2 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-plum"><MoveHorizontal className="size-4" /></span>
+              </div>
+              <input type="range" min={0} max={100} value={split} onChange={(e) => setSplit(Number(e.target.value))} aria-label="Compare" className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0" />
+              <span className="absolute top-3 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">{shot.busy ? "Rendering with YouCam…" : shot.after ? "YouCam render" : "App preview"}</span>
+              <span className="absolute top-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">Before</span>
+              {shot.busy && <Loader2 className="absolute inset-0 m-auto size-8 animate-spin text-white/80" />}
+            </div>
+            <p className="mt-3 text-[11px] text-white/70">
+              {shot.after ? "Rendered by YouCam Makeup Try-On with the product's real shade." : shot.live ? (shot.note ?? "") : "Demo mode: this is the app's preview. Turn on YouCam live in Settings for a realistic render."}
+            </p>
+            <div className="mt-3 flex gap-2">
+              {makeup.filter((p) => picks[p.id]).map((p) => (
+                <Link key={p.id} href={`/product/${p.id}`} className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-surface py-2.5 text-xs text-plum-deep">
+                  <ShoppingBag className="size-3.5" /> {isLip(p) ? "Lip" : "Foundation"} · {picks[p.id]!.name}
+                </Link>
+              ))}
+              <button onClick={() => setShot(null)} disabled={shot.busy} className="rounded-full border border-white/30 px-4 text-xs">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="space-y-3 bg-ink p-4 pb-6">
         <div role="tablist" className="mx-auto flex w-fit rounded-full bg-white/10 p-1 text-sm">
@@ -177,9 +248,23 @@ function Mirror() {
             )}
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Swatches label="Foundation" items={shades} value={face} onChange={setFace} />
-            <Swatches label="Lips" items={lipShades} value={lip} onChange={setLip} />
+          <div className="mx-auto max-w-xl space-y-3">
+            {makeup.map((p) => (
+              <div key={p.id} className="flex items-center gap-3">
+                <Link href={`/product/${p.id}`} className="w-36 shrink-0 text-[11px] leading-tight text-white/80 hover:text-white">
+                  <span className="block text-[9px] uppercase tracking-wider text-white/50">{p.brand}</span>
+                  {p.name}
+                </Link>
+                <Swatches label={p.name} items={p.shades!} value={picks[p.id]} onChange={(v) => setPicks((cur) => ({ ...cur, [p.id]: v }))} />
+              </div>
+            ))}
+            <div className="flex items-center gap-3">
+              <label htmlFor="strength" className="w-36 shrink-0 text-[11px] text-white/80">Strength · {strength < 0.4 ? "sheer" : strength < 0.75 ? "medium" : "full"}</label>
+              <input id="strength" type="range" min={0.15} max={1} step={0.05} value={strength} onChange={(e) => setStrength(Number(e.target.value))} className="flex-1 accent-[var(--color-rose)]" />
+            </div>
+            <button onClick={capture} disabled={state !== "on" || (!face && !lip)} className="flex w-full items-center justify-center gap-2 rounded-full bg-surface py-3 text-sm font-medium text-plum-deep disabled:opacity-50">
+              <Zap className="size-4" /> {liveScans ? "Capture & render with YouCam" : "Capture & compare"}
+            </button>
           </div>
         )}
       </div>
@@ -190,7 +275,6 @@ function Mirror() {
 function Swatches({ label, items, value, onChange }: { label: string; items: { name: string; hex: string }[]; value: { name: string } | null; onChange: (v: { name: string; hex: string } | null) => void }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="mr-1 text-[11px] text-white/70">{label}</span>
       <button onClick={() => onChange(null)} aria-pressed={!value} aria-label={`No ${label.toLowerCase()}`} className={`grid size-7 place-items-center rounded-full border text-[10px] ${!value ? "border-white" : "border-white/30 text-white/60"}`}>
         <X className="size-3" />
       </button>
@@ -207,11 +291,49 @@ function path(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[], id
   ctx.closePath();
 }
 
+// Foundation over the face (not eyes or mouth) and lip colour inside the lip line.
+function paintMakeup(
+  ctx: CanvasRenderingContext2D,
+  pts: { x: number; y: number }[],
+  w: number,
+  h: number,
+  o: { face: { hex: string } | null; lip: { hex: string } | null; strength: number },
+) {
+  if (o.face) {
+    ctx.save();
+    ctx.beginPath();
+    path(ctx, pts, OVAL, w, h);
+    for (const eye of EYES) path(ctx, pts, eye, w, h);
+    path(ctx, pts, LIPS, w, h);
+    ctx.filter = `blur(${Math.round(w / 70)}px)`;
+    ctx.globalCompositeOperation = "soft-light";
+    ctx.globalAlpha = 0.25 + o.strength * 0.5;
+    ctx.fillStyle = o.face.hex;
+    ctx.fill("evenodd");
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = o.strength * 0.18;
+    ctx.fill("evenodd");
+    ctx.restore();
+  }
+  if (o.lip) {
+    ctx.save();
+    ctx.beginPath();
+    path(ctx, pts, LIPS, w, h);
+    path(ctx, pts, MOUTH, w, h);
+    ctx.clip("evenodd");
+    ctx.globalCompositeOperation = "multiply";
+    ctx.globalAlpha = 0.35 + o.strength * 0.55;
+    ctx.fillStyle = o.lip.hex;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+}
+
 // The canvas is mirrored with the video, so text is drawn flipped back.
 function draw(
   c: HTMLCanvasElement,
   pts: { x: number; y: number }[] | undefined,
-  o: { mode: Mode; face: { hex: string } | null; lip: { hex: string } | null; future: boolean },
+  o: { mode: Mode; face: { hex: string } | null; lip: { hex: string } | null; future: boolean; strength: number },
   vals: { scores?: Record<ConcernKey, number>; delta: Record<ConcernKey, number> | null },
 ) {
   const ctx = c.getContext("2d")!;
@@ -219,33 +341,7 @@ function draw(
   ctx.clearRect(0, 0, w, h);
   if (!pts) return;
 
-  if (o.mode === "makeup") {
-    if (o.face) {
-      ctx.save();
-      ctx.beginPath();
-      path(ctx, pts, OVAL, w, h);
-      for (const eye of EYES) path(ctx, pts, eye, w, h);
-      path(ctx, pts, LIPS, w, h);
-      ctx.filter = `blur(${Math.round(w / 90)}px)`;
-      ctx.globalAlpha = 0.28;
-      ctx.fillStyle = o.face.hex;
-      ctx.fill("evenodd");
-      ctx.restore();
-    }
-    if (o.lip) {
-      ctx.save();
-      ctx.beginPath();
-      path(ctx, pts, LIPS, w, h);
-      path(ctx, pts, MOUTH, w, h);
-      ctx.filter = "blur(1.5px)";
-      ctx.globalCompositeOperation = "multiply";
-      ctx.globalAlpha = 0.7;
-      ctx.fillStyle = o.lip.hex;
-      ctx.fill("evenodd");
-      ctx.restore();
-    }
-    return;
-  }
+  if (o.mode === "makeup") return paintMakeup(ctx, pts, w, h, o);
 
   if (!vals.scores) return;
   const fs = Math.max(14, Math.round(w / 38));
