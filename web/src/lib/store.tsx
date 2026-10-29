@@ -21,7 +21,7 @@ interface State {
   savedProducts: string[];
   reminderTimes: { am: string; pm: string }; // "HH:MM"
   // Public identity: what other people see. Never a scan photo.
-  identity: { displayName: string };
+  identity: { displayName: string; avatar?: string }; // avatar: small photo the user picked
   // Daily routine tick-offs, keyed "YYYY-MM-DD:am" -> product ids done.
   done: Record<string, string[]>;
   // Use live YouCam analysis for new scans (spends API units). Off = demo scores.

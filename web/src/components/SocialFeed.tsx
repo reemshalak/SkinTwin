@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
-import { BadgeCheck, Star, X } from "lucide-react";
+import { BadgeCheck, ShoppingBag, Star, X } from "lucide-react";
 import { Avatar, avatarFromSeed } from "./Avatar";
 import { EASE } from "./motion";
 import { ProductVisual } from "./ProductArt";
@@ -90,8 +90,9 @@ export function PostTile({ post, onOpen, i = 0 }: { post: ReviewPost; onOpen: ()
             ))}
           </span>
           <span className="mt-1.5 flex items-center gap-2">
-            <Avatar config={avatarFromSeed(post.authorSeed, post.authorName)} className="size-6 text-[10px] ring-2 ring-white/70" />
+            <Avatar config={avatarFromSeed(post.authorSeed, post.authorName, post.authorAvatar)} className="size-6 text-[10px] ring-2 ring-white/70" />
             <span className="min-w-0 flex-1 truncate text-xs font-medium">{post.authorName}</span>
+            {post.buyUrl && <ShoppingBag className="size-3.5 shrink-0 opacity-90" aria-label="Has a shop link" />}
             {post.verified && <BadgeCheck className="size-4 shrink-0" aria-label="Scan-verified" />}
           </span>
         </span>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Suspense, useEffect, useState } from "react";
-import { BadgeCheck, Clock, Loader2, Star } from "lucide-react";
+import { BadgeCheck, Clock, Link2, Loader2, Mic, Square, Star } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { EASE } from "@/components/motion";
 import { useMyIdentity } from "@/components/MyAvatar";
@@ -12,10 +12,11 @@ import { NeedScan } from "@/components/NeedScan";
 import { Page, PageTitle } from "@/components/Page";
 import { Delta, ProductThumb } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
-import { postReview } from "@/lib/community";
+import { cleanBuyUrl, postReview } from "@/lib/community";
 import { CONCERNS } from "@/lib/concerns";
 import { PRODUCTS, productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
+import { useDictation } from "@/lib/use-dictation";
 import type { ConcernKey } from "@/lib/types";
 import { measureProduct, MIN_WEEKS } from "@/lib/verify";
 
@@ -33,6 +34,9 @@ function ShareForm() {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [buyUrl, setBuyUrl] = useState("");
+  const [affiliate, setAffiliate] = useState(false);
+  const voice = useDictation((text) => setBody((b) => `${b}${b && !b.endsWith(" ") ? " " : ""}${text}`.slice(0, 500)));
 
   useEffect(() => {
     const p = params.get("product");
@@ -50,6 +54,9 @@ function ShareForm() {
     e.preventDefault();
     if (!rating) return setError("Tap the stars to rate it.");
     if (!body.trim()) return setError("Add one line about how it went.");
+    const link = buyUrl.trim() ? cleanBuyUrl(buyUrl) : null;
+    if (buyUrl.trim() && !link) return setError("The shop link needs to be a full https:// address.");
+    voice.stop();
     setBusy(true);
     setError(null);
     const res = await postReview({
@@ -62,6 +69,9 @@ function ShareForm() {
       verified: m.verified,
       delta: m.verified ? m.delta : {},
       skin: latest!.scores,
+      authorAvatar: me.avatar.photo,
+      buyUrl: m.verified && link ? link : undefined,
+      buyAffiliate: affiliate,
     });
     setBusy(false);
     if (res.error) return setError(res.error);
@@ -155,17 +165,58 @@ function ShareForm() {
               </button>
             ))}
           </div>
-          <label className="mt-4 block">
-            <span className="text-xs font-medium">In one line</span>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              maxLength={500}
-              rows={3}
-              placeholder="e.g. Cleared my forehead in 4 weeks, a little dry at first."
-              className="mt-1 w-full resize-none rounded-2xl border border-line bg-blush-50 px-4 py-3 text-sm outline-none focus:border-plum focus:bg-surface"
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <label htmlFor="review-body" className="text-xs font-medium">In one line</label>
+              {voice.supported && <span className="text-[11px] text-muted">{voice.listening ? "Listening… tap stop when done" : "Or say it"}</span>}
+            </div>
+            <div className="relative mt-1">
+              <textarea
+                id="review-body"
+                value={voice.listening && voice.interim ? `${body}${body ? " " : ""}${voice.interim}` : body}
+                onChange={(e) => setBody(e.target.value)}
+                readOnly={voice.listening}
+                maxLength={500}
+                rows={3}
+                placeholder="e.g. Cleared my forehead in 4 weeks, a little dry at first."
+                className={`w-full resize-none rounded-2xl border bg-blush-50 px-4 py-3 pr-16 text-sm outline-none focus:border-plum focus:bg-surface ${voice.listening ? "border-rose" : "border-line"}`}
+              />
+              {voice.supported && (
+                <button
+                  type="button"
+                  onClick={voice.listening ? voice.stop : voice.start}
+                  aria-pressed={voice.listening}
+                  aria-label={voice.listening ? "Stop voice input" : "Talk your review"}
+                  className={`absolute right-3 bottom-3 grid size-11 place-items-center rounded-full text-white shadow-card transition ${voice.listening ? "bg-bad" : "bg-gradient-to-br from-rose to-plum hover:scale-105"}`}
+                >
+                  {voice.listening && <span className="absolute inset-0 animate-ping rounded-full bg-bad/40" />}
+                  {voice.listening ? <Square className="relative size-4 fill-current" /> : <Mic className="size-5" />}
+                </button>
+              )}
+            </div>
+            {voice.error && <p className="mt-1 text-[11px] text-bad">{voice.error}</p>}
+          </div>
+
+          <div className={`mt-4 rounded-2xl border border-dashed p-3 ${m.verified ? "border-blush-300" : "border-line opacity-60"}`}>
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <Link2 className="size-4 text-plum" /> Where I bought it <span className="font-normal text-muted">(optional)</span>
+            </label>
+            <input
+              type="url"
+              value={buyUrl}
+              onChange={(e) => setBuyUrl(e.target.value)}
+              disabled={!m.verified}
+              placeholder={m.verified ? "https://your-shop-or-affiliate-link" : "Unlocks once your review is scan-verified"}
+              className="mt-2 w-full rounded-full border border-line bg-surface px-4 py-2.5 text-sm outline-none focus:border-plum disabled:cursor-not-allowed"
             />
-          </label>
+            {m.verified && buyUrl && (
+              <label className="mt-2 flex items-center gap-2 text-[11px] text-muted">
+                <input type="checkbox" checked={affiliate} onChange={(e) => setAffiliate(e.target.checked)} className="accent-[var(--color-plum)]" />
+                It&apos;s an affiliate link (I may earn from it). We show an &ldquo;Affiliate link&rdquo; tag.
+              </label>
+            )}
+            <p className="mt-2 text-[10px] text-muted">Links never change rankings. Those come only from measured results.</p>
+          </div>
           <p className="mt-2 text-[11px] text-muted">Posting as {me.name || "SkinTwin member"} with your initial. Your photos are never shared.</p>
         </section>
 

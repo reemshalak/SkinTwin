@@ -1,4 +1,4 @@
-import { FEATURED } from "./cohort";
+import { FEATURED, trialVerdict } from "./cohort";
 import { personById } from "./people";
 import { canonicalId, idsOf } from "./products";
 import { hashString } from "./random";
@@ -21,6 +21,9 @@ export interface ReviewPost {
   delta: Partial<Scores>;
   skin?: Scores;
   createdAt: string;
+  authorAvatar?: string; // profile photo the author picked, never a scan
+  buyUrl?: string; // "where I bought it", verified reviews only
+  buyAffiliate?: boolean; // the author may earn from the link
 }
 
 export interface Comment {
@@ -51,6 +54,8 @@ export const SAMPLE_POSTS: ReviewPost[] = FEATURED.flatMap((m) =>
       delta: t.delta,
       skin: m.scores,
       createdAt: new Date(ANCHOR - (hashString(key) % 40) * 86_400_000).toISOString(),
+      // Some creators link where they bought it; the demo points at the product page.
+      ...(trialVerdict(t.delta) === "worked" && hashString(key) % 3 === 0 ? { buyUrl: `/product/${t.productId}`, buyAffiliate: true } : {}),
     };
   }),
 ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -98,6 +103,9 @@ interface ReviewRow {
   delta: Partial<Scores>;
   skin: Scores;
   created_at: string;
+  author_avatar?: string | null;
+  buy_url?: string | null;
+  buy_affiliate?: boolean | null;
 }
 
 const toPost = (r: ReviewRow): ReviewPost => ({
@@ -114,7 +122,20 @@ const toPost = (r: ReviewRow): ReviewPost => ({
   delta: r.delta ?? {},
   skin: r.skin,
   createdAt: r.created_at,
+  authorAvatar: r.author_avatar ?? undefined,
+  buyUrl: r.verified && r.buy_url ? (cleanBuyUrl(r.buy_url) ?? undefined) : undefined,
+  buyAffiliate: Boolean(r.buy_affiliate),
 });
+
+// Only plain https links to a public site.
+export function cleanBuyUrl(raw: string) {
+  try {
+    const u = new URL(raw.trim());
+    return u.protocol === "https:" && !u.username && u.hostname.includes(".") ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function fetchReviews(opts: { productId?: string; userId?: string; limit?: number } = {}): Promise<ReviewPost[]> {
   if (!supabase) return [];
@@ -135,9 +156,17 @@ export async function postReview(input: {
   verified: boolean;
   delta: Partial<Record<ConcernKey, number>>;
   skin: Scores;
+  authorAvatar?: string;
+  buyUrl?: string;
+  buyAffiliate?: boolean;
 }): Promise<{ error?: string }> {
   if (!supabase) return { error: "Accounts aren't set up on this site." };
-  const { error } = await supabase.from("reviews").insert({
+  const extras = {
+    author_avatar: input.authorAvatar ?? null,
+    buy_url: input.verified ? (input.buyUrl ?? null) : null,
+    buy_affiliate: input.verified && Boolean(input.buyUrl) && Boolean(input.buyAffiliate),
+  };
+  const row = {
     author_name: input.authorName,
     product_id: input.productId,
     rating: input.rating,
@@ -147,7 +176,10 @@ export async function postReview(input: {
     verified: input.verified,
     delta: input.delta,
     skin: input.skin,
-  });
+  };
+  let { error } = await supabase.from("reviews").insert({ ...row, ...extras });
+  // Databases set up before photos and links existed: post without them.
+  if (error && /author_avatar|buy_url|buy_affiliate/.test(error.message)) ({ error } = await supabase.from("reviews").insert(row));
   if (error?.code === "42P01" || error?.message.includes("does not exist")) return { error: "Community tables aren't set up yet." };
   return error ? { error: error.message } : {};
 }

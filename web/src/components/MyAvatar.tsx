@@ -9,7 +9,7 @@ export function useMyIdentity() {
   const { identity } = useStore();
   const auth = useAuth();
   const name = identity.displayName || auth.name || "";
-  const avatar = avatarFromSeed(auth.user?.email ?? (name || "guest-skintwin"), name);
+  const avatar = avatarFromSeed(auth.user?.email ?? (name || "guest-skintwin"), name, identity.avatar);
   return { name, avatar };
 }
 

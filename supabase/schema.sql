@@ -59,3 +59,8 @@ drop policy if exists "unmark helpful" on public.helpful;
 create policy "read helpful" on public.helpful for select using (true);
 create policy "mark helpful" on public.helpful for insert to authenticated with check (auth.uid() = user_id);
 create policy "unmark helpful" on public.helpful for delete to authenticated using (auth.uid() = user_id);
+
+-- Added later: profile photos and shop links. See add-photos-and-links.sql.
+alter table public.reviews add column if not exists author_avatar text;
+alter table public.reviews add column if not exists buy_url text;
+alter table public.reviews add column if not exists buy_affiliate boolean not null default false;

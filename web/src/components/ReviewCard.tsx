@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { BadgeCheck, Clock, Loader2, MessageCircle, Send, ThumbsUp, Trash2 } from "lucide-react";
+import { BadgeCheck, Clock, Loader2, MessageCircle, Send, ShoppingBag, ThumbsUp, Trash2 } from "lucide-react";
 import { Avatar, avatarFromSeed } from "./Avatar";
 import { EASE } from "./motion";
 import { useMyIdentity } from "./MyAvatar";
@@ -75,7 +75,7 @@ export function ReviewCard({
   const mine = Boolean(auth.user && post.userId === auth.user.id);
   const author = (
     <>
-      <Avatar config={avatarFromSeed(post.authorSeed, post.authorName)} className="size-9 text-sm" />
+      <Avatar config={avatarFromSeed(post.authorSeed, post.authorName, post.authorAvatar)} className="size-9 text-sm" />
       <span className="min-w-0">
         <span className="block truncate text-sm font-medium">{post.authorName}</span>
         <span className="block text-[11px] text-muted">
@@ -151,6 +151,21 @@ export function ReviewCard({
               </span>
             ))}
         </p>
+      )}
+
+      {post.buyUrl && post.verified && (
+        <a
+          href={post.buyUrl}
+          {...(post.buyUrl.startsWith("/") ? {} : { target: "_blank", rel: "sponsored noopener noreferrer nofollow" })}
+          className="mt-3 flex items-center gap-2 rounded-2xl border border-blush-200 bg-blush-50 px-3 py-2.5 text-xs transition hover:border-plum"
+        >
+          <ShoppingBag className="size-4 text-plum" />
+          <span className="flex-1">
+            Shop where {post.authorName} bought it
+            {!post.buyUrl.startsWith("/") && <span className="block text-[10px] text-muted">{new URL(post.buyUrl).hostname.replace(/^www\./, "")}</span>}
+          </span>
+          {post.buyAffiliate && <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted">Affiliate link</span>}
+        </a>
       )}
 
       <footer className="mt-4 flex items-center gap-2 border-t border-line pt-3 text-xs">

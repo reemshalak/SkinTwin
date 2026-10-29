@@ -1,17 +1,18 @@
 import { hashString } from "@/lib/random";
 
-// Letter avatars: a coloured circle with the person's initial. The public
-// identity on SkinTwin; scan photos are never used here.
+// Letter avatars: a coloured circle with the person's initial, or a profile
+// photo the person picked themselves. Scan photos are never used here.
 export interface AvatarConfig {
   initial: string;
   color: number;
+  photo?: string;
 }
 
 // Shades of the brand pink, deep enough for white initials to stay readable.
 const COLORS = ["#9c5a78", "#b9567f", "#a3497a", "#c0628a", "#8a4766", "#b04f74", "#93506f", "#c4577f"];
 
-export function avatarFromSeed(seed: string, name = ""): AvatarConfig {
-  return { initial: name.trim().charAt(0).toUpperCase(), color: hashString(seed) % COLORS.length };
+export function avatarFromSeed(seed: string, name = "", photo?: string): AvatarConfig {
+  return { initial: name.trim().charAt(0).toUpperCase(), color: hashString(seed) % COLORS.length, photo };
 }
 
 export function Avatar({ config, label, className = "" }: { config: AvatarConfig; label?: string; className?: string }) {
@@ -23,7 +24,10 @@ export function Avatar({ config, label, className = "" }: { config: AvatarConfig
       className={`inline-grid shrink-0 place-items-center overflow-hidden rounded-full font-medium text-white select-none ${className}`}
       style={{ backgroundColor: COLORS[config.color % COLORS.length], containerType: "size" }}
     >
-      {config.initial ? (
+      {config.photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={config.photo} alt="" className="h-full w-full object-cover" draggable={false} />
+      ) : config.initial ? (
         <span style={{ fontSize: "45cqh", lineHeight: 1 }}>{config.initial}</span>
       ) : (
         <svg viewBox="0 0 24 24" className="h-[55%] w-[55%]" fill="currentColor" aria-hidden>

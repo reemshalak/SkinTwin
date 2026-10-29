@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BookHeart, CalendarHeart, Check, Copy, Heart, Lock, MessageSquare, Pencil, ScanFace, Settings, Users } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
-import { MyAvatar, useMyIdentity } from "@/components/MyAvatar";
+import { AvatarEditor } from "@/components/AvatarEditor";
+import { useMyIdentity } from "@/components/MyAvatar";
 import { NeedScan } from "@/components/NeedScan";
 import { Page } from "@/components/Page";
 import { PersonCard } from "@/components/PersonCard";
@@ -102,7 +103,7 @@ export default function MePage() {
       <ProfileCover className="-mx-5 h-40 lg:-mx-8 lg:h-52 lg:rounded-b-[2.5rem]" />
       <section className="relative z-10 -mt-12 flex flex-wrap items-end justify-between gap-5">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:gap-5">
-          <MyAvatar className="size-28 text-5xl ring-[6px] ring-blush-50" />
+          <AvatarEditor className="size-28 text-5xl" />
           <div className="pb-1">
             {editingName ? (
               <form
