@@ -64,6 +64,7 @@ function Mirror() {
   const [lip, setLip] = useState(product?.id.includes("lip") ? (lipShades.find((s) => s.name === params.get("shade")) ?? lipShades[1]) : null);
   const [future, setFuture] = useState(false);
   const [state, setState] = useState<"idle" | "loading" | "on" | "denied" | "error">("idle");
+  const [run, setRun] = useState(0); // bumps each time you tap "Turn on camera"
   const video = useRef<HTMLVideoElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const opts = useRef({ mode, face, lip, future });
@@ -74,8 +75,10 @@ function Mirror() {
   const values = useRef<{ scores?: typeof scores; delta: typeof delta }>({ scores, delta });
   values.current = { scores, delta };
 
+  // Keyed on `run`, not the status, so the camera isn't torn down when it turns on.
   useEffect(() => {
-    if (state !== "loading") return;
+    if (!run) return;
+    setState("loading");
     let stream: MediaStream | null = null;
     let lm: Landmarker | null = null;
     let raf = 0;
@@ -123,7 +126,7 @@ function Mirror() {
       stream?.getTracks().forEach((t) => t.stop());
       lm?.close();
     };
-  }, [state]);
+  }, [run]);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-ink text-white">
@@ -144,7 +147,7 @@ function Mirror() {
               <p className="mt-1 text-sm text-white/75">Your scores and makeup shades follow your face. Video never leaves this device.</p>
               {state === "denied" && <p className="mt-3 text-xs text-blush-200">Camera access was blocked. Allow it in your browser settings.</p>}
               {state === "error" && <p className="mt-3 text-xs text-blush-200">Face tracking couldn&apos;t load on this browser. Try Chrome or Safari.</p>}
-              <button onClick={() => setState("loading")} disabled={state === "loading"} className="mt-5 inline-flex items-center gap-2 rounded-full bg-surface px-6 py-3 text-sm font-medium text-plum-deep disabled:opacity-70">
+              <button onClick={() => setRun((n) => n + 1)} disabled={state === "loading"} className="mt-5 inline-flex items-center gap-2 rounded-full bg-surface px-6 py-3 text-sm font-medium text-plum-deep disabled:opacity-70">
                 {state === "loading" ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />} {state === "loading" ? "Starting…" : "Turn on camera"}
               </button>
             </div>
