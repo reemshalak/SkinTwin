@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blush-50: #fdfcff;
+  --color-blush-100: #f6edf3;
+  --color-blush-200: #f0c9d9;
+  --color-blush-300: #e4b0c6;
+  --color-blush-400: #d89ab3;
+  --color-plum: #9c5a78;
+  --color-plum-deep: #7a3f5c;
+  --color-rose: #e37ea5;
+  --color-ink: #3a2430;
+  --color-muted: #7d6370;
+  --color-line: #ecdde5;
+  --color-good: #4f8f6f;
+  --color-warn: #b7722a;
+  --color-bad: #b9475a;
+  --color-surface: #ffffff;
+  --color-good-soft: #eef6f1;
+  --color-bad-soft: #fbeef0;
+  --color-warn-soft: #fdf3e7;
+  --color-warn-line: #f1dcc4;
+  --color-plum-soft: #f3ecf6;
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+
+  --shadow-soft: 0 10px 30px -12px rgb(156 90 120 / 0.28);
+  --shadow-card: 0 2px 14px -6px rgb(156 90 120 / 0.18);
+}
+
+/* Dark theme: same tokens, night values. Set by data-theme on <html>. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-blush-50: #19121a;
+  --color-blush-100: #2a1f28;
+  --color-blush-200: #3f2e3a;
+  --color-blush-300: #5c4252;
+  --color-blush-400: #c98aa6;
+  --color-plum: #e2a3c0;
+  --color-rose: #ec8fb2;
+  --color-ink: #f6ecf2;
+  --color-muted: #bba4b1;
+  --color-line: #3a2b36;
+  --color-good: #7cc6a0;
+  --color-bad: #ee8795;
+  --color-warn: #e6aa66;
+  --color-surface: #231a22;
+  --color-good-soft: #1d3128;
+  --color-bad-soft: #3b1f27;
+  --color-warn-soft: #382a1b;
+  --color-warn-line: #57422d;
+  --color-plum-soft: #33253a;
+  --shadow-soft: 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  --shadow-card: 0 2px 14px -6px rgb(0 0 0 / 0.5);
+}
+/* Accent colours used as both text and fill need different values per role. */
+:root[data-theme="dark"] .text-plum-deep { color: #f0c9d9; }
+:root[data-theme="dark"] .bg-plum { background-color: #9c5a78; }
+:root[data-theme="dark"] .glow-card {
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 0.18), transparent 60%),
+    linear-gradient(160deg, #8a4a6a 0%, #6e3a55 50%, #4a2639 100%);
+}
+
+html,
+body {
+  background: var(--color-blush-50);
+  color: var(--color-ink);
+}
+
+/* Tactile press on every tappable element (separate from Tailwind's translate/scale props) */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform, translate, scale;
+  transition-duration: 150ms;
+}
+a:active,
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Glassy rose card used for hero score panels */
+.glow-card {
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 0.55), transparent 60%),
+    linear-gradient(160deg, #e9a8c2 0%, #d89ab3 45%, #b8708f 100%);
+}
+
+.glass {
+  background: rgb(255 255 255 / 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgb(255 255 255 / 0.4);
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-10%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
+.animate-scanline { animation: scanline 1.8s ease-in-out infinite; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+.animate-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* Opacity only: a transform here would trap position:fixed screens (the skin map) inside it. */
+@keyframes page-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-page-in { animation: page-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scanline, .animate-dot, .animate-page-in { animation: none; }
+}

@@ -1,0 +1,26 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { BottomNav } from "./BottomNav";
+import { ReminderTicker } from "./ReminderTicker";
+import { SiteFooter } from "./SiteFooter";
+import { TopBar } from "./TopBar";
+
+// Full-screen app: sticky top bar with the journey on every size,
+// bottom tab bar on phones only.
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  const immersive = path === "/analysis";
+  const showBottom = path !== "/scan" && !immersive;
+  return (
+    <div className="min-h-dvh bg-blush-50">
+      {!immersive && <TopBar />}
+      <main className={showBottom ? "pb-28 lg:pb-0" : ""}>
+        {children}
+        {!immersive && path !== "/scan" && <SiteFooter />}
+      </main>
+      {showBottom && <BottomNav />}
+      <ReminderTicker />
+    </div>
+  );
+}
