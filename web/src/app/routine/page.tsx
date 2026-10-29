@@ -9,6 +9,7 @@ import { Avatar } from "@/components/Avatar";
 import { EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
 import { Page, PageTitle } from "@/components/Page";
+import { ProductVisual } from "@/components/ProductArt";
 import { SaveProfile } from "@/components/SaveProfile";
 import { DemoNote, ProductThumb } from "@/components/ui";
 import { trialVerdict } from "@/lib/cohort";
@@ -312,7 +313,7 @@ function WeekStrip({ week, today }: { week: ReturnType<typeof planWeek>; today: 
 
 // Whole routines from your closest twins, adoptable with your own products.
 function TwinRoutines() {
-  const { latest, routine, shelf } = useStore();
+  const { latest, routine, shelf, savedTwins, toggleSavedTwin } = useStore();
   const { featured } = useTwins();
   const [adopt, setAdopt] = useState<{ personId: string; ids: string[] } | null>(null);
   const owned = Array.from(new Set([...shelf, ...routine.map((r) => r.productId)]));
@@ -330,23 +331,58 @@ function TwinRoutines() {
           const person = personById(t.member.personId!)!;
           const home = planAdoption(ids, owned, latest?.scores).filter((s) => s.kind !== "buy").length;
           return (
-            <li key={person.id} className="flex flex-col rounded-[2rem] border border-line bg-surface p-4">
-              <div className="flex items-center gap-3">
-                <Avatar config={personAvatar(person.id)} className="size-11 text-base" />
-                <div className="min-w-0 flex-1">
-                  <Link href={`/twins/${person.id}`} className="block truncate text-sm font-medium hover:text-plum">{person.name}&apos;s routine</Link>
-                  <p className="text-[11px] text-muted">{t.similarity}% skin match · {ids.length} steps</p>
+            <li key={person.id} className="overflow-hidden rounded-[2rem] border border-line bg-surface p-2 shadow-card transition hover:-translate-y-1 hover:shadow-soft">
+              {/* Cover: their top products */}
+              <div className="relative h-32 overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-blush-100 via-blush-200 to-[#E7DDF0]">
+                <div className="absolute inset-0 flex items-end justify-center gap-1 px-4 pb-1">
+                  {ids.slice(0, 3).map((id, i) => {
+                    const p = productById(id)!;
+                    return (
+                      <span key={id} className={`relative block w-1/3 ${i === 1 ? "h-[92%]" : "h-[74%]"}`}>
+                        <ProductVisual product={p} className="absolute inset-0 h-full w-full drop-shadow-md" />
+                      </span>
+                    );
+                  })}
                 </div>
+                <button
+                  onClick={() => toggleSavedTwin(person.id)}
+                  aria-pressed={savedTwins.includes(person.id)}
+                  className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-surface/90 px-3 py-1.5 text-xs font-medium text-ink shadow-card backdrop-blur"
+                >
+                  {savedTwins.includes(person.id) ? <Check className="size-3.5" /> : <Plus className="size-3.5" />}
+                  {savedTwins.includes(person.id) ? "Following" : "Follow"}
+                </button>
               </div>
-              <div className="mt-3 flex -space-x-2">
-                {ids.map((id) => (
-                  <span key={id} className="rounded-xl ring-2 ring-surface">
-                    <ProductThumb product={productById(id)!} size="sm" />
-                  </span>
-                ))}
+
+              {/* Avatar with a match ring */}
+              <div className="relative -mt-9 ml-4 flex items-end gap-2">
+                <span className="relative grid size-[4.5rem] place-items-center rounded-full bg-surface">
+                  <svg viewBox="0 0 72 72" className="absolute inset-0 -rotate-90" aria-hidden>
+                    <circle cx="36" cy="36" r="33" fill="none" strokeWidth="3" className="stroke-blush-100" />
+                    <circle cx="36" cy="36" r="33" fill="none" strokeWidth="3" strokeLinecap="round" stroke="url(#matchRing)" strokeDasharray={`${(t.similarity / 100) * 207} 207`} />
+                    <defs>
+                      <linearGradient id="matchRing" x1="0" x2="1">
+                        <stop offset="0" stopColor="#e37ea5" />
+                        <stop offset="1" stopColor="#9c5a78" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <Avatar config={personAvatar(person.id)} className="size-[3.6rem] text-xl" />
+                </span>
               </div>
-              <p className="mt-3 text-[11px] text-muted">{home ? `${home} of ${ids.length} already at home (or a swap)` : "None at home yet"}</p>
-              <button onClick={() => setAdopt({ personId: person.id, ids })} className="mt-3 rounded-full bg-plum-deep py-2.5 text-sm text-white hover:bg-plum">
+
+              <div className="px-3 pt-2">
+                <Link href={`/twins/${person.id}`} className="font-display text-xl text-ink hover:text-plum">{person.name}, {person.age}</Link>
+                <p className="line-clamp-1 text-xs text-muted">{person.goal}</p>
+              </div>
+
+              <div className="mx-1 mt-3 grid grid-cols-3 rounded-[1.25rem] bg-blush-50 py-3 text-center">
+                <span><span className="block font-display text-lg text-ink">{t.similarity}%</span><span className="text-[10px] text-muted">Match</span></span>
+                <span><span className="block font-display text-lg text-ink">{ids.length}</span><span className="text-[10px] text-muted">Steps</span></span>
+                <span><span className="block font-display text-lg text-ink">{home}/{ids.length}</span><span className="text-[10px] text-muted">At home</span></span>
+              </div>
+
+              <button onClick={() => setAdopt({ personId: person.id, ids })} className="mt-2 w-full rounded-[1.25rem] bg-plum-deep py-3 text-sm font-medium text-white hover:bg-plum">
                 Adopt routine
               </button>
             </li>
