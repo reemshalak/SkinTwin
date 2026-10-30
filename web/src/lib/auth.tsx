@@ -130,8 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Your results are saved to the account, so signing out clears this device
   // and goes back to the public homepage, even if the sign-out request fails.
   const signOut = useCallback(async () => {
+    // Local sign-out needs no network, so it can't hang; then always go home.
     try {
-      await supabase?.auth.signOut();
+      await Promise.race([supabase?.auth.signOut({ scope: "local" }), new Promise((r) => setTimeout(r, 1500))]);
     } catch {}
     pulled.current = null;
     mark(null);
