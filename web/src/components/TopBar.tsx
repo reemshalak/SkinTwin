@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Moon, Search, ScanFace, Sun, X } from "lucide-react";
+import { Search, ScanFace, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileMenu } from "./ProfileMenu";
-import { useTheme } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
 import { LanguagePicker } from "./LanguagePicker";
 import { useAuth } from "@/lib/auth";
@@ -26,6 +25,10 @@ export function TopBar() {
   const path = usePathname();
   const { latest } = useStore();
   const { t } = useT();
+  const { enabled, user } = useAuth();
+  // Without accounts set up, everything lives on this device: treat as signed in.
+  const signedIn = !enabled || Boolean(user);
+  const onAuth = path === "/signup" || path === "/login";
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-blush-50/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-5 lg:px-8">
@@ -50,42 +53,50 @@ export function TopBar() {
         </nav>
         <div className="ml-auto flex items-center gap-1 md:ml-0">
           <span className="hidden sm:block"><HeaderSearch /></span>
-          <NotificationBell />
-          <ThemeSwitch />
-          <LanguagePicker />
-          <Link href="/scan" data-tour="checkin" className="ml-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
-            <ScanFace className="size-4" /> {latest ? t("nav.checkin") : t("nav.startScan")}
-          </Link>
-          <span className="mx-1 hidden h-6 w-px bg-line sm:block" aria-hidden />
-          <ProfileLink />
+          {signedIn ? (
+            <>
+              <NotificationBell />
+              <Link href="/scan" data-tour="checkin" className="ms-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
+                <ScanFace className="size-4" /> {latest ? t("nav.checkin") : t("nav.startScan")}
+              </Link>
+              <span className="ms-1"><ProfileMenu /></span>
+            </>
+          ) : (
+            <>
+              <LanguagePicker />
+              {!onAuth && (
+                <Link href="/scan" data-tour="checkin" className="ms-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
+                  <ScanFace className="size-4" /> {latest ? t("nav.checkin") : t("nav.startScan")}
+                </Link>
+              )}
+              <span className="mx-1 hidden h-6 w-px bg-line sm:block" aria-hidden />
+              <AuthLinks />
+            </>
+          )}
         </div>
       </div>
     </header>
   );
 }
 
-// Signed in: the account menu. Not signed in: Log in and Sign up, like most sites.
-function ProfileLink() {
-  const { enabled, ready, user } = useAuth();
+// Signed out: Log in and Sign up on the far edge, like most shops.
+function AuthLinks() {
+  const { ready } = useAuth();
   const { t } = useT();
   const path = usePathname();
-  const onAuth = path === "/signup" || path === "/login";
-  if (enabled && !ready) return <span className="size-9" aria-hidden />;
-  if (enabled && !user) {
-    if (onAuth) return null;
-    const next = `?next=${encodeURIComponent(path)}`;
-    return (
-      <div className="flex items-center gap-1">
-        <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
-          {t("nav.login")}
-        </Link>
-        <Link href={`/signup${next}`} className="hidden rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
-          {t("nav.signup")}
-        </Link>
-      </div>
-    );
-  }
-  return <ProfileMenu />;
+  if (!ready) return <span className="w-24" aria-hidden />;
+  if (path === "/signup" || path === "/login") return null;
+  const next = `?next=${encodeURIComponent(path)}`;
+  return (
+    <div className="flex items-center gap-1">
+      <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
+        {t("nav.login")}
+      </Link>
+      <Link href={`/signup${next}`} className="hidden rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
+        {t("nav.signup")}
+      </Link>
+    </div>
+  );
 }
 
 // Search from anywhere: products, ingredients or concerns, answered on Products.
@@ -143,20 +154,3 @@ function HeaderSearch() {
   );
 }
 
-// Light / dark in one tap, for everyone (signed in or not).
-function ThemeSwitch() {
-  const { theme, setTheme } = useTheme();
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const read = () => setDark(document.documentElement.dataset.theme === "dark");
-    read();
-    const mo = new MutationObserver(read);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => mo.disconnect();
-  }, [theme]);
-  return (
-    <button onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} className="grid size-9 place-items-center rounded-full text-plum hover:bg-blush-100">
-      {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
-    </button>
-  );
-}

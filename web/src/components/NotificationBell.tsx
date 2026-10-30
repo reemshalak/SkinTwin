@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CalendarHeart, Droplets, Flag, Moon, NotebookPen, PenLine, ScanFace, Settings2, Sparkles, Coffee } from "lucide-react";
 import { buildNotes, type NoteKind } from "@/lib/notifications";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 const ICON: Record<NoteKind, typeof Bell> = {
   checkin: ScanFace,
@@ -24,6 +25,7 @@ export function NotificationBell() {
   const { ready, scans, routine, done, reminderTimes, wellness, goal, readNotes, markNotesRead } = useStore();
   const [open, setOpen] = useState(false);
   const [tick, setTick] = useState(0);
+  const { t } = useT();
   const box = useRef<HTMLDivElement>(null);
 
   // Refresh once a minute so time-based nudges appear on their own.
@@ -72,9 +74,9 @@ export function NotificationBell() {
             className="absolute top-12 right-0 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-line bg-surface shadow-soft"
           >
             <p className="flex items-center justify-between border-b border-line px-4 py-3 text-sm font-medium">
-              Today
+              {t("n.today")}
               <Link href="/settings#reminders" onClick={() => setOpen(false)} className="flex items-center gap-1 text-xs font-normal text-plum">
-                <Settings2 className="size-3.5" /> Reminders
+                <Settings2 className="size-3.5" /> {t("n.reminders")}
               </Link>
             </p>
             {notes.length ? (
@@ -95,7 +97,7 @@ export function NotificationBell() {
                 })}
               </ul>
             ) : (
-              <p className="p-6 text-center text-sm text-muted">You&apos;re all caught up.</p>
+              <p className="p-6 text-center text-sm text-muted">{t("n.caught")}</p>
             )}
           </motion.div>
         )}

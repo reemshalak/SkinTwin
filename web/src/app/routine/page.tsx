@@ -20,10 +20,12 @@ import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { planAdoption } from "@/lib/substitute";
 import { useTwins } from "@/lib/use-twins";
+import { useT } from "@/lib/i18n";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function PlanPage() {
+  const { t } = useT();
   const { ready, latest, routine, replaceRoutine, removeFromRoutine, done, toggleDone } = useStore();
   const { plan, improved, twins } = useSuggestedPlan();
   const [editing, setEditing] = useState(false);
@@ -36,8 +38,8 @@ export default function PlanPage() {
     return (
       <Page>
         <PageTitle
-          eyebrow="Your plan"
-          title="Your routine is ready"
+          eyebrow={t("plan.eyebrow")}
+          title={t("plan.ready")}
           subtitle={`Built from what measurably worked for your ${twins} skin twins, with no ingredient clashes. One tap to start.`}
         />
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -49,7 +51,7 @@ export default function PlanPage() {
                 <div key={slot} className="mb-6 last:mb-0">
                   <h2 className="flex items-center gap-2 text-sm font-medium">
                     {slot === "am" ? <Sun className="size-4 text-warn" /> : <Moon className="size-4 text-plum" />}
-                    {slot === "am" ? "Morning" : "Evening"}
+                    {slot === "am" ? t("prod.am") : t("prod.pm")}
                   </h2>
                   <ol className="mt-3 space-y-2">
                     {items.map((item, i) => {
@@ -84,12 +86,12 @@ export default function PlanPage() {
               onClick={() => replaceRoutine(plan)}
               className="flex w-full items-center justify-center gap-2 rounded-full bg-plum-deep py-4 text-sm font-medium text-white shadow-soft transition hover:bg-plum"
             >
-              <Sparkles className="size-4" /> Use this routine
+              <Sparkles className="size-4" /> {t("plan.use")}
             </button>
             <Link href="/import" className="flex items-center justify-center gap-2 rounded-full border border-line bg-surface py-4 text-sm text-plum">
-              <ShoppingBag className="size-4" /> Use what I already bought
+              <ShoppingBag className="size-4" /> {t("plan.owned")}
             </Link>
-            <p className="text-center text-xs text-muted">You can swap or remove any step later.</p>
+            <p className="text-center text-xs text-muted">{t("plan.later")}</p>
           </aside>
         </div>
         <TwinRoutines />
@@ -113,20 +115,20 @@ export default function PlanPage() {
   return (
     <Page>
       <PageTitle
-        eyebrow="Today"
-        title={allDone ? "All done for today" : `${doneCount} of ${total} steps done`}
+        eyebrow={t("plan.today")}
+        title={allDone ? t("plan.allDone") : t("plan.done", { d: doneCount, t: total })}
         subtitle="Tick each step as you go. Your weekly check-in shows whether it's working."
         right={
           <div className="flex gap-2">
           <Link href="/import" className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-plum">
-            <ShoppingBag className="size-4" /> Add what I own
+            <ShoppingBag className="size-4" /> {t("plan.addOwn")}
           </Link>
           <button
             onClick={() => setEditing((v) => !v)}
             aria-pressed={editing}
             className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-plum"
           >
-            <Pencil className="size-4" /> {editing ? "Done editing" : "Edit routine"}
+            <Pencil className="size-4" /> {editing ? t("plan.editDone") : t("plan.edit")}
           </button>
           </div>
         }
@@ -170,7 +172,7 @@ export default function PlanPage() {
             <section key={slot} className="rounded-[2rem] border border-line bg-surface p-5">
               <h2 className="flex items-center gap-2 text-base font-medium">
                 {slot === "am" ? <Sun className="size-4 text-warn" /> : <Moon className="size-4 text-plum" />}
-                {slot === "am" ? "Morning" : "Evening"}
+                {slot === "am" ? t("prod.am") : t("prod.pm")}
                 <span className="ml-auto text-xs font-normal text-muted">
                   {items.filter((r) => ticked.includes(r.productId)).length}/{items.length}
                 </span>
@@ -253,7 +255,7 @@ export default function PlanPage() {
         <Link href="/mix" className="flex items-center gap-3 rounded-[2rem] border border-line bg-surface p-5 text-sm transition hover:shadow-card">
           <FlaskConical className="size-6 text-plum" />
           <span>
-            <span className="block font-medium">Preview my routine on my face</span>
+            <span className="block font-medium">{t("plan.preview")}</span>
             <span className="text-xs text-muted">Mix Lab previews what these products do together →</span>
           </span>
         </Link>
@@ -274,12 +276,13 @@ export default function PlanPage() {
 
 // The week at a glance: which strong product runs each night, and rest nights.
 function WeekStrip({ week, today }: { week: ReturnType<typeof planWeek>; today: number }) {
+  const { t } = useT();
   const strong = Object.keys(week.nights);
   if (!strong.length) return null;
   return (
     <section className="mb-6 rounded-[2rem] border border-line bg-surface p-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Your week</h2>
+        <h2 className="text-sm font-medium">{t("plan.week")}</h2>
         <p className="text-[11px] text-muted">{week.gentleStart ? "Gentle start for your skin: fewer strong nights" : "Strong products never share a night"}</p>
       </div>
       <ol className="mt-3 grid grid-cols-7 gap-1.5">
@@ -299,7 +302,7 @@ function WeekStrip({ week, today }: { week: ReturnType<typeof planWeek>; today: 
                   <Leaf className="size-4" />
                 </span>
               )}
-              <span className="text-[9px] opacity-80">{ids.length ? "Active" : "Rest"}</span>
+              <span className="text-[9px] opacity-80">{ids.length ? t("plan.active") : t("plan.rest")}</span>
             </li>
           );
         })}
@@ -310,6 +313,7 @@ function WeekStrip({ week, today }: { week: ReturnType<typeof planWeek>; today: 
 
 // Whole routines from your closest twins, adoptable with your own products.
 function TwinRoutines() {
+  const { t: tx } = useT();
   const { latest, routine, shelf, savedTwins, toggleSavedTwin } = useStore();
   const { featured } = useTwins();
   const [adopt, setAdopt] = useState<{ personId: string; ids: string[] } | null>(null);
@@ -321,7 +325,7 @@ function TwinRoutines() {
   if (!cards.length) return null;
   return (
     <section className="mt-10">
-      <h2 className="text-sm font-medium">Routines from people like you</h2>
+      <h2 className="text-sm font-medium">{tx("plan.twinRoutines")}</h2>
       <p className="text-xs text-muted">What measurably worked for your closest twins. Adopt one and we swap in what you own.</p>
       <ul className="mt-4 grid gap-4 md:grid-cols-3">
         {cards.map(({ t, ids }) => {
@@ -380,7 +384,7 @@ function TwinRoutines() {
               </div>
 
               <button onClick={() => setAdopt({ personId: person.id, ids })} className="mt-2 w-full rounded-[1.25rem] bg-plum-deep py-3 text-sm font-medium text-white hover:bg-plum">
-                Adopt routine
+                {tx("plan.adopt")}
               </button>
             </li>
           );

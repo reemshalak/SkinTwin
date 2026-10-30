@@ -1,4 +1,4 @@
-import { CONCERN_KEYS, skinTypeLabel } from "./concerns";
+import { CONCERN_KEYS, skinTypeKey } from "./concerns";
 import { COHORT, FEATURED } from "./cohort";
 import { personById } from "./people";
 import { productById } from "./products";
@@ -13,7 +13,7 @@ import type { ConcernKey, Scores } from "./types";
 export const CIRCLES = ["Oily", "Combination", "Dry & sensitive", "Dry", "Sensitive", "Balanced"] as const;
 export type Circle = (typeof CIRCLES)[number];
 
-export const circleOf = (scores: Scores) => skinTypeLabel(scores) as Circle;
+export const circleOf = (scores: Scores) => skinTypeKey(scores) as Circle;
 
 export const CIRCLE_INFO: Record<Circle, { blurb: string; hue: string }> = {
   Oily: { blurb: "Shine, pores and breakouts", hue: "from-[#EEF6F6] to-[#CBE7E6]" },
@@ -24,7 +24,7 @@ export const CIRCLE_INFO: Record<Circle, { blurb: string; hue: string }> = {
   Balanced: { blurb: "Keeping good skin good", hue: "from-[#FFF6E5] to-[#F8DDAA]" },
 };
 
-export const memberCount = (c: Circle) => COHORT.filter((m) => skinTypeLabel(m.scores) === c).length;
+export const memberCount = (c: Circle) => COHORT.filter((m) => skinTypeKey(m.scores) === c).length;
 
 export interface CirclePost {
   key: string; // "sample:c…" sample, "c:<uuid>" real

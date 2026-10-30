@@ -7,26 +7,33 @@ import { EASE } from "./motion";
 // optional hand-drawn double underline under one key word.
 export function WriteOn({ text, mark, className = "", delay = 0 }: { text: string; mark?: string; className?: string; delay?: number }) {
   const reduce = useReducedMotion();
-  // Chinese has no spaces: reveal character by character so it can still wrap.
+  // Chinese has no spaces: reveal character by character so it can still wrap,
+  // keeping the marked phrase together so it can be underlined.
   const spaced = /\s/.test(text);
-  const words = spaced ? text.split(" ") : Array.from(text);
+  const at = !spaced && mark ? text.indexOf(mark) : -1;
+  const words = spaced
+    ? text.split(" ")
+    : at >= 0
+      ? [...Array.from(text.slice(0, at)), mark!, ...Array.from(text.slice(at + mark!.length))]
+      : Array.from(text);
+  const step = spaced ? 0.04 : 0.02;
   return (
     <span className={className} aria-label={text}>
       {words.map((w, i) => {
         const clean = w.replace(/[^\w'’-]/g, "");
         const bare = (x: string) => x.replace(/[.,!?؟。？！]+$/, "");
         // Works for Latin words and for Arabic/Chinese tokens matched as written.
-        const marked = Boolean(mark) && (clean.toLowerCase() === mark!.toLowerCase() || bare(w) === bare(mark!));
+        const marked = Boolean(mark) && (w === mark || clean.toLowerCase() === mark!.toLowerCase() || bare(w) === bare(mark!));
         return (
           <span key={i} aria-hidden className="inline-block whitespace-pre">
             <motion.span
               className="relative inline-block"
               initial={reduce ? false : { opacity: 0, y: "0.35em", filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.55, ease: EASE, delay: delay + i * 0.07 }}
+              transition={{ duration: 0.4, ease: EASE, delay: delay + i * step }}
             >
               {w}
-              {marked && <DoubleUnderline delay={delay + words.length * 0.07 + 0.15} />}
+              {marked && <DoubleUnderline delay={delay + words.length * step + 0.1} />}
             </motion.span>
             {spaced && i < words.length - 1 ? " " : ""}
           </span>

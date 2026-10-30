@@ -18,11 +18,13 @@ import { CONCERNS } from "@/lib/concerns";
 import { useStore } from "@/lib/store";
 import type { ConcernKey } from "@/lib/types";
 import { useEngagement } from "@/lib/use-engagement";
+import { tr, useT, type TKey } from "@/lib/i18n";
 
 const DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
 const WEEK = 7 * 86_400_000;
 
 export default function CirclesPage() {
+  const { t } = useT();
   const { ready, latest, scans } = useStore();
   const auth = useAuth();
   const mine = latest ? circleOf(latest.scores) : null;
@@ -48,11 +50,11 @@ export default function CirclesPage() {
 
   return (
     <Page className="!max-w-4xl">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Twin Circles</p>
+      <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">{t("circ.eyebrow")}</p>
       <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">
-        <WriteOn text="Ask people with your skin." mark="your" />
+        <WriteOn text={t("circ.title")} mark={t("circ.mark")} />
       </h1>
-      <p className="mt-1 text-sm text-muted">Questions and progress from people whose skin measures like yours. Everything here is public; scan photos never are.</p>
+      <p className="mt-1 text-sm text-muted">{t("circ.sub")}</p>
 
       {/* Circle chips */}
       <ul className="-mx-5 mt-5 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
@@ -65,10 +67,10 @@ export default function CirclesPage() {
                 aria-pressed={on}
                 className={`flex w-40 flex-col rounded-[1.5rem] bg-gradient-to-br p-4 text-left text-[#3a2430] transition ${CIRCLE_INFO[c].hue} ${on ? "ring-2 ring-plum ring-offset-2 ring-offset-blush-50" : "hover:-translate-y-0.5"}`}
               >
-                {c === mine && <span className="mb-1 w-fit rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#7a3f5c]">Your circle</span>}
-                <span className="font-display text-lg leading-tight">{c}</span>
+                {c === mine && <span className="mb-1 w-fit rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#7a3f5c]">{t("circ.yours")}</span>}
+                <span className="font-display text-lg leading-tight">{tr(`st.${c}` as TKey)}</span>
                 <span className="text-[10px] opacity-75">{CIRCLE_INFO[c].blurb}</span>
-                <span className="mt-2 flex items-center gap-1 text-[10px] opacity-80"><Users className="size-3" /> {memberCount(c).toLocaleString()} members</span>
+                <span className="mt-2 flex items-center gap-1 text-[10px] opacity-80"><Users className="size-3" /> {t("circ.members", { n: memberCount(c).toLocaleString() })}</span>
               </button>
             </li>
           );
@@ -81,7 +83,7 @@ export default function CirclesPage() {
           <Composer circle={active} onPosted={(p) => setReal((r) => [p, ...r])} />
         ) : (
           <Link href="/signup?next=/circles" className="mt-5 flex items-center justify-between rounded-[1.75rem] border border-line bg-surface p-4 text-sm hover:shadow-card">
-            <span><b className="font-medium">Join the conversation.</b> <span className="text-muted">A free account lets you ask and share progress.</span></span>
+            <span><b className="font-medium">{t("circ.join")}</b> <span className="text-muted">{t("circ.joinSub")}</span></span>
             <ArrowRight className="size-4 text-plum" />
           </Link>
         )
@@ -93,9 +95,9 @@ export default function CirclesPage() {
       <div role="tablist" aria-label="Post type" className="mt-6 inline-flex rounded-full bg-blush-100 p-1 text-sm">
         {(
           [
-            ["all", "Everything"],
-            ["question", "Questions"],
-            ["progress", "Progress"],
+            ["all", t("circ.everything")],
+            ["question", t("circ.questions")],
+            ["progress", t("circ.progressTab")],
           ] as const
         ).map(([id, label]) => (
           <button key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)} className={`relative rounded-full px-4 py-1.5 transition ${filter === id ? "text-plum" : "text-muted"}`}>
@@ -125,6 +127,7 @@ export default function CirclesPage() {
 
 // Ask a question, or share progress filled in from your own scans.
 function Composer({ circle, onPosted }: { circle: Circle; onPosted: (p: CirclePost) => void }) {
+  const { t } = useT();
   const { scans } = useStore();
   const me = useMyIdentity();
   const [kind, setKind] = useState<"question" | "progress">("question");
@@ -166,8 +169,8 @@ function Composer({ circle, onPosted }: { circle: Circle; onPosted: (p: CirclePo
       <div className="flex gap-2">
         {(
           [
-            ["question", "Ask a question", HelpCircle],
-            ["progress", "Share my progress", TrendingUp],
+            ["question", t("circ.ask"), HelpCircle],
+            ["progress", t("circ.progress"), TrendingUp],
           ] as const
         ).map(([id, label, Icon]) => (
           <button
@@ -203,7 +206,7 @@ function Composer({ circle, onPosted }: { circle: Circle; onPosted: (p: CirclePo
       {error && <p className="mt-1 text-xs text-bad">{error}</p>}
       <div className="mt-2 flex justify-end">
         <button disabled={busy} className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-2.5 text-sm text-white disabled:opacity-60">
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} Post to {circle}
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} {t("circ.post", { c: tr(`st.${circle}` as TKey) })}
         </button>
       </div>
     </form>
@@ -211,6 +214,7 @@ function Composer({ circle, onPosted }: { circle: Circle; onPosted: (p: CirclePo
 }
 
 function CircleCard({ post, helpful, onHelpful }: { post: CirclePost; helpful: { count: number; mine: boolean }; onHelpful: () => void }) {
+  const { t } = useT();
   const auth = useAuth();
   const me = useMyIdentity();
   const [open, setOpen] = useState(false);
@@ -256,7 +260,7 @@ function CircleCard({ post, helpful, onHelpful }: { post: CirclePost; helpful: {
         {post.personId ? <Link href={`/twins/${post.personId}`} className="flex min-w-0 items-center gap-2.5">{author}</Link> : <span className="flex min-w-0 items-center gap-2.5">{author}</span>}
         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium ${post.kind === "question" ? "bg-blush-100 text-plum" : "bg-good-soft text-good"}`}>
           {post.kind === "question" ? <HelpCircle className="size-3.5" /> : <TrendingUp className="size-3.5" />}
-          {post.kind === "question" ? "Question" : `Progress · week ${post.weeks}`}
+          {post.kind === "question" ? t("circ.question") : t("circ.progressBadge", { n: post.weeks })}
         </span>
       </header>
 
@@ -286,10 +290,10 @@ function CircleCard({ post, helpful, onHelpful }: { post: CirclePost; helpful: {
 
       <footer className="mt-3 flex items-center gap-2 border-t border-line pt-3 text-xs">
         <button onClick={onHelpful} aria-pressed={helpful.mine} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${helpful.mine ? "bg-plum-soft text-plum" : "text-muted hover:bg-blush-100 hover:text-plum"}`}>
-          <ThumbsUp className={`size-3.5 ${helpful.mine ? "fill-current" : ""}`} /> {post.kind === "question" ? "Me too" : "Helpful"} · {helpful.count}
+          <ThumbsUp className={`size-3.5 ${helpful.mine ? "fill-current" : ""}`} /> {post.kind === "question" ? t("circ.metoo") : t("circ.helpful")} · {helpful.count}
         </button>
         <button onClick={toggle} aria-expanded={open} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-muted hover:bg-blush-100 hover:text-plum">
-          <MessageCircle className="size-3.5" /> {replyCount} {post.kind === "question" ? (replyCount === 1 ? "answer" : "answers") : replyCount === 1 ? "reply" : "replies"}
+          <MessageCircle className="size-3.5" /> {post.kind === "question" ? t("circ.answers", { n: replyCount }) : t("circ.replies", { n: replyCount })}
         </button>
       </footer>
 

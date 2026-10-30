@@ -115,7 +115,7 @@ export default function ProductPage() {
   return (
     <Page>
       <Link href="/shop" className="mb-6 inline-flex items-center gap-1 text-sm text-plum">
-        <ChevronLeft className="size-4" /> Products
+        <ChevronLeft className="size-4" /> {t("prod.back")}
       </Link>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="self-start lg:sticky lg:top-24">
@@ -136,7 +136,7 @@ export default function ProductPage() {
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted">{product.blurb}</p>
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted">Typical price <span className="font-medium text-ink">${product.price.toFixed(2)}</span></p>
+            <p className="text-sm text-muted">{t("prod.price")} <span className="font-medium text-ink">${product.price.toFixed(2)}</span></p>
             <SaveHeart productId={product.id} className="size-11" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -148,7 +148,7 @@ export default function ProductPage() {
                 className={`flex items-center justify-center gap-1.5 rounded-2xl border py-2.5 text-xs ${slot === s ? "border-plum bg-blush-100 text-plum" : "border-line text-muted"}`}
               >
                 {s === "am" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
-                {s === "am" ? "Morning" : "Evening"}
+                {s === "am" ? t("prod.am") : t("prod.pm")}
               </button>
             ))}
           </div>
@@ -165,11 +165,11 @@ export default function ProductPage() {
             disabled={inRoutine}
             className="mt-3 w-full rounded-full bg-plum-deep py-4 text-sm font-medium text-white shadow-soft transition hover:bg-plum disabled:bg-blush-300"
           >
-            {inRoutine ? "In your routine" : conflicts.length ? "Add anyway" : "Add to routine"}
+            {inRoutine ? t("prod.added") : conflicts.length ? t("prod.addAnyway") : t("prod.add")}
           </button>
           <div className="mt-5 border-t border-line pt-4">
-            <p className="text-xs font-medium">Where to buy</p>
-            <p className="text-[11px] text-muted">SkinTwin doesn&apos;t sell anything. We point you to shops and to links from people who tried it.</p>
+            <p className="text-xs font-medium">{t("prod.where")}</p>
+            <p className="text-[11px] text-muted">{t("prod.whereSub")}</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <a
                 href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(`${product.brand} ${product.name}`)}`}
@@ -177,7 +177,7 @@ export default function ProductPage() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-xs text-plum hover:border-plum"
               >
-                <Search className="size-3.5" /> Compare shops <ExternalLink className="size-3" />
+                <Search className="size-3.5" /> {t("prod.compare")} <ExternalLink className="size-3" />
               </a>
               <a
                 href={`https://www.google.com/maps/search/${encodeURIComponent(`${product.category === "makeup" ? "beauty store" : "pharmacy skincare"} near me`)}`}
@@ -185,10 +185,10 @@ export default function ProductPage() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-xs text-plum hover:border-plum"
               >
-                <MapPin className="size-3.5" /> Stores nearby <ExternalLink className="size-3" />
+                <MapPin className="size-3.5" /> {t("prod.stores")} <ExternalLink className="size-3" />
               </a>
             </div>
-            <a href="#reviews" className="mt-2 block text-center text-[11px] text-plum underline">Shop links from verified reviewers</a>
+            <a href="#reviews" className="mt-2 block text-center text-[11px] text-plum underline">{t("prod.reviewerLinks")}</a>
           </div>
         </section>
 
@@ -226,7 +226,7 @@ export default function ProductPage() {
                 {view === v && (
                   <motion.span layoutId="whose-results" className="absolute inset-0 rounded-full bg-surface shadow-card" transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
                 )}
-                <span className="relative">{v === "twins" ? "Your skin twins" : "Everyone"}</span>
+                <span className="relative">{v === "twins" ? t("prod.yourTwins") : t("prod.everyone")}</span>
               </button>
             ))}
           </div>

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Bookmark, CalendarHeart, CircleUserRound, LogIn, LogOut, Monitor, Moon, ScanFace, Settings, Sun, UserPlus } from "lucide-react";
 import { MyAvatar, useMyIdentity } from "./MyAvatar";
+import { LanguagePicker } from "./LanguagePicker";
 import { EASE } from "./motion";
 import { useAuth } from "@/lib/auth";
 import { skinTypeLabel } from "@/lib/concerns";
@@ -113,6 +114,11 @@ export function ProfileMenu() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="border-t border-line p-3">
+              <p className="px-1 pb-2 text-[11px] text-muted">Language</p>
+              <LanguagePicker variant="row" />
             </div>
 
             <div className="border-t border-line p-2">

@@ -8,6 +8,7 @@ import { Reveal } from "@/components/motion";
 import { ScanModeToggle } from "@/components/ScanModeToggle";
 import { TOUR_KEY } from "@/components/Tour";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { useT } from "@/lib/i18n";
 import { Page, PageTitle } from "@/components/Page";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -56,6 +57,7 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
 const input = "rounded-2xl border border-line bg-blush-50 px-4 py-2.5 text-sm outline-none transition focus:border-plum";
 
 export default function SettingsPage() {
+  const { t } = useT();
   const auth = useAuth();
   const store = useStore();
   const { theme, setTheme } = useTheme();
@@ -105,7 +107,7 @@ export default function SettingsPage() {
       <PageTitle eyebrow="Settings" title="Your preferences" subtitle="Account, appearance, reminders and your data." />
 
       <div className="space-y-6">
-        <Section icon={UserRound} title="Account">
+        <Section icon={UserRound} title={t("set.account")}>
           {auth.user ? (
             <>
               <Row label="First name">
@@ -156,7 +158,7 @@ export default function SettingsPage() {
           )}
         </Section>
 
-        <Section icon={Palette} title="Appearance">
+        <Section icon={Palette} title={t("set.appearance")}>
           <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Theme">
             {themes.map(({ id, label, icon: Icon, hint }) => (
               <button
@@ -185,7 +187,7 @@ export default function SettingsPage() {
             }}
             className="mt-4 rounded-full border border-line px-4 py-2 text-sm text-plum"
           >
-            Show the quick tour again
+            {t("set.tour")}
           </button>
           <div className="mt-5 border-t border-line pt-4">
             <p className="mb-2 text-sm">Language</p>
@@ -193,7 +195,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <Section icon={ScanFace} title="Analysis source (for demos)">
+        <Section icon={ScanFace} title={t("set.source")}>
           <p className="mb-4 text-xs text-muted">
             Demo mode gives simulated scores in the same format as YouCam and costs nothing. Live mode sends new photos to YouCam AI Skin
             Analysis (12 API units each; repeats of the same photo are free).
@@ -202,7 +204,7 @@ export default function SettingsPage() {
         </Section>
 
         <div id="reminders" className="scroll-mt-24" />
-        <Section icon={Bell} title="Reminders">
+        <Section icon={Bell} title={t("set.reminders")}>
           <Row label="Reminders" hint="A browser notification while SkinTwin is open">
             <Switch on={store.reminders} onChange={toggleReminders} label="Routine reminders" />
           </Row>
@@ -242,7 +244,7 @@ export default function SettingsPage() {
           </Row>
         </Section>
 
-        <Section icon={Shield} title="Privacy & data">
+        <Section icon={Shield} title={t("set.privacy")}>
           <Row label="Photos on this device" hint={selfies ? `${selfies} selfie${selfies === 1 ? "" : "s"} stored in this browser only` : "No selfies stored"}>
             <button onClick={store.clearPhotos} disabled={!selfies} className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm text-plum disabled:opacity-40">
               <ImageOff className="size-4" /> Remove photos

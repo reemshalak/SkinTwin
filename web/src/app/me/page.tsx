@@ -26,6 +26,7 @@ import { sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 import { similarity } from "@/lib/twins";
 import { useTwins } from "@/lib/use-twins";
+import { useT } from "@/lib/i18n";
 
 const DATE = new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
 
@@ -33,6 +34,7 @@ export default function MePage() {
   const { ready, latest, scans, savedTwins, savedProducts, shelf, setIdentity } = useStore();
   const auth = useAuth();
   const me = useMyIdentity();
+  const { t } = useT();
   const { twins } = useTwins();
   const [tab, setTab] = useState<"following" | "wishlist" | "shelf" | "reviews">("following");
   const [myReviews, setMyReviews] = useState<ReviewPost[]>([]);
@@ -121,7 +123,7 @@ export default function MePage() {
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? "Copied" : "Share"}
           </button>
           <Link href="/scan" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2.5 text-sm font-medium text-white">
-            <ScanFace className="size-4" /> Weekly check-in
+            <ScanFace className="size-4" /> {t("me.checkin")}
           </Link>
         </div>
       </section>
@@ -132,17 +134,17 @@ export default function MePage() {
       <section className="mt-8 grid gap-6 lg:grid-cols-[19rem_1fr]">
         <Link href="/analysis" className="group relative block rounded-[2rem] border border-line bg-surface p-5 transition hover:shadow-soft">
           <p className="flex items-center justify-between text-xs text-muted">
-            <span className="flex items-center gap-1.5"><ScanFace className="size-4 text-plum" /> My skin map</span>
+            <span className="flex items-center gap-1.5"><ScanFace className="size-4 text-plum" /> {t("me.map")}</span>
             <span className="font-display text-2xl text-plum-deep">{latest.overall}<span className="text-sm text-muted">/100</span></span>
           </p>
           <div className="mx-auto mt-2 aspect-[5/6] w-full max-w-[15rem]">
             <FaceDiagram scores={latest.scores} />
           </div>
           <p className="text-center text-xs text-muted">
-            Working on {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}
+            {t("me.working", { a: focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ") })}
           </p>
           <span className="mt-3 flex items-center justify-center gap-1 text-xs text-plum">
-            See it on my photo <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
+            {t("me.photo")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
           </span>
         </Link>
 
@@ -182,13 +184,13 @@ export default function MePage() {
                   );
                 })}
               </span>
-              Journal · {scans.length} check-in{scans.length === 1 ? "" : "s"}
+              {t("me.journal", { n: scans.length })}
             </Link>
             <Link href="/mirror" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
-              <Camera className="size-4" /> Live mirror
+              <Camera className="size-4" /> {t("me.mirror")}
             </Link>
             <Link href="/report" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
-              <Sparkles className="size-4" /> Full report
+              <Sparkles className="size-4" /> {t("me.report")}
             </Link>
           </div>
         </div>
@@ -200,10 +202,10 @@ export default function MePage() {
           <div role="tablist" aria-label="Saved" className="inline-flex rounded-full bg-blush-100 p-1 text-sm">
             {(
               [
-                ["following", `Following · ${following.length}`, Users],
-                ["wishlist", `Wishlist · ${wishlist.length}`, Heart],
-                ["shelf", `My shelf · ${shelfItems.length}`, Package],
-                ["reviews", `My reviews · ${myReviews.length}`, MessageSquare],
+                ["following", t("me.following", { n: following.length }), Users],
+                ["wishlist", t("me.wishlist", { n: wishlist.length }), Heart],
+                ["shelf", t("me.shelf", { n: shelfItems.length }), Package],
+                ["reviews", t("me.reviews", { n: myReviews.length }), MessageSquare],
               ] as const
             ).map(([id, label, Icon]) => (
               <button
