@@ -76,16 +76,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // must not stay on screen. Guest data, with no owner, is left alone.
   const { reset } = store;
   useEffect(() => {
-    if (!ready || !store.ready || user || !owner()) return;
+    if (!ready || !store.ready || user) return;
+    // One-time clean-up for data saved before devices were marked: a named
+    // profile with nobody signed in came from an account.
+    let legacy = false;
+    try {
+      legacy = !localStorage.getItem("skintwin:owner-checked") && Boolean(store.identity.displayName) && store.scans.length > 0;
+      localStorage.setItem("skintwin:owner-checked", "1");
+    } catch {}
+    if (!owner() && !legacy) return;
     mark(null);
     reset();
-  }, [ready, store.ready, user, reset]);
+  }, [ready, store.ready, user, reset, store.identity.displayName, store.scans.length]);
 
   // On sign-in: load the saved profile, or save this device's guest results to it.
   useEffect(() => {
     if (!supabase || !user || !store.ready || pulled.current === user.id) return;
     pulled.current = user.id;
     mark(user.id);
+    try {
+      localStorage.setItem("skintwin:owner-checked", "1");
+    } catch {}
     const remote = user.user_metadata?.[KEY] as SyncedState | undefined;
     const local = syncedFrom(store);
     if (remote?.scans?.length && !store.scans.length) {
