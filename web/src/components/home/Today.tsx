@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { ArrowRight, CalendarHeart, Check, Coffee, Droplet, Flame, Lightbulb, MessagesSquare, Moon, ScanFace, Sun, Users } from "lucide-react";
 import { circleOf } from "@/lib/circles";
+import { tr, type TKey } from "@/lib/i18n";
 import { useMyIdentity } from "../MyAvatar";
 import { WriteOn } from "../WriteOn";
 import { useT } from "@/lib/i18n";
@@ -36,7 +37,6 @@ const TIPS: Record<ConcernKey, string[]> = {
   radiance: ["Sleep is the cheapest glow. Aim for 7 to 9 hours.", "Daily SPF keeps dullness and dark spots from building up."],
   wrinkle: ["SPF every morning is the best anti-ageing step there is.", "Retinoids work slowly: judge them at 12 weeks."],
 };
-const CALL_STYLE = { working: "bg-good-soft text-good", keep: "bg-blush-100 text-plum", early: "bg-blush-100 text-muted", pause: "bg-bad-soft text-bad", swap: "bg-warn-soft text-warn" } as const;
 const CALL_LABEL = { working: "Working", keep: "Keep going", early: "Too early", pause: "Pause", swap: "Try a swap" } as const;
 
 // Home for someone who has scanned: what to do today, at a glance.
@@ -64,145 +64,121 @@ export function Today() {
   const dayNo = Math.floor(Date.now() / 86_400_000);
   const tip = TIPS[focus[0]][dayNo % TIPS[focus[0]].length];
 
+  const circle = circleOf(latest.scores);
+  const lead = calls.find((c) => c.call === "working") ?? calls[0];
+  const goalNow = goal ? latest.scores[goal.concern] : 0;
+  const goalPct = goal ? Math.max(0, Math.min(1, (goalNow - goal.from) / ((goal.target - goal.from) || 1))) : 0;
+
+  // One next action, whichever matters most right now.
+  const nextStep = st.due
+    ? { title: t("today.due"), sub: t("n.checkin.b"), href: "/scan", cta: t("today.checkNow") }
+    : steps.length > doneCount
+      ? { title: t("n.left", { n: steps.length - doneCount }), sub: "", href: "#today", cta: t("today.routine") }
+      : scans.length > 1 && lead
+        ? { title: t("today.working"), sub: `${productById(lead.productId)?.name} · ${CALL_LABEL[lead.call]}`, href: "/week", cta: t("today.seeWeek") }
+        : { title: t("today.next", { date: SHORT.format(next) }), sub: t("n.checkin.b"), href: "/scan", cta: t("today.checkEarly") };
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-10">
       <p className="text-xs uppercase tracking-[0.18em] text-plum">{DAY.format(new Date())}</p>
       <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn key={t("today.title")} text={me.name ? t("today.hi", { name: me.name.split(" ")[0] }) : t("today.title")} mark={me.name ? undefined : t("today.mark")} /></h1>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        {/* My skin */}
-        <Link href="/me" data-tour="skin" className="glow-card group flex items-center gap-4 rounded-[2rem] p-5 text-white shadow-soft">
-          <div className="h-28 w-24 shrink-0 rounded-2xl bg-white/90 p-1 text-ink">
+      {/* 1 + 2: your skin, and the one thing to do next */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+        <Link href="/me" data-tour="skin" className="glow-card group flex items-center gap-5 rounded-[2rem] p-5 text-white shadow-soft">
+          <div className="h-32 w-28 shrink-0 rounded-2xl bg-white/90 p-1 text-ink">
             <FaceDiagram scores={latest.scores} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-xs text-white/80">{t("today.mySkin")}</p>
             <p className="font-display text-4xl">{latest.overall}<span className="text-lg text-white/70">/100</span></p>
-            <p className="text-xs text-white/85">{skinTypeLabel(latest.scores)} · working on {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}</p>
-            <p className="mt-2 flex items-center gap-1 text-xs">{t("today.open")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1" /></p>
+            <p className="text-xs text-white/85">{skinTypeLabel(latest.scores)} · {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}</p>
+            {goal ? (
+              <div className="mt-3">
+                <p className="text-[11px] text-white/85">{CONCERNS[goal.concern].label}: {goal.from} → {goal.target} · {goalNow}</p>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/25"><div className="h-full rounded-full bg-white" style={{ width: `${goalPct * 100}%` }} /></div>
+              </div>
+            ) : null}
+            <p className="mt-3 flex items-center gap-1 text-xs">{t("today.open")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1 rtl:rotate-180" /></p>
           </div>
         </Link>
 
-        {/* Check-in */}
         <section className={`flex flex-col justify-between rounded-[2rem] border p-5 ${st.due ? "border-rose bg-blush-100" : "border-line bg-surface"}`}>
           <div>
-            <p className="flex items-center gap-1.5 text-xs text-muted"><ScanFace className="size-4 text-plum" /> {t("today.checkin")}</p>
-            <p className="mt-2 font-display text-2xl text-ink">{st.due ? t("today.due") : t("today.next", { date: SHORT.format(next) })}</p>
-            <p className="mt-1 flex items-center gap-1 text-xs text-muted"><Flame className="size-3.5 text-rose" /> {st.n}-week streak · {scans.length} check-in{scans.length === 1 ? "" : "s"}</p>
+            <p className="flex items-center gap-1.5 text-xs text-muted"><ScanFace className="size-4 text-plum" /> {t("today.checkin")} · <Flame className="size-3.5 text-rose" /> {st.n}</p>
+            <p className="mt-2 font-display text-2xl text-ink">{nextStep.title}</p>
+            {nextStep.sub && <p className="mt-1 text-xs text-muted">{nextStep.sub}</p>}
           </div>
-          <Link href={scans.length > 1 && !st.due ? "/week" : "/scan"} className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-plum-deep py-3 text-sm text-white hover:bg-plum">
-            {st.due ? t("today.checkNow") : scans.length > 1 ? t("today.seeWeek") : t("today.checkEarly")} <ArrowRight className="size-4" />
+          <Link href={nextStep.href} className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-plum-deep py-3 text-sm text-white hover:bg-plum">
+            {nextStep.cta} <ArrowRight className="size-4 rtl:rotate-180" />
           </Link>
         </section>
-
-        {/* Twins */}
-        <Link href="/twins" className="flex flex-col justify-between rounded-[2rem] border border-line bg-surface p-5 transition hover:shadow-card">
-          <div>
-            <p className="flex items-center gap-1.5 text-xs text-muted"><Users className="size-4 text-plum" /> {t("today.people")}</p>
-            <p className="mt-2 font-display text-4xl text-ink">{twins.length}</p>
-            <p className="text-xs text-muted">{t("today.twinsSub")}</p>
-          </div>
-          <p className="mt-4 flex items-center gap-1 text-xs text-plum">{t("today.openTwins")} <ArrowRight className="size-3.5" /></p>
-        </Link>
-        <Link href="/circles" className="flex items-center justify-between rounded-[2rem] border border-line bg-gradient-to-r from-blush-100 to-surface p-4 text-sm transition hover:shadow-card lg:col-span-3">
-          <span className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-full bg-plum-deep text-white"><MessagesSquare className="size-5" /></span>
-            <span>
-              <span className="block font-medium">Ask your {circleOf(latest.scores)} circle</span>
-              <span className="text-xs text-muted">Questions and week-by-week progress from people with your skin</span>
-            </span>
-          </span>
-          <ArrowRight className="size-4 text-plum" />
-        </Link>
       </div>
 
-      {/* Today's routine */}
-      <section className="mt-6 rounded-[2rem] border border-line bg-surface p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-medium"><CalendarHeart className="size-4 text-plum" /> {t("today.routine")}</h2>
-          {steps.length > 0 && <span className="text-xs text-muted">{doneCount}/{steps.length} done</span>}
+      {/* 3: today, routine and habits together */}
+      <section id="today" className="mt-6 scroll-mt-24 rounded-[2rem] border border-line bg-surface p-5">
+        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-medium"><CalendarHeart className="size-4 text-plum" /> {t("today.routine")}</h2>
+              {steps.length > 0 && <span className="text-xs text-muted">{doneCount}/{steps.length}</span>}
+            </div>
+            {steps.length ? (
+              <ul className="mt-3 space-y-2">
+                {steps.map((r) => {
+                  const p = productById(r.productId)!;
+                  const on = done[key(r.slot)]?.includes(p.id) ?? false;
+                  return (
+                    <li key={`${r.slot}-${p.id}`}>
+                      <button onClick={() => toggleDone(key(r.slot), p.id)} aria-pressed={on} className="flex w-full items-center gap-3 rounded-2xl bg-blush-50 p-2 text-start">
+                        <span className={`grid size-7 shrink-0 place-items-center rounded-full border-2 ${on ? "border-good bg-good text-white" : "border-blush-300 text-transparent"}`}><Check className="size-3.5" /></span>
+                        <ProductThumb product={p} size="sm" />
+                        <span className={`min-w-0 flex-1 truncate text-sm ${on ? "text-muted line-through" : ""}`}>{p.name}</span>
+                        {r.slot === "am" ? <Sun className="size-4 text-warn" /> : <Moon className="size-4 text-plum" />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <Link href="/routine" className="mt-3 flex items-center justify-between rounded-2xl bg-blush-50 p-4 text-sm">
+                {t("plan.ready")} <ArrowRight className="size-4 text-plum rtl:rotate-180" />
+              </Link>
+            )}
+          </div>
+          <Habits dayKey={`${todayKey()}:habits`} done={done} toggle={toggleDone} bedtime={wellness.sleep.time} />
         </div>
-        {steps.length ? (
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {steps.map((r) => {
-              const p = productById(r.productId)!;
-              const on = done[key(r.slot)]?.includes(p.id) ?? false;
-              return (
-                <li key={`${r.slot}-${p.id}`}>
-                  <button onClick={() => toggleDone(key(r.slot), p.id)} aria-pressed={on} className="flex w-full items-center gap-3 rounded-2xl bg-blush-50 p-2 text-left">
-                    <span className={`grid size-7 shrink-0 place-items-center rounded-full border-2 ${on ? "border-good bg-good text-white" : "border-blush-300 text-transparent"}`}><Check className="size-3.5" /></span>
-                    <ProductThumb product={p} size="sm" />
-                    <span className={`min-w-0 flex-1 truncate text-sm ${on ? "text-muted line-through" : ""}`}>{p.name}</span>
-                    {r.slot === "am" ? <Sun className="size-4 text-warn" /> : <Moon className="size-4 text-plum" />}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <Link href="/routine" className="mt-3 flex items-center justify-between rounded-2xl bg-blush-50 p-4 text-sm">
-            Get a routine built from what worked for your twins <ArrowRight className="size-4 text-plum" />
-          </Link>
-        )}
       </section>
 
-      {/* Habits, what's working, tip */}
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Habits dayKey={`${todayKey()}:habits`} done={done} toggle={toggleDone} bedtime={wellness.sleep.time} />
-
-        <section className="rounded-[2rem] border border-line bg-surface p-5">
-          <h2 className="text-sm font-medium">{t("today.working")}</h2>
-          {calls.length ? (
-            <ul className="mt-3 space-y-2">
-              {calls.slice(0, 3).map((c) => {
-                const p = productById(c.productId)!;
-                return (
-                  <li key={c.productId}>
-                    <Link href={`/product/${p.id}`} className="flex items-center gap-3 rounded-2xl bg-blush-50 p-2">
-                      <ProductThumb product={p} size="sm" />
-                      <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${CALL_STYLE[c.call]}`}>{CALL_LABEL[c.call]}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="mt-3 text-xs text-muted">Once you have a routine and a second check-in, we&apos;ll show which products are actually working.</p>
-          )}
-          <Link href={scans.length > 1 ? "/week" : "/routine"} className="mt-3 inline-flex items-center gap-1 text-xs text-plum">
-            {scans.length > 1 ? "This week's changes" : "Build my plan"} <ArrowRight className="size-3.5" />
-          </Link>
-        </section>
-
-        <section className="rounded-[2rem] bg-gradient-to-br from-blush-100 to-blush-200 p-5">
-          <p className="flex items-center gap-1.5 text-xs text-plum-deep"><Lightbulb className="size-4" /> {t("today.tip")}</p>
-          <p className="mt-3 font-display text-xl leading-snug text-ink">{tip}</p>
-          <p className="mt-3 text-[11px] text-muted">For your {CONCERNS[focus[0]].label.toLowerCase()}</p>
-        </section>
-      </div>
-
-      {/* From your twins */}
-      {posts.length > 0 && (
-        <section className="mt-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">{t("today.fromTwins")}</h2>
-            <Link href="/twins" className="text-xs text-plum">See all</Link>
+      {/* 4: your community, twins and circle together */}
+      <section className="mt-6 rounded-[2rem] border border-line bg-surface p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-sm font-medium"><Users className="size-4 text-plum" /> {t("today.people")}</h2>
+            <p className="text-xs text-muted">{twins.length} {t("today.twinsSub")}</p>
           </div>
-          <ul className="mt-3 grid grid-cols-3 gap-3">
+          <div className="flex gap-2">
+            <Link href="/circles" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-xs text-white hover:bg-plum">
+              <MessagesSquare className="size-3.5" /> {t("circ.eyebrow")} · {tr(`st.${circle}` as TKey)}
+            </Link>
+            <Link href="/twins" className="inline-flex items-center gap-1 rounded-full border border-line px-4 py-2 text-xs text-plum">
+              {t("today.openTwins")} <ArrowRight className="size-3.5 rtl:rotate-180" />
+            </Link>
+          </div>
+        </div>
+        {posts.length > 0 && (
+          <ul className="mt-4 grid grid-cols-3 gap-3">
             {posts.map((p, i) => (
               <PostTile key={p.key} post={p} i={i} onOpen={() => router.push(p.personId ? `/twins/${p.personId}` : "/twins")} />
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
-      {goal && (
-        <Link href="/me" className="mt-6 flex items-center justify-between rounded-[2rem] border border-line bg-surface p-4 text-sm hover:shadow-card">
-          <span>Goal: {CONCERNS[goal.concern].label} {goal.from} → {goal.target} · now {latest.scores[goal.concern]}</span>
-          <ArrowRight className="size-4 text-plum" />
-        </Link>
-      )}
+      <p className="mt-6 flex items-start gap-2 text-sm text-muted">
+        <Lightbulb className="mt-0.5 size-4 shrink-0 text-plum" />
+        <span><b className="font-medium text-ink">{t("today.tip")}:</b> {tip}</span>
+      </p>
     </div>
   );
 }
@@ -213,7 +189,7 @@ function Habits({ dayKey, done, toggle, bedtime }: { dayKey: string; done: Recor
   const got = done[dayKey] ?? [];
   const glasses = [1, 2, 3, 4, 5, 6].filter((n) => got.includes(`water${n}`)).length;
   return (
-    <section className="rounded-[2rem] border border-line bg-surface p-5">
+    <section className="lg:border-s lg:border-line lg:ps-6">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium">{t("today.habits")}</h2>
         <Link href="/settings#reminders" className="text-[11px] text-plum">Reminders</Link>

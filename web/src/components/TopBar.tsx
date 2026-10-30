@@ -31,7 +31,7 @@ export function TopBar() {
   const onAuth = path === "/signup" || path === "/login";
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-blush-50/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-5 lg:px-8">
+      <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="font-display text-2xl text-plum-deep">
           SkinTwin
         </Link>
@@ -55,11 +55,12 @@ export function TopBar() {
           <span className="hidden sm:block"><HeaderSearch /></span>
           {signedIn ? (
             <>
-              <NotificationBell />
-              <Link href="/scan" data-tour="checkin" className="ms-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
+              <Link href="/scan" data-tour="checkin" className="me-2 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
                 <ScanFace className="size-4" /> {latest ? t("nav.checkin") : t("nav.startScan")}
               </Link>
-              <span className="ms-1"><ProfileMenu /></span>
+              {/* Account cluster on the far edge: bell, then avatar */}
+              <NotificationBell />
+              <ProfileMenu />
             </>
           ) : (
             <>
