@@ -131,7 +131,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
   const setReminders = useCallback((reminders: boolean) => setState((s) => ({ ...s, reminders })), []);
-  const reset = useCallback(() => setState(EMPTY), []);
+  // Wipe saved data right away too, so a page change straight after can't bring it back.
+  const reset = useCallback(() => {
+    try {
+      localStorage.removeItem(KEY);
+      Object.keys(sessionStorage).filter((k) => k.startsWith("skintwin:")).forEach((k) => sessionStorage.removeItem(k));
+    } catch {}
+    setState(EMPTY);
+  }, []);
   const toggleSavedProduct = useCallback(
     (id: string) =>
       setState((s) => ({

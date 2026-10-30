@@ -96,7 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase?.auth.signOut();
     pulled.current = null;
     reset();
-    window.location.href = "/";
+    // Full reload so nothing from the signed-in session stays in memory.
+    window.location.replace("/");
   }, [reset]);
 
   const updateName = useCallback(async (name: string) => {
