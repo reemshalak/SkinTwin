@@ -23,6 +23,23 @@ interface Auth {
 
 const Ctx = createContext<Auth | null>(null);
 
+// Marks that this device's data belongs to an account (not a guest), so it can be
+// cleared whenever nobody is signed in.
+const OWNER = "skintwin:owner";
+const mark = (id: string | null) => {
+  try {
+    if (id) localStorage.setItem(OWNER, id);
+    else localStorage.removeItem(OWNER);
+  } catch {}
+};
+const owner = () => {
+  try {
+    return localStorage.getItem(OWNER);
+  } catch {
+    return null;
+  }
+};
+
 function syncedFrom(s: SyncedState): SyncedState {
   return {
     scans: s.scans.map(({ photo, ...rest }) => (photo?.startsWith("/") ? { ...rest, photo } : rest)),
@@ -55,10 +72,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
+  // Signed out (here, in another tab, or the session expired): an account's data
+  // must not stay on screen. Guest data, with no owner, is left alone.
+  const { reset } = store;
+  useEffect(() => {
+    if (!ready || !store.ready || user || !owner()) return;
+    mark(null);
+    reset();
+  }, [ready, store.ready, user, reset]);
+
   // On sign-in: load the saved profile, or save this device's guest results to it.
   useEffect(() => {
     if (!supabase || !user || !store.ready || pulled.current === user.id) return;
     pulled.current = user.id;
+    mark(user.id);
     const remote = user.user_metadata?.[KEY] as SyncedState | undefined;
     const local = syncedFrom(store);
     if (remote?.scans?.length && !store.scans.length) {
@@ -90,13 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Your results are saved to the account, so signing out clears this device
-  // and goes back to the public homepage (the next person sees a fresh app).
-  const { reset } = store;
+  // and goes back to the public homepage, even if the sign-out request fails.
   const signOut = useCallback(async () => {
-    await supabase?.auth.signOut();
+    try {
+      await supabase?.auth.signOut();
+    } catch {}
     pulled.current = null;
+    mark(null);
+    try {
+      Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));
+    } catch {}
     reset();
-    // Full reload so nothing from the signed-in session stays in memory.
     window.location.replace("/");
   }, [reset]);
 
