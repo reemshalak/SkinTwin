@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AlertTriangle, ChevronLeft, MapPin, Moon, Sparkles, Sun } from "lucide-react";
+import { AlertTriangle, BadgeCheck, ChevronLeft, ExternalLink, HelpCircle, MapPin, Moon, Search, Sparkles, Sun, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { ProductVisual, productColors } from "@/components/ProductArt";
 import { CountUp, EASE } from "@/components/motion";
@@ -16,6 +16,7 @@ import { CONCERNS } from "@/lib/concerns";
 import { conflictsIfAdded } from "@/lib/conflicts";
 import { ACTIVE_LABELS, productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
+import { VERDICT_STYLE, verdictFor } from "@/lib/verdict";
 import { everyone, findTwins, outcomeFor } from "@/lib/twins";
 import type { ConcernKey, Product } from "@/lib/types";
 
@@ -93,12 +94,16 @@ export default function ProductPage() {
   if (!product || !outcomes) {
     return (
       <Page>
-        <PageTitle title="Product not found" back={{ href: "/shop", label: "Shop" }} />
+        <PageTitle title="Product not found" back={{ href: "/shop", label: "Products" }} />
       </Page>
     );
   }
 
-  const hasTwins = Boolean(latest) && outcomes.twins.n > 0;
+  const verdict = verdictFor(latest ? outcomes.twins : null, outcomes.all);
+  const vs = VERDICT_STYLE[verdict.kind];
+  const VIcon = verdict.kind === "good" ? BadgeCheck : verdict.kind === "risky" ? AlertTriangle : verdict.kind === "mixed" ? Users : HelpCircle;
+  // Under 5 twins, the numbers below show everyone's results instead.
+  const hasTwins = Boolean(latest) && outcomes.twins.n >= 5;
   const o = view === "twins" && hasTwins ? outcomes.twins : outcomes.all;
   const conflicts = conflictsIfAdded(routine, product.id, slot);
   const inRoutine = routine.some((r) => r.productId === product.id && r.slot === slot);
@@ -108,7 +113,7 @@ export default function ProductPage() {
   return (
     <Page>
       <Link href="/shop" className="mb-6 inline-flex items-center gap-1 text-sm text-plum">
-        <ChevronLeft className="size-4" /> Shop
+        <ChevronLeft className="size-4" /> Products
       </Link>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="self-start lg:sticky lg:top-24">
@@ -129,7 +134,7 @@ export default function ProductPage() {
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted">{product.blurb}</p>
           <div className="mt-4 flex items-center justify-between">
-            <p className="font-display text-3xl text-plum-deep">${product.price.toFixed(2)}</p>
+            <p className="text-sm text-muted">Typical price <span className="font-medium text-ink">${product.price.toFixed(2)}</span></p>
             <SaveHeart productId={product.id} className="size-11" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -160,20 +165,51 @@ export default function ProductPage() {
           >
             {inRoutine ? "In your routine" : conflicts.length ? "Add anyway" : "Add to routine"}
           </button>
-          <a
-            href={`https://www.google.com/maps/search/${encodeURIComponent(`${product.category === "makeup" ? "beauty store" : "pharmacy skincare"} near me`)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-sm text-plum"
-          >
-            <MapPin className="size-4" /> Find a store nearby
-          </a>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="text-xs font-medium">Where to buy</p>
+            <p className="text-[11px] text-muted">SkinTwin doesn&apos;t sell anything. We point you to shops and to links from people who tried it.</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <a
+                href={`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(`${product.brand} ${product.name}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-xs text-plum hover:border-plum"
+              >
+                <Search className="size-3.5" /> Compare shops <ExternalLink className="size-3" />
+              </a>
+              <a
+                href={`https://www.google.com/maps/search/${encodeURIComponent(`${product.category === "makeup" ? "beauty store" : "pharmacy skincare"} near me`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-line py-3 text-xs text-plum hover:border-plum"
+              >
+                <MapPin className="size-3.5" /> Stores nearby <ExternalLink className="size-3" />
+              </a>
+            </div>
+            <a href="#reviews" className="mt-2 block text-center text-[11px] text-plum underline">Shop links from verified reviewers</a>
+          </div>
         </section>
 
         {product.shades && <TryOn product={product} />}
       </div>
 
       <div>
+        <section className={`mb-5 flex items-start gap-3 rounded-[2rem] border p-5 ${vs.banner}`}>
+          <VIcon className="mt-0.5 size-6 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-2xl leading-tight">{verdict.title}</p>
+            <p className="mt-1 text-sm opacity-90">{verdict.detail}</p>
+            {latest && outcomes.twins.n > 0 && (
+              <div className="mt-2">
+                <ConfidenceBadge level={outcomes.twins.confidence} n={outcomes.twins.n} />
+              </div>
+            )}
+          </div>
+          {verdict.kind === "noscan" && (
+            <Link href="/scan" className="shrink-0 rounded-full bg-plum-deep px-4 py-2 text-xs text-white">Scan</Link>
+          )}
+        </section>
+
         <section className="rounded-[2rem] border border-line bg-surface p-5">
           <div role="tablist" aria-label="Whose results" className="grid grid-cols-2 rounded-full bg-blush-100 p-1 text-xs">
             {(["twins", "all"] as const).map((v) => (

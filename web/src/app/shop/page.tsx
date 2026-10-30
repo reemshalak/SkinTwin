@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { Flame, Heart, Leaf, Search, ShoppingBag, Sparkles, Tag, Users, X } from "lucide-react";
+import { Flame, Heart, Leaf, Search, Sparkles, Tag, Users, X } from "lucide-react";
 import { EASE } from "@/components/motion";
 import { Page } from "@/components/Page";
 import { ProductVisual } from "@/components/ProductArt";
 import { SaveHeart } from "@/components/SaveHeart";
-import { ConfidenceBadge } from "@/components/ui";
 import { SAMPLE_POSTS } from "@/lib/community";
 import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { ACTIVE_LABELS, PRODUCTS } from "@/lib/products";
 import { useStore } from "@/lib/store";
-import { findTwins, fitScore, outcomeFor, type Outcome } from "@/lib/twins";
+import { everyone, findTwins, fitScore, outcomeFor, type Outcome } from "@/lib/twins";
+import { VERDICT_STYLE, verdictFor } from "@/lib/verdict";
 import type { ConcernKey, Product } from "@/lib/types";
 
 const CATEGORIES: { id: string; label: string; match: (p: Product) => boolean }[] = [
@@ -44,7 +44,7 @@ const TRENDING = (() => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
 })();
 
-type Row = { product: Product; o: Outcome };
+type Row = { product: Product; o: Outcome; all: Outcome };
 
 export default function ShopPage() {
   const { latest } = useStore();
@@ -56,7 +56,8 @@ export default function ShopPage() {
 
   const rows = useMemo<Row[]>(() => {
     const twins = latest ? findTwins(latest.scores, latest.sampleId) : [];
-    return PRODUCTS.map((p) => ({ product: p, o: outcomeFor(p.id, twins) })).sort((a, b) =>
+    const all = everyone();
+    return PRODUCTS.map((p) => ({ product: p, o: outcomeFor(p.id, twins), all: outcomeFor(p.id, all) })).sort((a, b) =>
       a.o.n >= 5 && b.o.n >= 5 ? fitScore(b.o) - fitScore(a.o) : b.o.n - a.o.n,
     );
   }, [latest]);
@@ -80,7 +81,17 @@ export default function ShopPage() {
   const myConcerns = latest ? [...CONCERN_KEYS].sort((a, b) => latest.scores[a] - latest.scores[b]).slice(0, 3) : [];
   const byId = (id: string) => rows.find((r) => r.product.id === id)!;
   const shelves: { id: string; title: string; icon: React.ReactNode; items: Row[] }[] = [
-    ...(latest ? [{ id: "twins", title: "Best for your twins", icon: <Users className="size-4 text-plum" />, items: rows.filter((r) => r.o.n >= 5 && r.product.category !== "makeup").slice(0, 8) }] : []),
+    ...(latest
+      ? [
+          { id: "twins", title: "Worked for your twins", icon: <Users className="size-4 text-good" />, items: rows.filter((r) => verdictFor(r.o, r.all).kind === "good").slice(0, 8) },
+          {
+            id: "risky",
+            title: "Popular, but risky for you",
+            icon: <Flame className="size-4 text-warn" />,
+            items: rows.filter((r) => r.all.avgRating >= 3.6 && verdictFor(r.o, r.all).kind === "risky").slice(0, 8),
+          },
+        ]
+      : []),
     { id: "trending", title: "Trending this week", icon: <Flame className="size-4 text-rose" />, items: TRENDING.slice(0, 8).map(byId) },
     { id: "gentle", title: "Fragrance-free & gentle", icon: <Leaf className="size-4 text-good" />, items: rows.filter((r) => fragranceFree(r.product) && !r.product.risks.some((x) => x.concern === "redness")).slice(0, 8) },
     { id: "budget", title: "Under $25", icon: <Tag className="size-4 text-warn" />, items: rows.filter((r) => r.product.price < 25).slice(0, 8) },
@@ -91,7 +102,7 @@ export default function ShopPage() {
   return (
     <Page>
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Products</p>
-      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">Find what works for your skin</h1>
+      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">What works for skin like yours</h1>
 
       <Link href="/swipe" className="group mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blush-100 to-blush-200 px-4 py-2 text-xs font-medium text-plum-deep transition hover:shadow-card">
         <Heart className="size-3.5 fill-current text-rose transition group-hover:scale-110" /> Can&apos;t decide? Quick pick
@@ -179,7 +190,7 @@ export default function ShopPage() {
               <span className="rounded-full bg-plum-deep px-4 py-2 text-xs text-white">Start scan</span>
             </Link>
           )}
-          {shelves.map((s) => (
+          {shelves.filter((s) => s.items.length).map((s) => (
             <section key={s.id} className="mt-8">
               <h2 className="flex items-center gap-2 text-sm font-medium">{s.icon} {s.title}</h2>
               <ul key={latest?.id ?? "none"} className="-mx-5 mt-3 flex snap-x scroll-px-5 lg:scroll-px-0 gap-4 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
@@ -201,32 +212,21 @@ export default function ShopPage() {
   );
 }
 
-function ProductTile({ row: { product, o }, scanned, i, className = "" }: { row: Row; scanned: boolean; i: number; className?: string }) {
+function ProductTile({ row: { product, o, all }, scanned, i, className = "" }: { row: Row; scanned: boolean; i: number; className?: string }) {
+  const v = verdictFor(scanned ? o : null, all);
   return (
     <motion.li initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 6) * 0.04, ease: EASE }} className={`relative ${className}`}>
       <Link href={`/product/${product.id}`} className="group block rounded-[2rem] bg-blush-100/70 p-3 pb-5 text-center transition hover:-translate-y-1 hover:bg-blush-100 hover:shadow-soft">
         <div className="relative mx-auto aspect-square w-full">
           <div className={`absolute inset-1 rounded-full bg-gradient-to-br ${product.hue} transition duration-500 group-hover:scale-[1.03]`} />
           <ProductVisual product={product} className="absolute inset-x-0 top-[10%] mx-auto h-[80%] w-[80%] transition duration-500 group-hover:-translate-y-1 group-hover:rotate-[-3deg]" />
-          <span className="absolute right-[6%] bottom-[6%] grid size-9 place-items-center rounded-full bg-surface/90 text-plum shadow-card transition group-hover:bg-plum group-hover:text-white">
-            <ShoppingBag className="size-4" />
-          </span>
-          {scanned && o.n >= 5 && (
-            <span className={`absolute top-[4%] left-[4%] rounded-full bg-surface/95 px-2 py-0.5 text-[10px] font-medium shadow-card ${fitScore(o) >= 40 ? "text-good" : fitScore(o) < 10 ? "text-bad" : "text-muted"}`}>
-              {o.improvedPct}% of twins
-            </span>
-          )}
+          <span className={`absolute inset-x-[6%] bottom-[4%] truncate rounded-full px-2.5 py-1 text-center text-[10px] font-medium shadow-card ${VERDICT_STYLE[v.kind].chip}`}>{v.short}</span>
         </div>
         <p className="mt-3 line-clamp-1 px-1 text-sm font-medium">{product.name}</p>
         <p className="text-[11px] text-muted">
           {product.actives[0] ? ACTIVE_LABELS[product.actives[0]] : product.brand} · {product.size}
         </p>
-        <p className="mt-2 font-display text-xl text-plum-deep">${product.price.toFixed(2)}</p>
-        {scanned && o.n < 5 && (
-          <div className="mt-1">
-            <ConfidenceBadge level={o.confidence} n={o.n} />
-          </div>
-        )}
+        <p className="mt-1 text-[11px] text-muted">${product.price.toFixed(2)}</p>
       </Link>
       <SaveHeart productId={product.id} className="absolute top-5 right-5" />
     </motion.li>
