@@ -55,6 +55,7 @@ export function ProfileMenu() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Account menu"
+        data-tour="skin"
         aria-haspopup="menu"
         aria-expanded={open}
         className="ml-1 block shrink-0 rounded-full ring-2 ring-blush-200 ring-offset-2 ring-offset-blush-50 transition hover:ring-plum"

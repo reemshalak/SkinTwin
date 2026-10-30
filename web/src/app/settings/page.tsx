@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Bell, Check, Download, ImageOff, Loader2, LogOut, Monitor, Moon, Palette, RotateCcw, ScanFace, Shield, Sun, UserRound } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { ScanModeToggle } from "@/components/ScanModeToggle";
+import { TOUR_KEY } from "@/components/Tour";
 import { Page, PageTitle } from "@/components/Page";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -174,6 +175,17 @@ export default function SettingsPage() {
               </button>
             ))}
           </div>
+          <button
+            onClick={() => {
+              try {
+                localStorage.removeItem(TOUR_KEY);
+              } catch {}
+              window.location.href = "/";
+            }}
+            className="mt-4 rounded-full border border-line px-4 py-2 text-sm text-plum"
+          >
+            Show the quick tour again
+          </button>
         </Section>
 
         <Section icon={ScanFace} title="Analysis source (for demos)">

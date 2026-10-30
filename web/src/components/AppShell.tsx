@@ -5,6 +5,7 @@ import { BottomNav } from "./BottomNav";
 import { ReminderTicker } from "./ReminderTicker";
 import { SiteFooter } from "./SiteFooter";
 import { TopBar } from "./TopBar";
+import { Tour } from "./Tour";
 
 // Full-screen app: sticky top bar with the journey on every size,
 // bottom tab bar on phones only.
@@ -21,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       {showBottom && <BottomNav />}
       <ReminderTicker />
+      <Tour />
     </div>
   );
 }

@@ -9,10 +9,10 @@ import { useStore } from "@/lib/store";
 
 // The loop: who's like me -> what works -> my plan -> my skin.
 const LINKS = [
-  { href: "/twins", label: "Twins" },
-  { href: "/shop", label: "Products" },
-  { href: "/routine", label: "Plan" },
-  { href: "/me", label: "My skin" },
+  { href: "/twins", label: "Twins", tour: "twins" },
+  { href: "/shop", label: "Products", tour: "products" },
+  { href: "/routine", label: "Plan", tour: "plan" },
+  { href: "/me", label: "My skin", tour: "skin" },
 ];
 
 export function TopBar() {
@@ -30,6 +30,7 @@ export function TopBar() {
               <Link
                 key={l.href}
                 href={l.href}
+                data-tour={l.tour}
                 aria-current={path.startsWith(l.href) ? "page" : undefined}
                 className={`rounded-full px-4 py-2 text-sm transition ${path.startsWith(l.href) ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
               >
@@ -37,7 +38,7 @@ export function TopBar() {
               </Link>
             ))}
           </nav>
-          <Link href="/scan" className="hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum sm:inline-flex">
+          <Link href="/scan" data-tour="checkin" className="hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum sm:inline-flex">
             <ScanFace className="size-4" /> {latest ? "Check-in" : "Start scan"}
           </Link>
           <ProfileLink />
