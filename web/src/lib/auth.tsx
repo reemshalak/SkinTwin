@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useStore, type SyncedState } from "./store";
 import { supabase } from "./supabase";
 
-// Profile data lives in the account's user metadata (no database tables needed).
+// Profile data lives in the private user_state table (falls back to user metadata).
 // Photos are stripped before syncing: they never leave the device.
 const KEY = "skintwin";
 
@@ -58,6 +58,16 @@ function syncedFrom(s: SyncedState): SyncedState {
   };
 }
 
+// Saved account data wins for settings; scans and routine steps from both are kept.
+function mergeStates(remote: SyncedState, local: SyncedState): Partial<SyncedState> {
+  const scans = [...remote.scans, ...local.scans.filter((l) => !remote.scans.some((r) => r.id === l.id))].sort(
+    (a, b) => new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime(),
+  );
+  const routine = [...remote.routine, ...local.routine.filter((l) => !remote.routine.some((r) => r.productId === l.productId && r.slot === l.slot))];
+  const identity = { ...remote.identity, avatar: local.identity.avatar ?? remote.identity.avatar };
+  return { ...remote, scans, routine, identity, done: { ...local.done, ...remote.done } };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const store = useStore();
   const [user, setUser] = useState<User | null>(null);
@@ -91,7 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     reset();
   }, [ready, store.ready, user, reset, store.identity.displayName, store.scans.length]);
 
-  // On sign-in: load the saved profile, or save this device's guest results to it.
+  // On sign-in: load the saved profile and merge it with this device's results.
+  // Saved in the private user_state table; until that exists, in the account's
+  // metadata (without the profile photo, which would make every request heavy).
+  const table = useRef<boolean | null>(null);
+  const [synced, setSynced] = useState<string | null>(null);
   useEffect(() => {
     if (!supabase || !user || !store.ready || pulled.current === user.id) return;
     pulled.current = user.id;
@@ -99,22 +113,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem("skintwin:owner-checked", "1");
     } catch {}
-    const remote = user.user_metadata?.[KEY] as SyncedState | undefined;
-    const local = syncedFrom(store);
-    if (remote?.scans?.length && !store.scans.length) {
-      store.hydrate(remote);
-    } else if (store.scans.length) {
-      supabase.auth.updateUser({ data: { [KEY]: local } });
-    }
+    const meta = user.user_metadata?.[KEY] as SyncedState | undefined;
+    (async () => {
+      const { data, error } = await supabase!.from("user_state").select("data").eq("user_id", user.id).maybeSingle();
+      table.current = !error;
+      const remote = (data?.data as SyncedState | undefined) ?? meta;
+      if (remote?.scans?.length) store.hydrate(mergeStates(remote, syncedFrom(store)));
+      // Moved to the table: drop the old copy from the sign-in token.
+      if (table.current && meta) supabase!.auth.updateUser({ data: { [KEY]: null } });
+      setSynced(user.id);
+    })();
   }, [user, store]);
 
   // Keep the account up to date as the profile changes (debounced).
   const snapshot = JSON.stringify(syncedFrom(store));
   useEffect(() => {
-    if (!supabase || !user || pulled.current !== user.id) return;
-    const id = setTimeout(() => supabase!.auth.updateUser({ data: { [KEY]: JSON.parse(snapshot) } }), 1200);
+    if (!supabase || !user || synced !== user.id) return;
+    const id = setTimeout(() => {
+      const data = JSON.parse(snapshot) as SyncedState;
+      if (table.current) supabase!.from("user_state").upsert({ user_id: user.id, data, updated_at: new Date().toISOString() }).then(() => {});
+      else supabase!.auth.updateUser({ data: { [KEY]: { ...data, identity: { displayName: data.identity.displayName } } } });
+    }, 1200);
     return () => clearTimeout(id);
-  }, [snapshot, user]);
+  }, [snapshot, user, synced]);
 
   const signUp = useCallback(async (name: string, email: string, password: string) => {
     if (!supabase) return { error: "Accounts aren't set up on this site yet." };
@@ -137,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await Promise.race([supabase?.auth.signOut({ scope: "local" }), new Promise((r) => setTimeout(r, 1500))]);
     } catch {}
     pulled.current = null;
+    setSynced(null);
     mark(null);
     try {
       Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));

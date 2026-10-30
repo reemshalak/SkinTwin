@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, Check, Copy, Heart, Lock, MessageSquare, Package, Pencil, ScanFace, Settings, Sparkles, Users } from "lucide-react";
 import { GoalCard } from "@/components/GoalCard";
+import { Extras } from "@/components/Extras";
 import { FaceDiagram, Ring } from "@/components/report/Visuals";
 import { Reveal } from "@/components/motion";
 import { AvatarEditor } from "@/components/AvatarEditor";
@@ -307,6 +308,7 @@ export default function MePage() {
           ))}
       </Reveal>
 
+      <Extras />
       <p className="mt-12 flex items-center justify-center gap-2 text-center text-xs text-muted">
         <Lock className="size-3.5" /> Others see your name and the profile photo you chose. Scan photos and this skin page stay private to you.
       </p>

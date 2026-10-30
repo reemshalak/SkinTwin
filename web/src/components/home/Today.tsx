@@ -91,7 +91,7 @@ export function Today() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs text-white/80">{t("today.mySkin")}</p>
-            <p className="font-display text-4xl">{latest.overall}<span className="text-lg text-white/70">/100</span></p>
+            <p className="font-display text-4xl">{latest.overall}<span className="text-lg text-white/70">/100</span>{latest.source !== "live" && <span className="ms-2 rounded-full bg-white/15 px-2 py-0.5 align-middle font-sans text-[10px] uppercase tracking-wider text-white/85">{latest.sampleId ? "Sample" : "Demo"}</span>}</p>
             <p className="text-xs text-white/85">{skinTypeLabel(latest.scores)} · {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}</p>
             {goal ? (
               <div className="mt-3">

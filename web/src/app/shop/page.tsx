@@ -118,9 +118,6 @@ export default function ShopPage() {
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">{t("prod.eyebrow")}</p>
       <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn text={t("prod.title")} mark={t("prod.mark")} /></h1>
 
-      <Link href="/swipe" className="group mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blush-100 to-blush-200 px-4 py-2 text-xs font-medium text-plum-deep transition hover:shadow-card">
-        <Heart className="size-3.5 fill-current text-rose transition group-hover:scale-110" /> {t("prod.quick")}
-      </Link>
 
       <label className="relative mt-5 block">
         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted" />

@@ -2,6 +2,11 @@
 // main pages. Merged into the dictionaries in i18n.tsx.
 
 export const EXTRA_EN = {
+  "x.title": "Extras", "x.sub": "Fun tools that help with the same four questions.",
+  "x.mirror": "Live mirror", "x.mirror.d": "Try shades matched to your skin tone",
+  "x.mix": "Mix Lab", "x.mix.d": "Preview what products do together",
+  "x.swipe": "Quick picks", "x.swipe.d": "Swipe through products your twins rate",
+  "x.import": "Check my cart", "x.import.d": "See if what you're about to buy suits you",
   "c.moisture": "Hydration", "c.oiliness": "Oil balance", "c.redness": "Calmness", "c.texture": "Smoothness", "c.pore": "Pores", "c.acne": "Clarity", "c.radiance": "Glow", "c.wrinkle": "Fine lines",
   "cl.moisture": "Dehydrated", "cl.oiliness": "Oily", "cl.redness": "Prone to redness", "cl.texture": "Uneven texture", "cl.pore": "Visible pores", "cl.acne": "Breakout-prone", "cl.radiance": "Dull", "cl.wrinkle": "Visible lines",
   "ch.moisture": "Well hydrated", "ch.oiliness": "Balanced", "ch.redness": "Calm", "ch.texture": "Smooth", "ch.pore": "Refined", "ch.acne": "Clear", "ch.radiance": "Radiant", "ch.wrinkle": "Smooth lines",

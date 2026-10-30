@@ -195,6 +195,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
+        <div id="source" className="scroll-mt-24" />
         <Section icon={ScanFace} title={t("set.source")}>
           <p className="mb-4 text-xs text-muted">
             Demo mode gives simulated scores in the same format as YouCam and costs nothing. Live mode sends new photos to YouCam AI Skin

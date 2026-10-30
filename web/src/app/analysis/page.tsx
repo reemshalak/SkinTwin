@@ -124,7 +124,7 @@ export default function AnalysisPage() {
                   </div>
                   <span className="text-xs tabular-nums text-white/80">{progress}%</span>
                 </div>
-                <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-white/60">Analysing 8 skin concerns · YouCam AI</p>
+                <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-white/60">Analysing 8 skin concerns{liveScans ? " · YouCam AI" : " · demo"}</p>
                 {error && (
                   <p className="mt-4 text-sm text-blush-200">
                     {error}{" "}
@@ -142,10 +142,18 @@ export default function AnalysisPage() {
                   <br />
                   <em className="text-blush-200">scored {result!.overall}/100</em>
                 </h1>
-                {(result!.source === "live" || note) && (
+                {result!.source === "live" ? (
                   <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white/85">
-                    <span className={`size-1.5 rounded-full ${result!.source === "live" ? "bg-[#7cc6a0]" : "bg-blush-200"}`} />
-                    {result!.source === "live" ? "Analysed by YouCam AI" : note}
+                    <span className="size-1.5 rounded-full bg-[#7cc6a0]" /> Analysed by YouCam AI
+                  </p>
+                ) : (
+                  <p className="mt-3 max-w-md rounded-2xl border border-blush-200/40 bg-white/10 px-4 py-3 text-xs leading-relaxed text-white/90">
+                    <span className="font-semibold text-blush-200">{result!.sampleId ? "Sample face. " : "Demo scores, not your skin yet. "}</span>
+                    {result!.sampleId
+                      ? "These are the preset scores for this sample person."
+                      : "These numbers are simulated, not measured from your photo."}{" "}
+                    {note && <span className="text-white/70">{note} </span>}
+                    <Link href="/settings#source" className="underline">Turn on live YouCam analysis</Link> for real scores.
                   </p>
                 )}
                 <p className="mt-3 hidden text-sm leading-relaxed text-white/75 lg:block">
