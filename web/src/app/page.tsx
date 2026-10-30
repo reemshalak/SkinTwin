@@ -6,11 +6,14 @@ import { ArrowRight, BadgeCheck, Check, ScanFace, Star, Users } from "lucide-rea
 import { Avatar } from "@/components/Avatar";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { HeroPortrait } from "@/components/home/HeroPortrait";
+import { Today } from "@/components/home/Today";
+import { FaceDiagram } from "@/components/report/Visuals";
+import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { CountUp, EASE, Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { ProductVisual } from "@/components/ProductArt";
 import { COHORT_SIZE, FEATURED } from "@/lib/cohort";
 import { PEOPLE, personAvatar, portraitPath } from "@/lib/people";
-import { productById, PRODUCTS } from "@/lib/products";
+import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { everyone, findTwins, outcomeFor } from "@/lib/twins";
 
@@ -33,23 +36,11 @@ const STATS = [
   { value: 3, suffix: "+ wk", label: "between verified scans" },
 ];
 
-const STEPS = [
-  { img: "/showcase/m-analysis.jpg", title: "Scan", text: "8 skin scores in 10 seconds" },
-  { img: "/showcase/m-twins.jpg", title: "Match", text: "People whose skin measures like yours" },
-  { img: "/showcase/m-product.jpg", title: "Shop", text: "What measurably worked for them" },
-];
 
-function Phone({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
-  return (
-    <div className={`rounded-[2.2rem] border-[6px] border-ink bg-ink p-0.5 shadow-soft ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="w-full rounded-[1.7rem]" loading="lazy" />
-    </div>
-  );
-}
 
 export default function Home() {
   const { latest, ready } = useStore();
+  if (ready && latest) return <Today />;
   return (
     <div className="overflow-hidden">
       {/* Hero: portrait with scan frames, headline left, stats right */}
@@ -65,7 +56,7 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.05 }}
               className="mt-5 font-display text-5xl leading-[1.02] sm:text-6xl"
             >
-              Skincare matched to <em className="text-plum">skin like yours.</em>
+              Find people with your skin. <em className="text-plum">See what actually worked.</em>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -73,17 +64,15 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
               className="mt-5 max-w-sm text-base text-muted"
             >
-              Scan your face. Meet your skin twins. Buy what actually worked for them.
+              A 10-second face scan matches you with people whose skin measures like yours. Their before-and-after scans show which products really worked, and which made things worse.
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.25 }} className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/scan" className="inline-flex items-center gap-2 rounded-full bg-plum-deep px-7 py-3.5 text-sm font-medium text-white shadow-soft transition hover:bg-plum">
-                <ScanFace className="size-4" /> Analyse my skin
+                <ScanFace className="size-4" /> Scan my skin · 10 sec
               </Link>
-              {ready && latest && (
-                <Link href="/report" className="rounded-full border border-line bg-surface px-6 py-3.5 text-sm text-plum">
-                  My results
-                </Link>
-              )}
+              <Link href="/scan#samples" className="rounded-full border border-line bg-surface px-6 py-3.5 text-sm text-plum">
+                Try a sample face
+              </Link>
             </motion.div>
             <div className="mt-8 flex items-center gap-3">
               <div className="flex -space-x-2">
@@ -113,13 +102,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 1 and 2: your skin, then people like you */}
+      <section className="py-20">
+        <div className="mx-auto grid max-w-6xl gap-6 px-5 md:grid-cols-2 lg:px-8">
+          <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
+            <Q n={1} q="What's my skin like?" a="Eight scores from one selfie, mapped onto your face." />
+            <div className="mt-6 grid grid-cols-[8rem_1fr] items-center gap-5">
+              <div className="aspect-[5/6]"><FaceDiagram scores={amara.scores} /></div>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                {CONCERN_KEYS.map((k) => (
+                  <li key={k} className="flex items-center justify-between border-b border-line pb-1">
+                    <span className="text-muted">{CONCERNS[k].label}</span>
+                    <span className="font-medium">{amara.scores[k]}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+          <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
+            <Q n={2} q="Who has skin like mine?" a="Your skin twins: people whose 8 scores sit close to yours." />
+            <ul className="mt-6 space-y-2">
+              {amaraTwins
+                .filter((t) => t.member.personId)
+                .slice(0, 3)
+                .map((t) => (
+                  <li key={t.member.id} className="flex items-center gap-3 rounded-2xl bg-blush-50 p-2.5">
+                    <Avatar config={personAvatar(t.member.personId!)} className="size-10 text-sm" />
+                    <span className="flex-1 text-sm">{PEOPLE.find((p) => p.id === t.member.personId)?.name}</span>
+                    <span className="rounded-full bg-plum-soft px-2.5 py-1 text-xs font-medium text-plum">{t.similarity}% match</span>
+                  </li>
+                ))}
+            </ul>
+            <p className="mt-3 text-xs text-muted">+ {amaraTwins.length - 3} more twins for this sample face</p>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Same product, different skin */}
       <section className="bg-surface/70 py-20">
         <div className="mx-auto max-w-6xl px-5 lg:px-8">
           <Reveal className="text-center">
-            <h2 className="font-display text-3xl lg:text-5xl">
-              Same product. <em className="text-plum">Different skin.</em>
-            </h2>
+            <Q n={3} q="What worked for them?" a="Results come from their scans, not star ratings. Same product, different skin, different result." center />
           </Reveal>
           <div className="mt-12 grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
             <Reveal className="rounded-[2rem] border border-line bg-blush-50 p-6">
@@ -177,8 +200,9 @@ export default function Home() {
           </Reveal>
           <div>
             <Reveal>
-              <h2 className="font-display text-3xl lg:text-5xl">
-                Progress you can <em className="text-plum">actually see.</em>
+              <Q n={4} q="Is it working for me?" a="Check in once a week. Your own scans show what's changing." />
+              <h2 className="sr-only">
+                Progress you can actually see.
               </h2>
               <p className="mt-4 text-muted">Weekly check-ins turn slow changes into numbers. Drag the slider.</p>
             </Reveal>
@@ -200,80 +224,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Three taps: real screens */}
-      <section className="bg-gradient-to-b from-blush-100/60 to-blush-50 py-20">
-        <div className="mx-auto max-w-6xl px-5 lg:px-8">
-          <Reveal className="text-center">
-            <h2 className="font-display text-3xl lg:text-5xl">Three taps. That&apos;s it.</h2>
-          </Reveal>
-          <Stagger as="div" className="mt-14 grid gap-10 sm:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <StaggerItem as="div" key={s.title} className={`text-center ${i === 1 ? "sm:-translate-y-6" : ""}`}>
-                <motion.div whileHover={{ y: -8, rotate: i === 0 ? -2 : i === 2 ? 2 : 0 }} transition={{ type: "spring", stiffness: 260, damping: 18 }}>
-                  <Phone src={s.img} alt={`${s.title} screen`} className="mx-auto max-w-[15rem]" />
-                </motion.div>
-                <p className="mt-6 flex items-center justify-center gap-2 text-lg font-medium">
-                  <span className="grid size-7 place-items-center rounded-full bg-plum-deep text-xs text-white">{i + 1}</span> {s.title}
-                </p>
-                <p className="text-sm text-muted">{s.text}</p>
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </div>
-      </section>
-
-      {/* People marquee */}
-      <section className="py-16">
-        <Reveal className="mx-auto max-w-6xl px-5 text-center lg:px-8">
-          <h2 className="font-display text-3xl lg:text-4xl">
-            Real routines. <em className="text-plum">Measured results.</em>
-          </h2>
-        </Reveal>
-        <div className="relative mt-10 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <motion.div className="flex w-max gap-4" animate={{ x: ["0%", "-50%"] }} transition={{ duration: 40, ease: "linear", repeat: Infinity }}>
-            {[...PEOPLE, ...PEOPLE].map((p, i) => (
-              <Link key={`${p.id}-${i}`} href={`/twins/${p.id}`} className="group w-44 shrink-0 rounded-3xl border border-line bg-surface p-4 transition hover:shadow-soft">
-                <Avatar config={personAvatar(p.id)} label={`${p.name}'s avatar`} className="size-12 text-lg transition group-hover:scale-105" />
-                <p className="mt-3 text-sm font-medium">
-                  {p.name}, {p.age}
-                </p>
-                <p className="text-[11px] text-muted">{p.city}</p>
-                <p className="mt-2 line-clamp-2 text-[11px] leading-snug text-muted">&ldquo;{p.goal}&rdquo;</p>
-              </Link>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Products */}
-      <section className="bg-surface/70 py-20">
-        <div className="mx-auto max-w-6xl px-5 lg:px-8">
-          <Reveal className="flex flex-wrap items-end justify-between gap-4">
-            <h2 className="font-display text-3xl lg:text-4xl">
-              Ranked by <em className="text-plum">results, not reviews.</em>
-            </h2>
-            <Link href="/shop" className="inline-flex items-center gap-1 text-sm text-plum">
-              Discover products <ArrowRight className="size-4" />
-            </Link>
-          </Reveal>
-          <Stagger as="div" className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {PRODUCTS.filter((p) => p.category !== "makeup")
-              .slice(0, 8)
-              .map((p) => (
-                <StaggerItem as="div" key={p.id}>
-                  <Link href={`/product/${p.id}`} className="group block rounded-[2rem] bg-blush-100/70 p-4 text-center transition hover:-translate-y-1 hover:shadow-soft">
-                    <div className={`relative mx-auto aspect-square rounded-full bg-gradient-to-br ${p.hue}`}>
-                      <ProductVisual product={p} className="absolute inset-[12%] h-[76%] w-[76%] transition duration-500 group-hover:-rotate-3" />
-                    </div>
-                    <p className="mt-3 line-clamp-1 text-sm font-medium">{p.name}</p>
-                    <p className="text-[11px] text-muted">{p.brand}</p>
-                  </Link>
-                </StaggerItem>
-              ))}
-          </Stagger>
-        </div>
-      </section>
-
       {/* Closing CTA */}
       <section className="px-5 py-20 lg:px-8">
         <Reveal className="glow-card relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] px-8 py-16 text-center text-white shadow-soft">
@@ -291,6 +241,19 @@ export default function Home() {
           </Link>
         </Reveal>
       </section>
+    </div>
+  );
+}
+
+// A numbered question with its one-line answer: the four steps of SkinTwin.
+function Q({ n, q, a, center }: { n: number; q: string; a: string; center?: boolean }) {
+  return (
+    <div className={center ? "mx-auto max-w-2xl text-center" : ""}>
+      <p className={`flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-plum ${center ? "justify-center" : ""}`}>
+        <span className="grid size-6 place-items-center rounded-full bg-plum-deep text-[11px] text-white">{n}</span> Step {n}
+      </p>
+      <h2 className="mt-2 font-display text-3xl lg:text-4xl">{q}</h2>
+      <p className="mt-2 text-sm text-muted">{a}</p>
     </div>
   );
 }

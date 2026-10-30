@@ -272,7 +272,7 @@ export default function ScanPage() {
           ))}
         </ul>
 
-        <h2 className="mt-10 text-sm font-medium">No camera handy? Scan one of our sample faces</h2>
+        <h2 id="samples" className="mt-10 scroll-mt-24 text-sm font-medium">No camera handy? Scan one of our sample faces</h2>
         <div className="mt-3 grid grid-cols-4 items-start gap-3">
           {SAMPLE_FACES.map((s) => (
             <button
