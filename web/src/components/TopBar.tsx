@@ -48,23 +48,25 @@ export function TopBar() {
   );
 }
 
-// Guests get a nudge to save or log in next to the account menu.
+// Signed in: the account menu. Not signed in: Log in and Sign up, like most sites.
 function ProfileLink() {
-  const { latest } = useStore();
-  const { enabled, user } = useAuth();
+  const { enabled, ready, user } = useAuth();
   const path = usePathname();
   const onAuth = path === "/signup" || path === "/login";
-  return (
-    <>
-      {enabled && !user && !onAuth && (
-        <Link
-          href={latest ? `/signup?next=${encodeURIComponent(path)}` : "/login"}
-          className="hidden rounded-full px-3 py-2 text-sm text-plum hover:bg-blush-100 sm:inline"
-        >
-          {latest ? "Save profile" : "Log in"}
+  if (enabled && !ready) return <span className="size-9" aria-hidden />;
+  if (enabled && !user) {
+    if (onAuth) return null;
+    const next = `?next=${encodeURIComponent(path)}`;
+    return (
+      <div className="flex items-center gap-1">
+        <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm text-plum hover:bg-blush-100">
+          Log in
         </Link>
-      )}
-      <ProfileMenu />
-    </>
-  );
+        <Link href={`/signup${next}`} className="rounded-full border border-plum/40 px-4 py-2 text-sm font-medium text-plum-deep hover:bg-blush-100">
+          Sign up
+        </Link>
+      </div>
+    );
+  }
+  return <ProfileMenu />;
 }

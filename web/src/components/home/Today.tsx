@@ -49,7 +49,7 @@ export function Today() {
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {/* My skin */}
-        <Link href="/me" className="glow-card group flex items-center gap-4 rounded-[2rem] p-5 text-white shadow-soft">
+        <Link href="/me" data-tour="skin" className="glow-card group flex items-center gap-4 rounded-[2rem] p-5 text-white shadow-soft">
           <div className="h-28 w-24 shrink-0 rounded-2xl bg-white/90 p-1 text-ink">
             <FaceDiagram scores={latest.scores} />
           </div>
