@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { ArrowRight, CalendarHeart, Check, Flame, Moon, ScanFace, Sun, Users } from "lucide-react";
 import { useMyIdentity } from "../MyAvatar";
+import { WriteOn } from "../WriteOn";
 import { FaceDiagram } from "../report/Visuals";
 import { PostTile } from "../SocialFeed";
 import { ProductThumb } from "../ui";
@@ -45,7 +46,7 @@ export function Today() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-10">
       <p className="text-xs uppercase tracking-[0.18em] text-plum">{DAY.format(new Date())}</p>
-      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">{me.name ? `Hi ${me.name.split(" ")[0]}` : "Your skin today"}</h1>
+      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn text={me.name ? `Hi ${me.name.split(" ")[0]}` : "Your skin today"} mark={me.name ? undefined : "today"} /></h1>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {/* My skin */}

@@ -270,6 +270,7 @@ export default function ScanPage() {
         <PageTitle
           eyebrow={checkIn ? "Weekly check-in" : "Your skin scan"}
           title={checkIn ? "How's your skin this week?" : "Let's measure your skin"}
+          mark="skin"
           subtitle={
             checkIn
               ? "Line your face up with last week's ghost and match the light, so the change you see is your skin, not the photo."

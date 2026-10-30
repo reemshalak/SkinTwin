@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Flame, Heart, Leaf, Search, Sparkles, Tag, Users, X } from "lucide-react";
 import { EASE } from "@/components/motion";
 import { Page } from "@/components/Page";
+import { WriteOn } from "@/components/WriteOn";
 import { ProductVisual } from "@/components/ProductArt";
 import { SaveHeart } from "@/components/SaveHeart";
 import { SAMPLE_POSTS } from "@/lib/community";
@@ -102,7 +103,7 @@ export default function ShopPage() {
   return (
     <Page>
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Products</p>
-      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">What works for skin like yours</h1>
+      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn text="What works for skin like yours" mark="yours" /></h1>
 
       <Link href="/swipe" className="group mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blush-100 to-blush-200 px-4 py-2 text-xs font-medium text-plum-deep transition hover:shadow-card">
         <Heart className="size-3.5 fill-current text-rose transition group-hover:scale-110" /> Can&apos;t decide? Quick pick

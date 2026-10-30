@@ -9,6 +9,7 @@ import { useStore } from "@/lib/store";
 
 // The loop: who's like me -> what works -> my plan -> my skin.
 const LINKS = [
+  { href: "/", label: "Home", tour: "home" },
   { href: "/twins", label: "Twins", tour: "twins" },
   { href: "/shop", label: "Products", tour: "products" },
   { href: "/routine", label: "Plan", tour: "plan" },
@@ -31,8 +32,8 @@ export function TopBar() {
                 key={l.href}
                 href={l.href}
                 data-tour={l.tour}
-                aria-current={path.startsWith(l.href) ? "page" : undefined}
-                className={`rounded-full px-4 py-2 text-sm transition ${path.startsWith(l.href) ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
+                aria-current={(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "page" : undefined}
+                className={`rounded-full px-4 py-2 text-sm transition ${(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
               >
                 {l.label}
               </Link>

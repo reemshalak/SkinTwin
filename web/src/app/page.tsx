@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { HeroPortrait } from "@/components/home/HeroPortrait";
 import { Today } from "@/components/home/Today";
+import { WriteOn } from "@/components/WriteOn";
 import { FaceDiagram } from "@/components/report/Visuals";
 import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { CountUp, EASE, Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -56,7 +57,7 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.05 }}
               className="mt-5 font-display text-5xl leading-[1.02] sm:text-6xl"
             >
-              Find people with your skin. <em className="text-plum">See what actually worked.</em>
+              <WriteOn text="Find people with your skin. See what actually worked." mark="actually" delay={0.1} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -254,7 +255,7 @@ function Q({ n, q, a, center }: { n: number; q: string; a: string; center?: bool
       <p className={`flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-plum ${center ? "justify-center" : ""}`}>
         <span className="grid size-6 place-items-center rounded-full bg-plum-deep text-[11px] text-white">{n}</span> Step {n}
       </p>
-      <h2 className="mt-2 font-display text-3xl lg:text-4xl">{q}</h2>
+      <h2 className="mt-2 font-display text-3xl lg:text-4xl"><WriteOn text={q} /></h2>
       <p className="mt-2 text-sm text-muted">{a}</p>
     </div>
   );
