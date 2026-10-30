@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Droplet, ImageUp, RefreshCw, Scissors, ShieldCheck, Smile, Sun } from "lucide-react";
+import { ArrowRight, Camera, Droplet, ImageUp, RefreshCw, Scissors, ShieldCheck, Smile, Sun } from "lucide-react";
 import { FaceAvatar } from "@/components/FaceAvatar";
 import { Page, PageTitle } from "@/components/Page";
 import { downscale } from "@/lib/image";
 import { hashString } from "@/lib/random";
-import { SAMPLE_FACES, SCANNABLE_FACES, sampleById } from "@/lib/samples";
+import { SCANNABLE_FACES, sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 
 type Light = "dark" | "ok" | "bright" | "unknown";
@@ -136,7 +136,6 @@ export default function ScanPage() {
     router.push("/analysis");
   }
 
-  const sample = SAMPLE_FACES[0];
 
   return (
     <Page>
@@ -152,7 +151,21 @@ export default function ScanPage() {
             <img src={lastPhoto} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-screen" />
           )}
           {camera !== "on" && !preview && (
-            <FaceAvatar src={sample.image} tone={sample.tone} alt="Example face position" className="absolute inset-0 h-full w-full opacity-60" />
+            <div className="absolute inset-0 grid place-items-center bg-gradient-to-b from-blush-100 via-blush-200 to-blush-300">
+              <span className="absolute size-56 animate-ping rounded-full bg-white/25 [animation-duration:2.4s]" aria-hidden />
+              <button
+                type="button"
+                onClick={startCamera}
+                disabled={camera === "starting"}
+                className="relative z-10 flex flex-col items-center gap-3 rounded-[2rem] bg-surface px-7 py-6 text-ink shadow-soft transition hover:scale-105 disabled:opacity-70"
+              >
+                <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-rose to-plum text-white shadow-soft">
+                  <Camera className="size-7" />
+                </span>
+                <span className="text-sm font-medium">{camera === "starting" ? "Starting camera…" : "Tap to turn on camera"}</span>
+                <span className="text-[11px] text-muted">Your preview appears here</span>
+              </button>
+            </div>
           )}
           {preview && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -194,9 +207,10 @@ export default function ScanPage() {
             onClick={() => fileRef.current?.click()}
             disabled={busy}
             aria-label="Upload a photo"
-            className="grid size-12 place-items-center rounded-2xl bg-surface/80 text-plum shadow-card disabled:opacity-50"
+            className="flex flex-col items-center gap-1 text-[10px] font-medium text-plum-deep disabled:opacity-50"
           >
-            <ImageUp className="size-5" />
+            <span className="grid size-12 place-items-center rounded-2xl bg-surface/90 text-plum shadow-card transition hover:scale-105"><ImageUp className="size-5" /></span>
+            Upload
           </button>
           <input ref={fileRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={onFile} />
 
@@ -215,9 +229,12 @@ export default function ScanPage() {
               onClick={camera === "on" ? capture : startCamera}
               disabled={busy || camera === "starting" || (camera === "on" && light !== "ok")}
               aria-label={camera === "on" ? "Take photo" : "Turn on camera"}
-              className="grid size-[4.5rem] place-items-center rounded-full bg-[radial-gradient(circle,#ffffff_0%,#f0c9d9_35%,#e37ea5_70%,#d05b85_100%)] shadow-soft ring-4 ring-white/70 transition disabled:opacity-50"
+              className="flex flex-col items-center gap-1 text-[10px] font-medium text-plum-deep disabled:opacity-50"
             >
-              <Camera className="size-6 text-white" />
+              <span className="grid size-[4.5rem] place-items-center rounded-full bg-[radial-gradient(circle,#ffffff_0%,#f0c9d9_35%,#e37ea5_70%,#d05b85_100%)] shadow-soft ring-4 ring-white/70 transition hover:scale-105">
+                <Camera className="size-6 text-white" />
+              </span>
+              {camera === "on" ? (light === "ok" ? "Take photo" : "Waiting for light") : "Camera"}
             </button>
           )}
 
@@ -230,13 +247,14 @@ export default function ScanPage() {
             }}
             disabled={busy}
             aria-label="Retake"
-            className="grid size-12 place-items-center rounded-2xl bg-surface/80 text-plum shadow-card disabled:opacity-50"
+            className="flex flex-col items-center gap-1 text-[10px] font-medium text-plum-deep disabled:opacity-50"
           >
-            <RefreshCw className="size-5" />
+            <span className="grid size-12 place-items-center rounded-2xl bg-surface/90 text-plum shadow-card transition hover:scale-105"><RefreshCw className="size-5" /></span>
+            Retake
           </button>
         </div>
         {camera === "denied" && (
-          <p className="mt-3 text-center text-xs text-bad">Camera access was blocked. Upload a photo or try a sample face below.</p>
+          <p className="mt-3 text-center text-xs text-bad">Camera access was blocked. Upload a photo or try the sample face instead.</p>
         )}
         {error && <p className="mt-3 text-center text-xs text-bad">{error}</p>}
         {repeat && (
@@ -258,36 +276,60 @@ export default function ScanPage() {
               : "One clear selfie is all it takes. YouCam AI scores 8 concerns so we can find people whose skin measures like yours."
           }
         />
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {TIPS.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex gap-3 rounded-3xl border border-line bg-surface p-4">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-blush-100 text-plum">
-                <Icon className="size-4" />
-              </span>
-              <div>
-                <p className="text-sm font-medium">{title}</p>
-                <p className="text-xs leading-relaxed text-muted">{text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <h2 id="samples" className="mt-10 scroll-mt-24 text-sm font-medium">No camera handy? Try our sample face</h2>
-        <div className="mt-3 grid grid-cols-4 items-start gap-3">
-          {SCANNABLE_FACES.map((s) => (
+        <div className="grid gap-3">
+          <button
+            type="button"
+            onClick={startCamera}
+            disabled={busy || camera === "starting" || camera === "on"}
+            className="group flex items-center gap-4 rounded-[1.75rem] bg-gradient-to-r from-rose to-plum p-4 text-left text-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70"
+          >
+            <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/20"><Camera className="size-6" /></span>
+            <span className="flex-1">
+              <span className="block text-base font-medium">{camera === "on" ? "Camera is on" : "Use my camera"}</span>
+              <span className="text-xs text-white/85">Best results · we check your light · 10 seconds</span>
+            </span>
+            <ArrowRight className="size-5 transition group-hover:translate-x-1" />
+          </button>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={busy}
+            className="group flex items-center gap-4 rounded-[1.75rem] border border-line bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5 hover:border-plum hover:shadow-soft disabled:opacity-60"
+          >
+            <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-blush-100 text-plum"><ImageUp className="size-6" /></span>
+            <span className="flex-1">
+              <span className="block text-base font-medium">Upload a photo</span>
+              <span className="text-xs text-muted">A clear, front-facing selfie (JPG or PNG)</span>
+            </span>
+            <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
+          </button>
+          {SCANNABLE_FACES.map((f) => (
             <button
-              key={s.id}
+              id="samples"
+              key={f.id}
               type="button"
               disabled={busy}
-              onClick={() => analyze({ sampleId: s.id })}
-              className="group text-left disabled:opacity-50"
+              onClick={() => analyze({ sampleId: f.id })}
+              className="group flex scroll-mt-24 items-center gap-4 rounded-[1.75rem] border border-line bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5 hover:border-plum hover:shadow-soft disabled:opacity-60"
             >
-              <FaceAvatar src={s.image} tone={s.tone} alt={`Sample face: ${s.name}`} className="aspect-square w-full rounded-2xl ring-plum/40 transition group-hover:ring-2" />
-              <p className="mt-1 text-xs font-medium">{s.name}</p>
-              <p className="text-[10px] leading-tight text-muted">{s.note}</p>
+              <FaceAvatar src={f.image} tone={f.tone} alt={`Sample face: ${f.name}`} className="size-14 shrink-0 rounded-2xl" />
+              <span className="flex-1">
+                <span className="block text-base font-medium">Try a sample face</span>
+                <span className="text-xs text-muted">No camera? Scan {f.name} ({f.note.toLowerCase()}) instead</span>
+              </span>
+              <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
             </button>
           ))}
         </div>
+
+        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.16em] text-muted">For the best scan</p>
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {TIPS.map(({ icon: Icon, title }) => (
+            <li key={title} className="flex items-center gap-1.5 rounded-full bg-blush-100/70 px-3 py-1.5 text-[11px] text-ink">
+              <Icon className="size-3.5 text-plum" /> {title}
+            </li>
+          ))}
+        </ul>
         <p className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-muted">
           <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-good" />
           Your photo is sent only for analysis and is never stored or shown to anyone. Results are cosmetic guidance, not a
