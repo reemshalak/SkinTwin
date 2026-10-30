@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
+import { useT, type TKey } from "@/lib/i18n";
 import { CalendarHeart, Compass, House, ScanFace, Users } from "lucide-react";
 
 const ITEMS = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/twins", label: "Twins", icon: Users, tour: "twins" },
-  { href: "/scan", label: "Check-in", icon: ScanFace, center: true, tour: "checkin" },
-  { href: "/shop", label: "Products", icon: Compass, tour: "products" },
-  { href: "/routine", label: "Plan", icon: CalendarHeart, tour: "plan" },
+  { href: "/", label: "nav.home", icon: House },
+  { href: "/twins", label: "nav.twins", icon: Users, tour: "twins" },
+  { href: "/scan", label: "nav.checkin", icon: ScanFace, center: true, tour: "checkin" },
+  { href: "/shop", label: "nav.products", icon: Compass, tour: "products" },
+  { href: "/routine", label: "nav.plan", icon: CalendarHeart, tour: "plan" },
 ];
 
 export function BottomNav() {
   const path = usePathname();
   const { latest } = useStore();
+  const { t } = useT();
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 px-4 pb-4 lg:hidden">
       <ul className="flex items-end justify-between rounded-3xl border border-line bg-surface/90 px-3 py-2 shadow-card backdrop-blur">
@@ -46,7 +48,7 @@ export function BottomNav() {
                 }`}
               >
                 <Icon className="size-5" strokeWidth={active ? 2 : 1.6} />
-                {label}
+                {t(label as TKey)}
               </Link>
             </li>
           );

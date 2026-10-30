@@ -8,6 +8,7 @@ import { BeforeAfter } from "@/components/BeforeAfter";
 import { HeroPortrait } from "@/components/home/HeroPortrait";
 import { Today } from "@/components/home/Today";
 import { WriteOn } from "@/components/WriteOn";
+import { useT } from "@/lib/i18n";
 import { FaceDiagram } from "@/components/report/Visuals";
 import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { CountUp, EASE, Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -41,6 +42,7 @@ const STATS = [
 
 export default function Home() {
   const { latest, ready } = useStore();
+  const { t } = useT();
   if (ready && latest) return <Today />;
   return (
     <div className="overflow-hidden">
@@ -49,7 +51,7 @@ export default function Home() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 lg:grid-cols-[1fr_1.2fr_11rem] lg:px-8 lg:py-14">
           <div className="lg:order-1">
             <motion.span initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-xs text-plum shadow-card">
-              <span className="size-1.5 rounded-full bg-rose" /> Powered by YouCam AI Skin Analysis
+              <span className="size-1.5 rounded-full bg-rose" /> {t("hero.eyebrow")}
             </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
@@ -57,7 +59,7 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.05 }}
               className="mt-5 font-display text-[3rem] leading-[0.95] tracking-tight sm:text-6xl 2xl:text-7xl"
             >
-              <WriteOn text="Stop guessing. See what worked on skin like yours." mark="worked" delay={0.1} />
+              <WriteOn key={t("hero.title")} text={t("hero.title")} mark={t("hero.mark")} delay={0.1} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -65,14 +67,14 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
               className="mt-5 max-w-sm text-base text-muted"
             >
-              Scan your face in 10 seconds. Meet people whose skin measures like yours, and see which products cleared, calmed or broke them out. Measured by their own before-and-after scans, not star ratings.
+              {t("hero.sub")}
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.25 }} className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/scan" className="inline-flex items-center gap-2 rounded-full bg-plum-deep px-7 py-3.5 text-sm font-medium text-white shadow-soft transition hover:bg-plum">
-                <ScanFace className="size-4" /> Scan my skin · 10 sec
+                <ScanFace className="size-4" /> {t("hero.cta")}
               </Link>
               <Link href="/scan#samples" className="rounded-full border border-line bg-surface px-6 py-3.5 text-sm text-plum">
-                Try a sample face
+                {t("hero.sample")}
               </Link>
             </motion.div>
             <div className="mt-8 flex items-center gap-3">
@@ -81,7 +83,7 @@ export default function Home() {
                   <Avatar key={p.id} config={personAvatar(p.id)} className="size-8 border-2 border-blush-50 text-xs" />
                 ))}
               </div>
-              <p className="text-xs text-muted">Free · no sign-up · your photos stay private</p>
+              <p className="text-xs text-muted">{t("hero.free")}</p>
             </div>
           </div>
 
@@ -107,14 +109,14 @@ export default function Home() {
       <section className="border-y border-line bg-surface/70 py-16">
         <div className="mx-auto max-w-6xl px-5 lg:px-8">
           <h2 className="max-w-3xl font-display text-3xl leading-tight tracking-tight lg:text-5xl">
-            <WriteOn text="Bought it for the five stars, then it broke you out?" mark="broke" />
+            <WriteOn key={t("pain.title")} text={t("pain.title")} mark={t("pain.mark")} />
           </h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted">Star ratings come from strangers with completely different skin. SkinTwin shows you results from people whose skin measures like yours.</p>
+          <p className="mt-3 max-w-2xl text-sm text-muted">{t("pain.sub")}</p>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              { t: "No more shelf of regrets", d: "See what worked, and what backfired, for skin like yours before you spend a penny." },
-              { t: "Proof, not promises", d: "Every result comes from two face scans weeks apart. Nobody can type a fake review." },
-              { t: "No sponsored picks", d: "We don't sell anything, and brands can't pay to rank higher. Only results decide." },
+              { t: t("p1.t"), d: t("p1.d") },
+              { t: t("p2.t"), d: t("p2.d") },
+              { t: t("p3.t"), d: t("p3.d") },
             ].map((x, i) => (
               <Reveal key={x.t} className="rounded-[2rem] border border-line bg-blush-50 p-6" delay={i * 0.08}>
                 <span className="grid size-9 place-items-center rounded-full bg-plum-deep text-sm text-white"><Check className="size-4" /></span>
@@ -130,7 +132,7 @@ export default function Home() {
       <section className="py-20">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 md:grid-cols-2 lg:px-8">
           <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
-            <Q n={1} q="What's my skin like?" a="Eight scores from one selfie, mapped onto your face." />
+            <Q n={1} q={t("q1")} a={t("a1")} />
             <p className="mt-3 inline-block rounded-full bg-blush-100 px-2.5 py-0.5 text-[10px] text-plum">Example · sample face</p>
             <div className="mt-6 grid grid-cols-[8rem_1fr] items-center gap-5">
               <div className="aspect-[5/6]"><FaceDiagram scores={amara.scores} /></div>
@@ -145,7 +147,7 @@ export default function Home() {
             </div>
           </Reveal>
           <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
-            <Q n={2} q="Who has skin like mine?" a="Your skin twins: people whose 8 scores sit close to yours." />
+            <Q n={2} q={t("q2")} a={t("a2")} />
             <p className="mt-3 inline-block rounded-full bg-blush-100 px-2.5 py-0.5 text-[10px] text-plum">Example · twins of the sample face</p>
             <ul className="mt-6 space-y-2">
               {amaraTwins
@@ -168,7 +170,7 @@ export default function Home() {
       <section className="bg-surface/70 py-20">
         <div className="mx-auto max-w-6xl px-5 lg:px-8">
           <Reveal className="text-center">
-            <Q n={3} q="What worked for them?" a="Results come from their scans, not star ratings. Same product, different skin, different result." center />
+            <Q n={3} q={t("q3")} a={t("a3")} center />
           </Reveal>
           <div className="mt-12 grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
             <Reveal className="rounded-[2rem] border border-line bg-blush-50 p-6">
@@ -226,7 +228,7 @@ export default function Home() {
           </Reveal>
           <div>
             <Reveal>
-              <Q n={4} q="Is it working for me?" a="Check in once a week. Your own scans show what's changing." />
+              <Q n={4} q={t("q4")} a={t("a4")} />
               <h2 className="sr-only">
                 Progress you can actually see.
               </h2>
@@ -254,17 +256,17 @@ export default function Home() {
       <section className="px-5 py-20 lg:px-8">
         <Reveal className="glow-card relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] px-8 py-16 text-center text-white shadow-soft">
           <Users className="mx-auto size-10 opacity-80" />
-          <h2 className="mt-4 font-display text-4xl lg:text-5xl">Your skin twins already tried it.</h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm opacity-90">Before you buy your next product, see how it went for people with skin like yours.</p>
+          <h2 className="mt-4 font-display text-4xl lg:text-5xl">{t("close.title")}</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm opacity-90">{t("close.sub")}</p>
           <ul className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-x-6 gap-y-2 text-sm opacity-95">
-            {["Free, no sign-up", "No sponsored picks", "Your photos stay private"].map((t) => (
-              <li key={t} className="inline-flex items-center gap-1.5">
-                <Check className="size-4" /> {t}
+            {[t("close.t1"), t("close.t2"), t("close.t3")].map((x) => (
+              <li key={x} className="inline-flex items-center gap-1.5">
+                <Check className="size-4" /> {x}
               </li>
             ))}
           </ul>
           <Link href="/scan" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-medium text-plum-deep">
-            See what works for me <ArrowRight className="size-4" />
+            {t("close.cta")} <ArrowRight className="size-4" />
           </Link>
         </Reveal>
       </section>
@@ -274,12 +276,13 @@ export default function Home() {
 
 // A numbered question with its one-line answer: the four steps of SkinTwin.
 function Q({ n, q, a, center }: { n: number; q: string; a: string; center?: boolean }) {
+  const { t } = useT();
   return (
     <div className={center ? "mx-auto max-w-2xl text-center" : ""}>
       <p className={`flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-plum ${center ? "justify-center" : ""}`}>
-        <span className="grid size-6 place-items-center rounded-full bg-plum-deep text-[11px] text-white">{n}</span> Step {n}
+        <span className="grid size-6 place-items-center rounded-full bg-plum-deep text-[11px] text-white">{n}</span> {t("step", { n })}
       </p>
-      <h2 className="mt-2 font-display text-3xl lg:text-4xl"><WriteOn text={q} /></h2>
+      <h2 className="mt-2 font-display text-3xl lg:text-4xl"><WriteOn key={q} text={q} /></h2>
       <p className="mt-2 text-sm text-muted">{a}</p>
     </div>
   );

@@ -17,6 +17,7 @@ import { conflictsIfAdded } from "@/lib/conflicts";
 import { ACTIVE_LABELS, productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { VERDICT_STYLE, verdictFor } from "@/lib/verdict";
+import { useT, type TKey } from "@/lib/i18n";
 import { everyone, findTwins, outcomeFor } from "@/lib/twins";
 import type { ConcernKey, Product } from "@/lib/types";
 
@@ -82,6 +83,7 @@ export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const product = productById(id);
   const { latest, routine, addToRoutine } = useStore();
+  const { t } = useT();
   const [view, setView] = useState<"twins" | "all">("twins");
   const [slot, setSlot] = useState<"am" | "pm">(product?.slot === "am" ? "am" : "pm");
 
@@ -197,7 +199,7 @@ export default function ProductPage() {
         <section className={`mb-5 flex items-start gap-3 rounded-[2rem] border p-5 ${vs.banner}`}>
           <VIcon className="mt-0.5 size-6 shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="font-display text-2xl leading-tight">{verdict.title}</p>
+            <p className="font-display text-2xl leading-tight">{t(`v.${verdict.kind}` as TKey)}</p>
             <p className="mt-1 text-sm opacity-90">{verdict.detail}</p>
             {latest && outcomes.twins.n > 0 && (
               <div className="mt-2">

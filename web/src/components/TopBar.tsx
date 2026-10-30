@@ -8,21 +8,24 @@ import { useEffect, useRef, useState } from "react";
 import { NotificationBell } from "./NotificationBell";
 import { ProfileMenu } from "./ProfileMenu";
 import { useTheme } from "@/lib/theme";
+import { useT } from "@/lib/i18n";
+import { LanguagePicker } from "./LanguagePicker";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 
 // The loop: who's like me -> what works -> my plan -> my skin.
 const LINKS = [
-  { href: "/", label: "Home", tour: "home" },
-  { href: "/twins", label: "Twins", tour: "twins" },
-  { href: "/shop", label: "Products", tour: "products" },
-  { href: "/routine", label: "Plan", tour: "plan" },
-  { href: "/me", label: "My skin", tour: "skin" },
-];
+  { href: "/", label: "nav.home", tour: "home" },
+  { href: "/twins", label: "nav.twins", tour: "twins" },
+  { href: "/shop", label: "nav.products", tour: "products" },
+  { href: "/routine", label: "nav.plan", tour: "plan" },
+  { href: "/me", label: "nav.skin", tour: "skin" },
+] as const;
 
 export function TopBar() {
   const path = usePathname();
   const { latest } = useStore();
+  const { t } = useT();
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-blush-50/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-5 lg:px-8">
@@ -40,7 +43,7 @@ export function TopBar() {
                 aria-current={on ? "page" : undefined}
                 className={`rounded-full px-4 py-2 text-sm transition ${on ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
               >
-                {l.label}
+                {t(l.label)}
               </Link>
             );
           })}
@@ -49,8 +52,9 @@ export function TopBar() {
           <span className="hidden sm:block"><HeaderSearch /></span>
           <NotificationBell />
           <ThemeSwitch />
+          <LanguagePicker />
           <Link href="/scan" data-tour="checkin" className="ml-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
-            <ScanFace className="size-4" /> {latest ? "Check-in" : "Start scan"}
+            <ScanFace className="size-4" /> {latest ? t("nav.checkin") : t("nav.startScan")}
           </Link>
           <span className="mx-1 hidden h-6 w-px bg-line sm:block" aria-hidden />
           <ProfileLink />
@@ -63,6 +67,7 @@ export function TopBar() {
 // Signed in: the account menu. Not signed in: Log in and Sign up, like most sites.
 function ProfileLink() {
   const { enabled, ready, user } = useAuth();
+  const { t } = useT();
   const path = usePathname();
   const onAuth = path === "/signup" || path === "/login";
   if (enabled && !ready) return <span className="size-9" aria-hidden />;
@@ -72,10 +77,10 @@ function ProfileLink() {
     return (
       <div className="flex items-center gap-1">
         <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
-          Log in
+          {t("nav.login")}
         </Link>
         <Link href={`/signup${next}`} className="hidden rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
-          Sign up
+          {t("nav.signup")}
         </Link>
       </div>
     );

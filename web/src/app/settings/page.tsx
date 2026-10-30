@@ -7,6 +7,7 @@ import { Bell, Check, Download, ImageOff, Loader2, LogOut, Monitor, Moon, Palett
 import { Reveal } from "@/components/motion";
 import { ScanModeToggle } from "@/components/ScanModeToggle";
 import { TOUR_KEY } from "@/components/Tour";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { Page, PageTitle } from "@/components/Page";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -186,6 +187,10 @@ export default function SettingsPage() {
           >
             Show the quick tour again
           </button>
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="mb-2 text-sm">Language</p>
+            <LanguagePicker variant="row" />
+          </div>
         </Section>
 
         <Section icon={ScanFace} title="Analysis source (for demos)">

@@ -9,6 +9,7 @@ import { downscale } from "@/lib/image";
 import { hashString } from "@/lib/random";
 import { SCANNABLE_FACES, sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 type Light = "dark" | "ok" | "bright" | "unknown";
 const LIGHT_TEXT: Record<Light, string> = {
@@ -21,6 +22,7 @@ const LIGHT_TEXT: Record<Light, string> = {
 export default function ScanPage() {
   const router = useRouter();
   const { setPending, latest, scans } = useStore();
+  const { t } = useT();
   const checkIn = scans.length > 0;
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -162,8 +164,8 @@ export default function ScanPage() {
                 <span className="grid size-16 place-items-center rounded-full bg-gradient-to-br from-rose to-plum text-white shadow-soft">
                   <Camera className="size-7" />
                 </span>
-                <span className="text-sm font-medium">{camera === "starting" ? "Starting camera…" : "Tap to turn on camera"}</span>
-                <span className="text-[11px] text-muted">Your preview appears here</span>
+                <span className="text-sm font-medium">{camera === "starting" ? "…" : t("scan.tapCam")}</span>
+                <span className="text-[11px] text-muted">{t("scan.preview")}</span>
               </button>
             </div>
           )}
@@ -268,13 +270,13 @@ export default function ScanPage() {
 
       <section className="lg:order-1 lg:pt-4">
         <PageTitle
-          eyebrow={checkIn ? "Weekly check-in" : "Your skin scan"}
-          title={checkIn ? "How's your skin this week?" : "Let's measure your skin"}
-          mark="skin"
+          eyebrow={checkIn ? t("today.checkin") : t("scan.eyebrow")}
+          title={checkIn ? "How's your skin this week?" : t("scan.title")}
+          mark={checkIn ? undefined : t("scan.mark")}
           subtitle={
             checkIn
               ? "Line your face up with last week's ghost and match the light, so the change you see is your skin, not the photo."
-              : "One clear selfie is all it takes. YouCam AI scores 8 concerns so we can find people whose skin measures like yours."
+              : t("scan.sub")
           }
         />
         <div className="grid gap-3">
@@ -286,8 +288,8 @@ export default function ScanPage() {
           >
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/20"><Camera className="size-6" /></span>
             <span className="flex-1">
-              <span className="block text-base font-medium">{camera === "on" ? "Camera is on" : "Use my camera"}</span>
-              <span className="text-xs text-white/85">Best results · we check your light · 10 seconds</span>
+              <span className="block text-base font-medium">{camera === "on" ? t("scan.camOn") : t("scan.cam")}</span>
+              <span className="text-xs text-white/85">{t("scan.camSub")}</span>
             </span>
             <ArrowRight className="size-5 transition group-hover:translate-x-1" />
           </button>
@@ -299,8 +301,8 @@ export default function ScanPage() {
           >
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-blush-100 text-plum"><ImageUp className="size-6" /></span>
             <span className="flex-1">
-              <span className="block text-base font-medium">Upload a photo</span>
-              <span className="text-xs text-muted">A clear, front-facing selfie (JPG or PNG)</span>
+              <span className="block text-base font-medium">{t("scan.upload")}</span>
+              <span className="text-xs text-muted">{t("scan.uploadSub")}</span>
             </span>
             <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
           </button>
@@ -315,15 +317,15 @@ export default function ScanPage() {
             >
               <FaceAvatar src={f.image} tone={f.tone} alt={`Sample face: ${f.name}`} className="size-14 shrink-0 rounded-2xl" />
               <span className="flex-1">
-                <span className="block text-base font-medium">Try a sample face</span>
-                <span className="text-xs text-muted">No camera? Scan {f.name} ({f.note.toLowerCase()}) instead</span>
+                <span className="block text-base font-medium">{t("scan.sample")}</span>
+                <span className="text-xs text-muted">{t("scan.sampleSub", { name: f.name })}</span>
               </span>
               <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
             </button>
           ))}
         </div>
 
-        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.16em] text-muted">For the best scan</p>
+        <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{t("scan.tips")}</p>
         <ul className="mt-2 flex flex-wrap gap-2">
           {TIPS.map(({ icon: Icon, title }) => (
             <li key={title} className="flex items-center gap-1.5 rounded-full bg-blush-100/70 px-3 py-1.5 text-[11px] text-ink">

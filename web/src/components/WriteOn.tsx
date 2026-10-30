@@ -7,12 +7,16 @@ import { EASE } from "./motion";
 // optional hand-drawn double underline under one key word.
 export function WriteOn({ text, mark, className = "", delay = 0 }: { text: string; mark?: string; className?: string; delay?: number }) {
   const reduce = useReducedMotion();
-  const words = text.split(" ");
+  // Chinese has no spaces: reveal character by character so it can still wrap.
+  const spaced = /\s/.test(text);
+  const words = spaced ? text.split(" ") : Array.from(text);
   return (
     <span className={className} aria-label={text}>
       {words.map((w, i) => {
         const clean = w.replace(/[^\w'’-]/g, "");
-        const marked = mark && clean.toLowerCase() === mark.toLowerCase();
+        const bare = (x: string) => x.replace(/[.,!?؟。？！]+$/, "");
+        // Works for Latin words and for Arabic/Chinese tokens matched as written.
+        const marked = Boolean(mark) && (clean.toLowerCase() === mark!.toLowerCase() || bare(w) === bare(mark!));
         return (
           <span key={i} aria-hidden className="inline-block whitespace-pre">
             <motion.span
@@ -24,7 +28,7 @@ export function WriteOn({ text, mark, className = "", delay = 0 }: { text: strin
               {w}
               {marked && <DoubleUnderline delay={delay + words.length * 0.07 + 0.15} />}
             </motion.span>
-            {i < words.length - 1 ? " " : ""}
+            {spaced && i < words.length - 1 ? " " : ""}
           </span>
         );
       })}

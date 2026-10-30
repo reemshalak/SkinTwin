@@ -4,18 +4,13 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
+import { useT, type TKey } from "@/lib/i18n";
 
 // First-time tour: dims the screen, spotlights one real button at a time and
 // says what it's for. Runs once after the first scan; replay from Settings.
 export const TOUR_KEY = "skintwin:tour-done";
 
-const STEPS = [
-  { id: "skin", title: "Your skin, always here", text: "Your skin map and 8 scores live in My skin, with your progress and goal." },
-  { id: "twins", title: "People with your skin", text: "Your skin twins: people whose scores sit close to yours. Their results are measured by scans, not typed." },
-  { id: "products", title: "What works for you", text: "Every product says how it went for twins like you. Green worked, orange was risky." },
-  { id: "plan", title: "Your routine", text: "A morning and evening plan built from what worked, with strong products spaced so they never clash." },
-  { id: "checkin", title: "Check in weekly", text: "One selfie a week shows what's changing, and which products are actually working." },
-];
+const STEPS = ["skin", "twins", "products", "plan", "checkin"].map((id) => ({ id, title: `tour.${id}.t` as TKey, text: `tour.${id}.d` as TKey }));
 
 // The visible element for a step (top bar on desktop, bottom bar on phones).
 function target(id: string) {
@@ -28,6 +23,7 @@ function target(id: string) {
 export function Tour() {
   const path = usePathname();
   const { ready, latest } = useStore();
+  const { t } = useT();
   const [step, setStep] = useState(-1);
   const [rect, setRect] = useState<DOMRect | null>(null);
 
@@ -101,11 +97,11 @@ export function Tour() {
             className="absolute w-[300px] rounded-[1.5rem] bg-surface p-4 text-ink shadow-soft"
             style={rect ? { left: tipLeft, ...(below ? { top: rect.bottom + pad + 12 } : { bottom: window.innerHeight - rect.top + pad + 12 }) } : { left: "50%", top: "40%", transform: "translateX(-50%)" }}
           >
-            <p className="text-[10px] uppercase tracking-[0.16em] text-plum">{step + 1} of {STEPS.length}</p>
-            <p className="mt-1 font-display text-xl">{s.title}</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{s.text}</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-plum">{t("tour.of", { n: step + 1, total: STEPS.length })}</p>
+            <p className="mt-1 font-display text-xl">{t(s.title)}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">{t(s.text)}</p>
             <div className="mt-4 flex items-center justify-between">
-              <button onClick={finish} className="text-xs text-muted hover:text-plum">Skip tour</button>
+              <button onClick={finish} className="text-xs text-muted hover:text-plum">{t("tour.skip")}</button>
               <div className="flex items-center gap-3">
                 <span className="flex gap-1" aria-hidden>
                   {STEPS.map((_, i) => (
@@ -113,7 +109,7 @@ export function Tour() {
                   ))}
                 </span>
                 <button onClick={() => (step === STEPS.length - 1 ? finish() : setStep(step + 1))} className="rounded-full bg-plum-deep px-4 py-2 text-xs font-medium text-white">
-                  {step === STEPS.length - 1 ? "Got it" : "Next"}
+                  {step === STEPS.length - 1 ? t("tour.done") : t("tour.next")}
                 </button>
               </div>
             </div>

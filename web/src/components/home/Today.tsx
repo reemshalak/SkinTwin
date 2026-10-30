@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { ArrowRight, CalendarHeart, Check, Coffee, Droplet, Flame, Lightbulb, Moon, ScanFace, Sun, Users } from "lucide-react";
 import { useMyIdentity } from "../MyAvatar";
 import { WriteOn } from "../WriteOn";
+import { useT } from "@/lib/i18n";
 import { FaceDiagram } from "../report/Visuals";
 import { PostTile } from "../SocialFeed";
 import { ProductThumb } from "../ui";
@@ -43,6 +44,7 @@ export function Today() {
   const { latest, scans, routine, done, toggleDone, goal, wellness } = useStore();
   const { twins } = useTwins();
   const me = useMyIdentity();
+  const { t } = useT();
 
   const posts = useMemo(() => {
     if (!latest) return [];
@@ -64,7 +66,7 @@ export function Today() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-10">
       <p className="text-xs uppercase tracking-[0.18em] text-plum">{DAY.format(new Date())}</p>
-      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn text={me.name ? `Hi ${me.name.split(" ")[0]}` : "Your skin today"} mark={me.name ? undefined : "today"} /></h1>
+      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl"><WriteOn key={t("today.title")} text={me.name ? t("today.hi", { name: me.name.split(" ")[0] }) : t("today.title")} mark={me.name ? undefined : t("today.mark")} /></h1>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {/* My skin */}
@@ -73,40 +75,40 @@ export function Today() {
             <FaceDiagram scores={latest.scores} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-white/80">My skin</p>
+            <p className="text-xs text-white/80">{t("today.mySkin")}</p>
             <p className="font-display text-4xl">{latest.overall}<span className="text-lg text-white/70">/100</span></p>
             <p className="text-xs text-white/85">{skinTypeLabel(latest.scores)} · working on {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}</p>
-            <p className="mt-2 flex items-center gap-1 text-xs">Open my skin <ArrowRight className="size-3.5 transition group-hover:translate-x-1" /></p>
+            <p className="mt-2 flex items-center gap-1 text-xs">{t("today.open")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1" /></p>
           </div>
         </Link>
 
         {/* Check-in */}
         <section className={`flex flex-col justify-between rounded-[2rem] border p-5 ${st.due ? "border-rose bg-blush-100" : "border-line bg-surface"}`}>
           <div>
-            <p className="flex items-center gap-1.5 text-xs text-muted"><ScanFace className="size-4 text-plum" /> Weekly check-in</p>
-            <p className="mt-2 font-display text-2xl text-ink">{st.due ? "Due today" : `Next: ${SHORT.format(next)}`}</p>
+            <p className="flex items-center gap-1.5 text-xs text-muted"><ScanFace className="size-4 text-plum" /> {t("today.checkin")}</p>
+            <p className="mt-2 font-display text-2xl text-ink">{st.due ? t("today.due") : t("today.next", { date: SHORT.format(next) })}</p>
             <p className="mt-1 flex items-center gap-1 text-xs text-muted"><Flame className="size-3.5 text-rose" /> {st.n}-week streak · {scans.length} check-in{scans.length === 1 ? "" : "s"}</p>
           </div>
           <Link href={scans.length > 1 && !st.due ? "/week" : "/scan"} className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-plum-deep py-3 text-sm text-white hover:bg-plum">
-            {st.due ? "Check in now" : scans.length > 1 ? "See this week" : "Check in early"} <ArrowRight className="size-4" />
+            {st.due ? t("today.checkNow") : scans.length > 1 ? t("today.seeWeek") : t("today.checkEarly")} <ArrowRight className="size-4" />
           </Link>
         </section>
 
         {/* Twins */}
         <Link href="/twins" className="flex flex-col justify-between rounded-[2rem] border border-line bg-surface p-5 transition hover:shadow-card">
           <div>
-            <p className="flex items-center gap-1.5 text-xs text-muted"><Users className="size-4 text-plum" /> People like you</p>
+            <p className="flex items-center gap-1.5 text-xs text-muted"><Users className="size-4 text-plum" /> {t("today.people")}</p>
             <p className="mt-2 font-display text-4xl text-ink">{twins.length}</p>
-            <p className="text-xs text-muted">skin twins. See what worked for them</p>
+            <p className="text-xs text-muted">{t("today.twinsSub")}</p>
           </div>
-          <p className="mt-4 flex items-center gap-1 text-xs text-plum">Open twins <ArrowRight className="size-3.5" /></p>
+          <p className="mt-4 flex items-center gap-1 text-xs text-plum">{t("today.openTwins")} <ArrowRight className="size-3.5" /></p>
         </Link>
       </div>
 
       {/* Today's routine */}
       <section className="mt-6 rounded-[2rem] border border-line bg-surface p-5">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-medium"><CalendarHeart className="size-4 text-plum" /> Today&apos;s routine</h2>
+          <h2 className="flex items-center gap-2 text-sm font-medium"><CalendarHeart className="size-4 text-plum" /> {t("today.routine")}</h2>
           {steps.length > 0 && <span className="text-xs text-muted">{doneCount}/{steps.length} done</span>}
         </div>
         {steps.length ? (
@@ -138,7 +140,7 @@ export function Today() {
         <Habits dayKey={`${todayKey()}:habits`} done={done} toggle={toggleDone} bedtime={wellness.sleep.time} />
 
         <section className="rounded-[2rem] border border-line bg-surface p-5">
-          <h2 className="text-sm font-medium">What&apos;s working for you</h2>
+          <h2 className="text-sm font-medium">{t("today.working")}</h2>
           {calls.length ? (
             <ul className="mt-3 space-y-2">
               {calls.slice(0, 3).map((c) => {
@@ -163,7 +165,7 @@ export function Today() {
         </section>
 
         <section className="rounded-[2rem] bg-gradient-to-br from-blush-100 to-blush-200 p-5">
-          <p className="flex items-center gap-1.5 text-xs text-plum-deep"><Lightbulb className="size-4" /> Skin tip of the day</p>
+          <p className="flex items-center gap-1.5 text-xs text-plum-deep"><Lightbulb className="size-4" /> {t("today.tip")}</p>
           <p className="mt-3 font-display text-xl leading-snug text-ink">{tip}</p>
           <p className="mt-3 text-[11px] text-muted">For your {CONCERNS[focus[0]].label.toLowerCase()}</p>
         </section>
@@ -173,7 +175,7 @@ export function Today() {
       {posts.length > 0 && (
         <section className="mt-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium">New from your twins</h2>
+            <h2 className="text-sm font-medium">{t("today.fromTwins")}</h2>
             <Link href="/twins" className="text-xs text-plum">See all</Link>
           </div>
           <ul className="mt-3 grid grid-cols-3 gap-3">
@@ -196,12 +198,13 @@ export function Today() {
 
 // Small daily habits that show up on skin: water, sleep, a pause.
 function Habits({ dayKey, done, toggle, bedtime }: { dayKey: string; done: Record<string, string[]>; toggle: (k: string, id: string) => void; bedtime: string }) {
+  const { t } = useT();
   const got = done[dayKey] ?? [];
   const glasses = [1, 2, 3, 4, 5, 6].filter((n) => got.includes(`water${n}`)).length;
   return (
     <section className="rounded-[2rem] border border-line bg-surface p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">Today&apos;s habits</h2>
+        <h2 className="text-sm font-medium">{t("today.habits")}</h2>
         <Link href="/settings#reminders" className="text-[11px] text-plum">Reminders</Link>
       </div>
       <p className="mt-3 text-xs text-muted">Water · {glasses}/6 glasses</p>

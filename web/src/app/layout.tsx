@@ -3,6 +3,7 @@ import { Fraunces, Poppins } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { MotionProvider } from "@/components/motion";
 import { AuthProvider } from "@/lib/auth";
+import { I18nProvider } from "@/lib/i18n";
 import { StoreProvider } from "@/lib/store";
 import { THEME_SCRIPT, ThemeProvider } from "@/lib/theme";
 import "./globals.css";
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${poppins.variable} ${fraunces.variable} font-sans antialiased`}>
         <ThemeProvider>
+        <I18nProvider>
         <MotionProvider>
           <StoreProvider>
             <AuthProvider>
@@ -39,6 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </AuthProvider>
           </StoreProvider>
         </MotionProvider>
+        </I18nProvider>
         </ThemeProvider>
       </body>
     </html>
