@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, MapPin, PenLine, Search, X } from "lucide-react";
+import { AlertTriangle, BadgeCheck, MapPin, MessagesSquare, PenLine, Search, X } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { NextStep } from "@/components/Journey";
 import { CountUp, EASE } from "@/components/motion";
@@ -112,9 +112,14 @@ export default function TwinsPage() {
           </h1>
           <p className="mt-1 text-xs text-muted">Matched on 8 measured scores · {COHORT_SIZE.toLocaleString()} profiles</p>
         </div>
-        <Link href="/share" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-3 text-sm font-medium text-white shadow-soft hover:bg-plum">
-          <PenLine className="size-4" /> Post a result
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/circles" className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-5 py-3 text-sm font-medium text-plum shadow-card hover:border-plum">
+            <MessagesSquare className="size-4" /> Twin Circles
+          </Link>
+          <Link href="/share" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-3 text-sm font-medium text-white shadow-soft hover:bg-plum">
+            <PenLine className="size-4" /> Post a result
+          </Link>
+        </div>
       </header>
 
       <label className="relative mt-6 block">

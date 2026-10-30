@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
-import { ArrowRight, CalendarHeart, Check, Coffee, Droplet, Flame, Lightbulb, Moon, ScanFace, Sun, Users } from "lucide-react";
+import { ArrowRight, CalendarHeart, Check, Coffee, Droplet, Flame, Lightbulb, MessagesSquare, Moon, ScanFace, Sun, Users } from "lucide-react";
+import { circleOf } from "@/lib/circles";
 import { useMyIdentity } from "../MyAvatar";
 import { WriteOn } from "../WriteOn";
 import { useT } from "@/lib/i18n";
@@ -102,6 +103,16 @@ export function Today() {
             <p className="text-xs text-muted">{t("today.twinsSub")}</p>
           </div>
           <p className="mt-4 flex items-center gap-1 text-xs text-plum">{t("today.openTwins")} <ArrowRight className="size-3.5" /></p>
+        </Link>
+        <Link href="/circles" className="flex items-center justify-between rounded-[2rem] border border-line bg-gradient-to-r from-blush-100 to-surface p-4 text-sm transition hover:shadow-card lg:col-span-3">
+          <span className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-full bg-plum-deep text-white"><MessagesSquare className="size-5" /></span>
+            <span>
+              <span className="block font-medium">Ask your {circleOf(latest.scores)} circle</span>
+              <span className="text-xs text-muted">Questions and week-by-week progress from people with your skin</span>
+            </span>
+          </span>
+          <ArrowRight className="size-4 text-plum" />
         </Link>
       </div>
 

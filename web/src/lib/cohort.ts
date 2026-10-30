@@ -72,7 +72,9 @@ function reviewText(delta: Partial<Scores>, weeks: number, rand: () => number) {
     return `${pick(NEGATIVE)}. ${CONCERNS[worst[0]].label} got worse within ${Math.max(1, Math.round(weeks / 2))} weeks.`;
   }
   if (verdict === "worked" && best) {
-    return `${pick(POSITIVE)}. After ${weeks} weeks my ${CONCERNS[best[0]].label.toLowerCase()} is clearly better.`;
+    const label = CONCERNS[best[0]].label.toLowerCase();
+    // "pores" and "fine lines" are plural.
+    return `${pick(POSITIVE)}. After ${weeks} weeks my ${label} ${/s$/.test(label) ? "are" : "is"} clearly better.`;
   }
   return `It's fine. Used it for ${weeks} weeks and didn't see much change either way.`;
 }
