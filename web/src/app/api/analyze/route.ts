@@ -1,10 +1,8 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { hashString } from "@/lib/random";
 import { mockScoresFor, mockYouCamResponse, profileFromYouCam } from "@/lib/skin-analysis";
 import { sampleById } from "@/lib/samples";
-import { analyzeSkin, PhotoError } from "@/lib/youcam";
+import { analyzeSkin, PhotoError, samplePhoto } from "@/lib/youcam";
 
 // SKIN_MODE=live allows YouCam Skin Analysis; each request opts in with live: true.
 // Otherwise (or on any failure) demo scores in the same response format are used.
@@ -47,12 +45,7 @@ export async function POST(req: Request) {
   let image: { bytes: Buffer; contentType: string } | null = null;
   if (body.imageDataUrl) image = decodeDataUrl(body.imageDataUrl);
   else if (body.sampleId && sampleById(body.sampleId)) {
-    try {
-      const file = path.join(process.cwd(), "public", sampleById(body.sampleId)!.image);
-      image = { bytes: await readFile(file), contentType: "image/jpeg" };
-    } catch {
-      image = null; // sample photo not generated yet
-    }
+    image = await samplePhoto(sampleById(body.sampleId)!.image, req.url).catch(() => null);
   }
   if (!image) return fallback();
 

@@ -8,7 +8,20 @@ import type { YouCamTaskResponse } from "./types";
 const BASE = "https://yce-api-01.makeupar.com";
 export const SD_ACTIONS = ["moisture", "oiliness", "redness", "texture", "pore", "acne", "radiance", "wrinkle"];
 
-const CACHE_DIR = path.join(process.cwd(), ".cache", "youcam");
+// Hosted (serverless) builds can only write to /tmp; locally keep it in the project.
+const CACHE_DIR = process.env.VERCEL ? "/tmp/youcam" : path.join(process.cwd(), ".cache", "youcam");
+
+// A sample photo from /public: read from disk locally, fetched over HTTP when
+// hosted (serverless functions don't ship the public folder).
+export async function samplePhoto(publicPath: string, requestUrl: string) {
+  try {
+    return { bytes: await readFile(path.join(process.cwd(), "public", publicPath)), contentType: "image/jpeg" };
+  } catch {
+    const res = await fetch(new URL(publicPath, requestUrl));
+    if (!res.ok) return null;
+    return { bytes: Buffer.from(await res.arrayBuffer()), contentType: res.headers.get("content-type") ?? "image/jpeg" };
+  }
+}
 
 // Readable reasons for YouCam's photo errors.
 const PHOTO_ERRORS: Record<string, string> = {

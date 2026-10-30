@@ -1,8 +1,6 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { sampleById } from "@/lib/samples";
-import { PhotoError, simulateSkin } from "@/lib/youcam";
+import { PhotoError, samplePhoto, simulateSkin } from "@/lib/youcam";
 
 // YouCam Skin Simulation for Mix Lab. Opt-in per request (live: true) and only
 // when the server allows live calls; otherwise the app shows its own preview.
@@ -37,9 +35,7 @@ export async function POST(req: Request) {
   const m = body.imageDataUrl ? /^data:(image\/(?:jpeg|png));base64,(.+)$/.exec(body.imageDataUrl) : null;
   if (m) image = { contentType: m[1], bytes: Buffer.from(m[2], "base64") };
   else if (body.sampleId && sampleById(body.sampleId)) {
-    try {
-      image = { contentType: "image/jpeg", bytes: await readFile(path.join(process.cwd(), "public", sampleById(body.sampleId)!.image)) };
-    } catch {}
+    image = await samplePhoto(sampleById(body.sampleId)!.image, req.url).catch(() => null);
   }
   if (!image) return NextResponse.json({ demo: true, note: "No photo to preview on." });
 
