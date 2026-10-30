@@ -25,6 +25,8 @@ const RULES: Record<string, [RegExp, number][]> = {
   "botanical-glow-c": [[/vitamin c|vit\.? c|ascorbic|\bc.?serum|brighten/, 3], [/serum|drops/, 1]],
   "botanical-glow-retinol": [[/retinol|retinoid|retinal/, 3], [/squalane|1%|night serum/, 1]],
   "botanical-glow-renewal": [[/encapsulated|renewal|bakuchiol|anti.?ag/, 2], [/retinol|serum/, 1]],
+  "aura-clarifying-cleanser": [[/cleanser|face wash|foaming|gel wash/, 3], [/salicylic|\bbha\b|acne|clarif/, 2]],
+  "ceramide-labs-cleanser": [[/cleanser|face wash|cleansing/, 3], [/hydrat|gentle|cream|ceramide/, 2]],
   "solis-shield-spf": [[/spf|sunscreen|sun ?cream|uv|sun fluid/, 4]],
   "solis-silk-foundation": [[/foundation|skin tint|bb cream|cc cream/, 4]],
   "solis-silk-lip": [[/lip/, 3], [/balm|butter|oil/, 1]],

@@ -89,10 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return error ? { error: error.message } : {};
   }, []);
 
+  // Your results are saved to the account, so signing out clears this device
+  // and goes back to the public homepage (the next person sees a fresh app).
+  const { reset } = store;
   const signOut = useCallback(async () => {
     await supabase?.auth.signOut();
     pulled.current = null;
-  }, []);
+    reset();
+    window.location.href = "/";
+  }, [reset]);
 
   const updateName = useCallback(async (name: string) => {
     if (!supabase) return { error: "Not signed in." };

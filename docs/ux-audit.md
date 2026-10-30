@@ -62,3 +62,25 @@ Walked through as a new visitor with no saved data: homepage → scan (sample fa
 - Updated copy, a faster first paint, and fewer save prompts.
 
 **Then:** deploy, run the live YouCam checks, re-audit, and prepare the submission kit.
+
+## Status (30 Oct)
+
+**Fixed:**
+- Sample faces (Amara only until more portraits exist).
+- Counters always land on their value.
+- The twins row shows only 80%+ matches.
+- Two cleansers added.
+- Demo controls hidden.
+- Fewer "save your results" prompts.
+- Step labels removed.
+- A verdict on every product, with Where to buy.
+- New navigation and My skin.
+- Landing page and Today screen.
+- First-time tour.
+- Sign-out clears the device.
+
+**Still open:**
+- Visual product reviews with friendlier names.
+- Deploy.
+- Live YouCam checks.
+- Re-audit.

@@ -162,7 +162,14 @@ export default function TwinsPage() {
         ) : (
           <motion.div key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <section className="mt-6">
-              <StoryRow people={people.map(({ person, match }) => ({ id: person.id, match, seen: match < TWIN_THRESHOLD - 10 }))} />
+              {/* Only real twins (80%+); if there are very few, show the closest few instead. */}
+              <StoryRow
+                people={(people.filter((p) => p.match >= TWIN_THRESHOLD).length >= 3 ? people.filter((p) => p.match >= TWIN_THRESHOLD) : people.slice(0, 4)).map(({ person, match }) => ({
+                  id: person.id,
+                  match,
+                  seen: match < TWIN_THRESHOLD,
+                }))}
+              />
             </section>
 
             {ranked.worked.length > 0 && (

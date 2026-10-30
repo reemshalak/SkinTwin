@@ -10,7 +10,6 @@ import { EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
 import { Page, PageTitle } from "@/components/Page";
 import { ProductVisual } from "@/components/ProductArt";
-import { SaveProfile } from "@/components/SaveProfile";
 import { DemoNote, ProductThumb } from "@/components/ui";
 import { trialVerdict } from "@/lib/cohort";
 import { findConflicts } from "@/lib/conflicts";
@@ -37,7 +36,7 @@ export default function PlanPage() {
     return (
       <Page>
         <PageTitle
-          eyebrow="Step 4 of 4"
+          eyebrow="Your plan"
           title="Your routine is ready"
           subtitle={`Built from what measurably worked for your ${twins} skin twins, with no ingredient clashes. One tap to start.`}
         />
@@ -91,7 +90,6 @@ export default function PlanPage() {
               <ShoppingBag className="size-4" /> Use what I already bought
             </Link>
             <p className="text-center text-xs text-muted">You can swap or remove any step later.</p>
-            <SaveProfile />
           </aside>
         </div>
         <TwinRoutines />
@@ -263,7 +261,6 @@ export default function PlanPage() {
           <p className="font-medium">Is it working?</p>
           <p className="text-xs text-muted">Your journal tracks the measured change week by week →</p>
         </Link>
-        <SaveProfile />
       </div>
 
       <TwinRoutines />

@@ -107,6 +107,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-6 px-5 md:grid-cols-2 lg:px-8">
           <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
             <Q n={1} q="What's my skin like?" a="Eight scores from one selfie, mapped onto your face." />
+            <p className="mt-3 inline-block rounded-full bg-blush-100 px-2.5 py-0.5 text-[10px] text-plum">Example · sample face</p>
             <div className="mt-6 grid grid-cols-[8rem_1fr] items-center gap-5">
               <div className="aspect-[5/6]"><FaceDiagram scores={amara.scores} /></div>
               <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -121,6 +122,7 @@ export default function Home() {
           </Reveal>
           <Reveal className="rounded-[2.5rem] border border-line bg-surface p-7">
             <Q n={2} q="Who has skin like mine?" a="Your skin twins: people whose 8 scores sit close to yours." />
+            <p className="mt-3 inline-block rounded-full bg-blush-100 px-2.5 py-0.5 text-[10px] text-plum">Example · twins of the sample face</p>
             <ul className="mt-6 space-y-2">
               {amaraTwins
                 .filter((t) => t.member.personId)

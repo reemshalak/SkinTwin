@@ -7,7 +7,7 @@ import { FaceAvatar } from "@/components/FaceAvatar";
 import { Page, PageTitle } from "@/components/Page";
 import { downscale } from "@/lib/image";
 import { hashString } from "@/lib/random";
-import { SAMPLE_FACES, sampleById } from "@/lib/samples";
+import { SAMPLE_FACES, SCANNABLE_FACES, sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 
 type Light = "dark" | "ok" | "bright" | "unknown";
@@ -250,7 +250,7 @@ export default function ScanPage() {
 
       <section className="lg:order-1 lg:pt-4">
         <PageTitle
-          eyebrow={checkIn ? "Weekly check-in" : "Step 1 of 4"}
+          eyebrow={checkIn ? "Weekly check-in" : "Your skin scan"}
           title={checkIn ? "How's your skin this week?" : "Let's measure your skin"}
           subtitle={
             checkIn
@@ -272,9 +272,9 @@ export default function ScanPage() {
           ))}
         </ul>
 
-        <h2 id="samples" className="mt-10 scroll-mt-24 text-sm font-medium">No camera handy? Scan one of our sample faces</h2>
+        <h2 id="samples" className="mt-10 scroll-mt-24 text-sm font-medium">No camera handy? Try our sample face</h2>
         <div className="mt-3 grid grid-cols-4 items-start gap-3">
-          {SAMPLE_FACES.map((s) => (
+          {SCANNABLE_FACES.map((s) => (
             <button
               key={s.id}
               type="button"

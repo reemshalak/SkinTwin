@@ -1,5 +1,5 @@
 import { FEATURED } from "./cohort";
-import { personById, portraitPath } from "./people";
+import { HAS_PORTRAIT, personById, portraitPath } from "./people";
 import type { Scores } from "./types";
 
 // Sample faces for judges without a camera: four of the featured people.
@@ -33,3 +33,6 @@ export const SAMPLE_FACES: SampleFace[] = Object.keys(NOTES).map((id) => {
 });
 
 export const sampleById = (id: string) => SAMPLE_FACES.find((s) => s.id === id);
+
+// Only faces whose sample photo exists can be scanned.
+export const SCANNABLE_FACES = SAMPLE_FACES.filter((f) => HAS_PORTRAIT.has(f.id));

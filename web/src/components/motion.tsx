@@ -68,9 +68,17 @@ export function CountUp({ value, decimals = 0, duration = 1.2, className }: { va
   const mv = useMotionValue(0);
   const text = useTransform(mv, (v) => v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }));
   useEffect(() => {
-    if (!inView) return;
+    // Background tabs and screen recorders can pause animations: always land on the value.
+    const settle = setTimeout(() => mv.set(value), duration * 1000 + 400);
+    if (!inView || document.visibilityState === "hidden") {
+      if (document.visibilityState === "hidden") mv.set(value);
+      return () => clearTimeout(settle);
+    }
     const controls = animate(mv, value, { duration, ease: EASE });
-    return () => controls.stop();
+    return () => {
+      controls.stop();
+      clearTimeout(settle);
+    };
   }, [inView, value, duration, mv]);
   return (
     <motion.span ref={ref} className={className}>
