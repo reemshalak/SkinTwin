@@ -39,8 +39,14 @@ export function Tour() {
       seen = localStorage.getItem(TOUR_KEY) === "1";
     } catch {}
     if (seen) return;
-    const id = setTimeout(() => setStep(0), 900);
-    return () => clearTimeout(id);
+    // Wait until other full-screen moments (like the twin-matching intro) are gone.
+    const id = setInterval(() => {
+      if (!document.querySelector("[data-overlay]")) {
+        clearInterval(id);
+        setTimeout(() => setStep((s) => (s < 0 ? 0 : s)), 700);
+      }
+    }, 500);
+    return () => clearInterval(id);
   }, [ready, latest, path, step]);
 
   const measure = useCallback(() => {

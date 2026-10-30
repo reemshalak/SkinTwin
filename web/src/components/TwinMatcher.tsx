@@ -54,6 +54,7 @@ export function TwinMatcher({ scanId, twins, featured }: { scanId: string; twins
     <AnimatePresence>
       {show && (
         <motion.div
+          data-overlay="matcher"
           className="fixed inset-0 z-40 grid place-items-center bg-blush-50/90 backdrop-blur-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

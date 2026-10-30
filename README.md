@@ -1,52 +1,83 @@
 # SkinTwin
 
-See what actually worked for people whose skin **measures** like yours.
+**Find people with your skin. See what actually worked.**
 
-Star ratings tell you little when the reviewer's skin is nothing like yours. SkinTwin scans your face with the
-YouCam Skin Analysis API, matches you to "skin twins" with similar measured scores, and shows each product's
-before/after results for those twins: how many improved, how many reacted, and how confident we are.
+Star ratings tell you little when the reviewer's skin is nothing like yours. SkinTwin scans your face with YouCam AI,
+matches you to "skin twins" whose 8 measured scores sit close to yours, and shows what their before/after scans proved
+worked, and what made things worse. Then it builds your routine and tracks your own progress week by week.
+
+SkinTwin is **not a store**. It tells you what to use and why, then links out to where to buy it.
+
+## The journey
+
+1. **What's my skin like?** A 10-second scan gives 8 scores on a face map, kept in *My skin*.
+2. **Who has skin like mine?** Your skin twins (80%+ match) with their scan-verified results.
+3. **What worked for them, and will it work for me?** Every product gets a verdict for your skin ("Good match",
+   "Mixed", "Risky", or "Few twins tried"), a confidence level, and *Where to buy* links.
+4. **Is it working for me?** A routine with a weekly planner that spaces strong actives, weekly check-ins, a goal, and a
+   keep / pause / swap call per product.
 
 ## Features
 
-- **Skin scan**: camera capture with a face guide and live light check, photo upload, or one-tap sample faces.
-- **Skin report**: 8 measured concerns (hydration, oil balance, calmness, smoothness, pores, clarity, glow, fine lines).
-- **Skin twins**: matching on measured scores, not a quiz. Shows products that worked for your twins and popular
-  products that did *not* work for skin like yours.
-- **Product pages**: Everyone vs. Your twins toggle, measured change per concern, confidence labels, scan-verified
-  reviews, ingredient pairing checks, virtual try-on for makeup, nearby-store link.
-- **Routine & progress**: AM/PM routine with clash warnings (retinoid + acids, missing SPF…), reminders, and a progress
-  chart across weekly scans.
-- **Retailer view**: the embeddable widget and a per-skin-segment breakdown of how each product performs.
+- **Scan**: camera with face guide, light check and last week's ghost outline; photo upload; a sample face.
+- **My skin**: face map, 8 score rings, progress, goal, private journal, live AR mirror.
+- **Twins**: visual feed, search, twin profiles, and "copy their routine" with swaps from products you already own.
+- **Products**: verdict per product, "Popular but risky for you", concern tiles, filters, Quick pick (swipe).
+- **Plan**: today's routine, weekly planner, Mix Lab (drag products onto your face to preview a combination), "Add what I
+  own" from a cart screenshot or link (read on the device).
+- **Reviews**: scan-verified results, voice-to-text, optional "where I bought it" link (affiliate links labelled; links
+  never affect ranking).
+- **Makeup**: shade match from your photo (on the device), what your twins wear, breakout check, live AR try-on.
+- **For brands**: an embeddable widget concept and a per-skin-segment breakdown.
 
 ## YouCam APIs
 
-| API | Used for | Status |
-|---|---|---|
-| AI Skin Analysis (SD, 8 concerns) | Scan → scores → twin matching | Mock responses in the API's exact shape; live wiring next |
-| AI Makeup Virtual Try-On | Shade try-on on product pages | Overlay preview now; VTO renders next |
+| API | Used for |
+|---|---|
+| **AI Skin Analysis** (SD, 8 concerns: moisture, oiliness, redness, texture, pore, acne, radiance, wrinkle) | Scores, face map, twin matching, weekly check-ins |
+| **AI Skin Simulation** | Mix Lab's realistic "6 weeks" preview (oiliness is never sent: in this API a higher value adds shine) |
+| **AI Makeup Virtual Try-On** | The AR mirror's *Capture*: the product's real shade rendered on your snapshot |
+
+All calls are server-side (the key never reaches the browser), cached per photo and settings, capped per day and per
+visitor, and opt-in: the app runs in **Demo** mode by default and only calls YouCam when *Settings → Analysis source* is set
+to YouCam live. Any failure falls back to demo results. Live face tracking in the AR mirror and shade matching run in the
+browser (MediaPipe), so they cost no units.
+
+## How twin matching works
+
+Each person is a vector of the 8 YouCam scores (0-100). Similarity is
+
+```
+match = max(0, 100 − 2.5 × RMS(user − other))
+```
+
+so an 80% match means the scores differ by about 8 points on average. That's stricter than plain Euclidean distance over
+the maximum distance, which would rate almost everyone above 80%. A **twin** is 80% or more. Product verdicts use twins'
+measured before/after changes; with fewer than 5 twins, the app says so and shows everyone's results instead.
+
+Code: `web/src/lib/twins.ts` (matching and outcomes), `web/src/lib/verdict.ts` (verdicts),
+`web/src/lib/mix.ts` (combinations), `web/src/lib/planner.ts` (weekly planner), `web/src/lib/substitute.ts` (swaps).
 
 ## Run locally
 
 ```bash
 cd web
+cp .env.example .env.local   # then fill in the values
 npm install
 npm run dev
+npm test                     # core logic tests
 ```
 
-Open http://localhost:3000.
-
-Scans run in **Demo** mode by default (free, simulated scores in YouCam's response format). Switch to **YouCam live** on the
-scan page or in Settings to call YouCam AI Skin Analysis (12 units per new photo; repeats are cached). The server only
-calls YouCam when `SKIN_MODE=live` and `YOUCAM_API_KEY` are set in `web/.env.local`, with a daily cap
-(`YOUCAM_DAILY_SCANS`) and a per-visitor hourly limit. Any failure falls back to demo scores.
+Open http://localhost:3000. Supabase (accounts and community reviews) is optional: without it, everything except posting
+reviews works. The database tables are in `supabase/schema.sql` and `supabase/add-photos-and-links.sql`.
 
 ## Data honesty
 
-- The twin cohort (1,240 profiles) and its product outcomes are **synthetic demo data**, generated by a documented,
-  seeded model in `web/src/lib/cohort.ts`. The UI labels it as demo data.
+- The twin community (1,240 profiles) and its product outcomes are **synthetic demo data**, generated by a documented,
+  seeded model in `web/src/lib/cohort.ts`, and labelled as sample data in the app.
 - Products are a demo catalogue with fictional brands (Aura Thermal, Ceramide Labs, Botanical Glow, Solis Beauty), so no
-  third-party trademarks appear in the app or demo. Ingredient lists are realistic INCI formulations, several adapted from
-  [Open Beauty Facts](https://world.openbeautyfacts.org) (ODbL). Twin outcomes are sample data, not clinical results.
+  third-party trademarks appear. Ingredient lists are realistic INCI formulations, several adapted from
+  [Open Beauty Facts](https://world.openbeautyfacts.org) (ODbL).
 - Results are cosmetic guidance, not medical advice.
 
 ## License
