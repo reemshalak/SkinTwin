@@ -32,27 +32,28 @@
 /* Dark theme: same tokens, night values. Set by data-theme on <html>. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-blush-50: #19121a;
-  --color-blush-100: #2a1f28;
-  --color-blush-200: #3f2e3a;
-  --color-blush-300: #5c4252;
-  --color-blush-400: #c98aa6;
-  --color-plum: #e2a3c0;
-  --color-rose: #ec8fb2;
-  --color-ink: #f6ecf2;
-  --color-muted: #bba4b1;
-  --color-line: #3a2b36;
-  --color-good: #7cc6a0;
-  --color-bad: #ee8795;
-  --color-warn: #e6aa66;
-  --color-surface: #231a22;
-  --color-good-soft: #1d3128;
-  --color-bad-soft: #3b1f27;
-  --color-warn-soft: #382a1b;
-  --color-warn-line: #57422d;
-  --color-plum-soft: #33253a;
-  --shadow-soft: 0 10px 30px -12px rgb(0 0 0 / 0.6);
-  --shadow-card: 0 2px 14px -6px rgb(0 0 0 / 0.5);
+  /* Warm "mocha rose" night palette: skin-toned, not purple-grey. */
+  --color-blush-50: #161011;
+  --color-blush-100: #2a1f21;
+  --color-blush-200: #3e2d30;
+  --color-blush-300: #5c4448;
+  --color-blush-400: #d99cad;
+  --color-plum: #efb2c5;
+  --color-rose: #f29db6;
+  --color-ink: #f8eeec;
+  --color-muted: #c6afac;
+  --color-line: #34272a;
+  --color-good: #8fd0ad;
+  --color-bad: #f0909c;
+  --color-warn: #eab074;
+  --color-surface: #221819;
+  --color-good-soft: #1c2d25;
+  --color-bad-soft: #3a1f24;
+  --color-warn-soft: #36291c;
+  --color-warn-line: #55412d;
+  --color-plum-soft: #35262b;
+  --shadow-soft: 0 12px 32px -12px rgb(0 0 0 / 0.65);
+  --shadow-card: 0 2px 14px -6px rgb(0 0 0 / 0.55);
 }
 /* Accent colours used as both text and fill need different values per role. */
 :root[data-theme="dark"] .text-plum-deep { color: #f0c9d9; }
@@ -60,7 +61,12 @@
 :root[data-theme="dark"] .glow-card {
   background:
     radial-gradient(120% 90% at 20% 10%, rgb(255 255 255 / 0.18), transparent 60%),
-    linear-gradient(160deg, #8a4a6a 0%, #6e3a55 50%, #4a2639 100%);
+    linear-gradient(160deg, #a05c74 0%, #7c4259 50%, #4f2b39 100%);
+}
+/* A faint warm glow at the top of every page in the dark. */
+:root[data-theme="dark"] body {
+  background-image: radial-gradient(90% 50% at 50% -10%, rgb(217 156 173 / 0.1), transparent 70%);
+  background-attachment: fixed;
 }
 
 html,

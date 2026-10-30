@@ -1,35 +1,32 @@
 "use client";
 
 import { useEffect } from "react";
+import { buildNotes } from "@/lib/notifications";
 import { useStore } from "@/lib/store";
 
-const TEXT = { am: "Time for your morning routine ☀️", pm: "Time for your evening routine 🌙" } as const;
-
-// Fires a browser notification at routine time while the app is open.
+// While SkinTwin is open, timely inbox items (routine, bedtime, rest, water,
+// check-in) also arrive as browser notifications, once each.
 export function ReminderTicker() {
-  const { reminders, routine, reminderTimes } = useStore();
+  const { reminders, scans, routine, done, reminderTimes, wellness, goal } = useStore();
   useEffect(() => {
     if (!reminders || typeof Notification === "undefined") return;
     const check = () => {
       if (Notification.permission !== "granted") return;
-      const now = new Date();
-      for (const slot of ["am", "pm"] as const) {
-        const t = { slot, text: TEXT[slot] };
-        const [h, m] = reminderTimes[slot].split(":").map(Number);
-        const key = `skintwin:reminded:${slot}:${now.toDateString()}`;
-        const due = now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m);
-        if (!due || now.getHours() > h + 1 || localStorage.getItem(key)) continue;
-        const count = routine.filter((r) => r.slot === t.slot).length;
-        if (!count) continue;
+      for (const n of buildNotes({ scans, routine, done, reminderTimes, wellness, goal })) {
+        if (!n.alert) continue;
+        const key = `skintwin:alerted:${n.id}`;
         try {
+          if (localStorage.getItem(key)) continue;
           localStorage.setItem(key, "1");
-        } catch {}
-        new Notification("SkinTwin", { body: `${t.text} · ${count} step${count === 1 ? "" : "s"}` });
+        } catch {
+          continue;
+        }
+        new Notification(n.title, { body: n.body, tag: n.id });
       }
     };
     check();
     const id = setInterval(check, 60_000);
     return () => clearInterval(id);
-  }, [reminders, routine, reminderTimes]);
+  }, [reminders, scans, routine, done, reminderTimes, wellness, goal]);
   return null;
 }

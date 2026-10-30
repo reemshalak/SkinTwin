@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ScanFace, X } from "lucide-react";
+import { Moon, Search, ScanFace, Sun, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { NotificationBell } from "./NotificationBell";
 import { ProfileMenu } from "./ProfileMenu";
+import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 
@@ -23,28 +25,34 @@ export function TopBar() {
   const { latest } = useStore();
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-blush-50/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-5 lg:px-8">
         <Link href="/" className="font-display text-2xl text-plum-deep">
           SkinTwin
         </Link>
-        <div className="flex items-center gap-2">
-          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-            {LINKS.map((l) => (
+        <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-1 md:flex">
+          {LINKS.map((l) => {
+            const on = l.href === "/" ? path === "/" : path.startsWith(l.href);
+            return (
               <Link
                 key={l.href}
                 href={l.href}
                 data-tour={l.tour}
-                aria-current={(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "page" : undefined}
-                className={`rounded-full px-4 py-2 text-sm transition ${(l.href === "/" ? path === "/" : path.startsWith(l.href)) ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
+                aria-current={on ? "page" : undefined}
+                className={`rounded-full px-4 py-2 text-sm transition ${on ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
               >
                 {l.label}
               </Link>
-            ))}
-          </nav>
-          <HeaderSearch />
-          <Link href="/scan" data-tour="checkin" className="hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum sm:inline-flex">
+            );
+          })}
+        </nav>
+        <div className="ml-auto flex items-center gap-1 md:ml-0">
+          <span className="hidden sm:block"><HeaderSearch /></span>
+          <NotificationBell />
+          <ThemeSwitch />
+          <Link href="/scan" data-tour="checkin" className="ml-1 hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum lg:inline-flex">
             <ScanFace className="size-4" /> {latest ? "Check-in" : "Start scan"}
           </Link>
+          <span className="mx-1 hidden h-6 w-px bg-line sm:block" aria-hidden />
           <ProfileLink />
         </div>
       </div>
@@ -63,10 +71,10 @@ function ProfileLink() {
     const next = `?next=${encodeURIComponent(path)}`;
     return (
       <div className="flex items-center gap-1">
-        <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm text-plum hover:bg-blush-100">
+        <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
           Log in
         </Link>
-        <Link href={`/signup${next}`} className="rounded-full border border-plum/40 px-4 py-2 text-sm font-medium text-plum-deep hover:bg-blush-100">
+        <Link href={`/signup${next}`} className="hidden rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
           Sign up
         </Link>
       </div>
@@ -127,5 +135,23 @@ function HeaderSearch() {
         </form>
       )}
     </div>
+  );
+}
+
+// Light / dark in one tap, for everyone (signed in or not).
+function ThemeSwitch() {
+  const { theme, setTheme } = useTheme();
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const read = () => setDark(document.documentElement.dataset.theme === "dark");
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => mo.disconnect();
+  }, [theme]);
+  return (
+    <button onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} className="grid size-9 place-items-center rounded-full text-plum hover:bg-blush-100">
+      {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+    </button>
   );
 }

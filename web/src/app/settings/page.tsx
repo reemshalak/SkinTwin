@@ -196,7 +196,8 @@ export default function SettingsPage() {
           <ScanModeToggle className="max-w-md" />
         </Section>
 
-        <Section icon={Bell} title="Routine reminders">
+        <div id="reminders" className="scroll-mt-24" />
+        <Section icon={Bell} title="Reminders">
           <Row label="Reminders" hint="A browser notification while SkinTwin is open">
             <Switch on={store.reminders} onChange={toggleReminders} label="Routine reminders" />
           </Row>
@@ -205,6 +206,34 @@ export default function SettingsPage() {
           </Row>
           <Row label="Evening routine">
             <input type="time" value={store.reminderTimes.pm} onChange={(e) => store.setReminderTimes({ ...store.reminderTimes, pm: e.target.value })} className={input} aria-label="Evening reminder time" />
+          </Row>
+          <Row label="Bedtime" hint="A wind-down nudge 30 minutes before. Skin repairs while you sleep.">
+            <div className="flex items-center gap-2">
+              <input type="time" value={store.wellness.sleep.time} disabled={!store.wellness.sleep.on} onChange={(e) => store.setWellness({ sleep: { ...store.wellness.sleep, time: e.target.value } })} className={input} aria-label="Bedtime" />
+              <Switch on={store.wellness.sleep.on} onChange={() => store.setWellness({ sleep: { ...store.wellness.sleep, on: !store.wellness.sleep.on } })} label="Bedtime reminder" />
+            </div>
+          </Row>
+          <Row label="Rest break" hint="A short pause in the afternoon. Stress shows up on skin too.">
+            <div className="flex items-center gap-2">
+              <input type="time" value={store.wellness.rest.time} disabled={!store.wellness.rest.on} onChange={(e) => store.setWellness({ rest: { ...store.wellness.rest, time: e.target.value } })} className={input} aria-label="Rest break time" />
+              <Switch on={store.wellness.rest.on} onChange={() => store.setWellness({ rest: { ...store.wellness.rest, on: !store.wellness.rest.on } })} label="Rest break reminder" />
+            </div>
+          </Row>
+          <Row label="Water" hint="A nudge to drink water between 9am and 9pm.">
+            <div className="flex items-center gap-2">
+              <select value={store.wellness.water.everyHours} disabled={!store.wellness.water.on} onChange={(e) => store.setWellness({ water: { ...store.wellness.water, everyHours: Number(e.target.value) } })} className={input} aria-label="Water reminder interval">
+                {[1, 2, 3].map((h) => <option key={h} value={h}>Every {h} h</option>)}
+              </select>
+              <Switch on={store.wellness.water.on} onChange={() => store.setWellness({ water: { ...store.wellness.water, on: !store.wellness.water.on } })} label="Water reminder" />
+            </div>
+          </Row>
+          <Row label="Weekly journal note" hint="How your skin felt, sleep, stress, anything new.">
+            <div className="flex items-center gap-2">
+              <select value={store.wellness.journal.day} disabled={!store.wellness.journal.on} onChange={(e) => store.setWellness({ journal: { ...store.wellness.journal, day: Number(e.target.value) } })} className={input} aria-label="Journal day">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => <option key={d} value={i}>{d}</option>)}
+              </select>
+              <Switch on={store.wellness.journal.on} onChange={() => store.setWellness({ journal: { ...store.wellness.journal, on: !store.wellness.journal.on } })} label="Journal reminder" />
+            </div>
           </Row>
         </Section>
 

@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const immersive = path === "/analysis" || path === "/mirror";
   const showBottom = path !== "/scan" && !immersive;
   return (
-    <div className="min-h-dvh bg-blush-50">
+    <div className="min-h-dvh">
       {!immersive && <TopBar />}
       <main className={showBottom ? "pb-28 lg:pb-0" : ""}>
         {children}

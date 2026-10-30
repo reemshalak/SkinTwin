@@ -53,6 +53,8 @@ function syncedFrom(s: SyncedState): SyncedState {
     liveScans: s.liveScans,
     shelf: s.shelf,
     goal: s.goal,
+    wellness: s.wellness,
+    readNotes: s.readNotes,
   };
 }
 

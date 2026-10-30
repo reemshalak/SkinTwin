@@ -4,6 +4,20 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { canonicalId } from "./products";
 import type { ConcernKey, RoutineItem, SkinProfile } from "./types";
 
+// Gentle daily habits that help skin: bedtime, a rest break, water, a weekly note.
+export interface Wellness {
+  sleep: { on: boolean; time: string }; // bedtime "HH:MM"
+  rest: { on: boolean; time: string };
+  water: { on: boolean; everyHours: number };
+  journal: { on: boolean; day: number }; // 0 = Monday
+}
+export const DEFAULT_WELLNESS: Wellness = {
+  sleep: { on: true, time: "22:30" },
+  rest: { on: false, time: "15:00" },
+  water: { on: false, everyHours: 2 },
+  journal: { on: true, day: 6 },
+};
+
 // A before/after aim for one concern, tracked by check-ins.
 export interface SkinGoal {
   concern: ConcernKey;
@@ -29,6 +43,8 @@ interface State {
   // Products you already own (from cart import or ticked by hand).
   shelf: string[];
   goal: SkinGoal | null;
+  wellness: Wellness;
+  readNotes: string[]; // notification ids already seen
 }
 
 // A scan waiting to run on the analysis screen. Memory only, never persisted.
@@ -54,6 +70,8 @@ const EMPTY: State = {
   liveScans: false,
   shelf: [],
   goal: null,
+  wellness: DEFAULT_WELLNESS,
+  readNotes: [],
 };
 const KEY = "skintwin:v1";
 
@@ -75,6 +93,8 @@ interface Store extends State {
   addToShelf: (ids: string[]) => void;
   toggleShelf: (id: string) => void;
   setGoal: (g: SkinGoal | null) => void;
+  setWellness: (w: Partial<Wellness>) => void;
+  markNotesRead: (ids: string[]) => void;
   hydrate: (s: Partial<SyncedState>) => void;
   addScan: (p: SkinProfile) => void;
   setScans: (s: SkinProfile[]) => void;
@@ -100,6 +120,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         saved.routine = saved.routine.map((r) => ({ ...r, productId: canonicalId(r.productId) }));
         saved.savedProducts = saved.savedProducts.map(canonicalId);
         saved.shelf = saved.shelf.map(canonicalId);
+        saved.wellness = { ...DEFAULT_WELLNESS, ...(saved.wellness ?? {}) };
         saved.done = Object.fromEntries(Object.entries(saved.done).map(([k, ids]) => [k, ids.map(canonicalId)]));
         setState(saved);
       }
@@ -174,6 +195,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     (id: string) => setState((s) => ({ ...s, shelf: s.shelf.includes(id) ? s.shelf.filter((x) => x !== id) : [...s.shelf, id] })),
     [],
   );
+  const setWellness = useCallback((w: Partial<Wellness>) => setState((s) => ({ ...s, wellness: { ...s.wellness, ...w } })), []);
+  const markNotesRead = useCallback(
+    (ids: string[]) => setState((s) => ({ ...s, readNotes: Array.from(new Set([...s.readNotes, ...ids])).slice(-200) })),
+    [],
+  );
   const setGoal = useCallback((goal: SkinGoal | null) => setState((s) => ({ ...s, goal })), []);
   const replaceRoutine = useCallback((items: RoutineItem[]) => setState((s) => ({ ...s, routine: items })), []);
   const hydrate = useCallback((s: Partial<SyncedState>) => setState((cur) => ({ ...cur, ...s })), []);
@@ -206,6 +232,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       addToShelf,
       toggleShelf,
       setGoal,
+      setWellness,
+      markNotesRead,
       hydrate,
       addScan,
       setScans,
@@ -214,7 +242,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setReminders,
       reset,
     }),
-    [state, ready, pending, toggleSavedTwin, toggleSavedProduct, setReminderTimes, clearPhotos, deleteScan, updateScan, setIdentity, toggleDone, replaceRoutine, setLiveScans, addToShelf, toggleShelf, setGoal, hydrate, addScan, setScans, addToRoutine, removeFromRoutine, setReminders, reset],
+    [state, ready, pending, toggleSavedTwin, toggleSavedProduct, setReminderTimes, clearPhotos, deleteScan, updateScan, setIdentity, toggleDone, replaceRoutine, setLiveScans, addToShelf, toggleShelf, setGoal, setWellness, markNotesRead, hydrate, addScan, setScans, addToRoutine, removeFromRoutine, setReminders, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
