@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flame, Heart, Leaf, Search, Sparkles, Tag, Users, X } from "lucide-react";
 import { EASE } from "@/components/motion";
 import { Page } from "@/components/Page";
@@ -54,6 +54,17 @@ export default function ShopPage() {
   const [freeOnly, setFreeOnly] = useState(false);
   const [under25, setUnder25] = useState(false);
   const [q, setQ] = useState("");
+  // Search from the header arrives as ?q=
+  useEffect(() => {
+    const apply = (term: string | null) => {
+      if (term === "Fragrance-free") setFreeOnly(true);
+      else if (term) setQ(term);
+    };
+    apply(new URLSearchParams(window.location.search).get("q"));
+    const onSearch = (e: Event) => apply((e as CustomEvent<string>).detail);
+    window.addEventListener("skintwin:search", onSearch);
+    return () => window.removeEventListener("skintwin:search", onSearch);
+  }, []);
 
   const rows = useMemo<Row[]>(() => {
     const twins = latest ? findTwins(latest.scores, latest.sampleId) : [];
@@ -213,8 +224,12 @@ export default function ShopPage() {
   );
 }
 
+const NEW = new Set(["aura-clarifying-cleanser", "ceramide-labs-cleanser"]);
+
 function ProductTile({ row: { product, o, all }, scanned, i, className = "" }: { row: Row; scanned: boolean; i: number; className?: string }) {
   const v = verdictFor(scanned ? o : null, all);
+  // One badge at most: twins' favourite beats trending beats new.
+  const badge = scanned && v.kind === "good" && o.improvedPct >= 85 ? "Twin favourite" : TRENDING.slice(0, 3).includes(product.id) ? "Trending" : NEW.has(product.id) ? "New" : null;
   return (
     <motion.li initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 6) * 0.04, ease: EASE }} className={`relative ${className}`}>
       <Link href={`/product/${product.id}`} className="group block rounded-[2rem] bg-blush-100/70 p-3 pb-5 text-center transition hover:-translate-y-1 hover:bg-blush-100 hover:shadow-soft">
@@ -223,7 +238,19 @@ function ProductTile({ row: { product, o, all }, scanned, i, className = "" }: {
           <ProductVisual product={product} className="absolute inset-x-0 top-[10%] mx-auto h-[80%] w-[80%] transition duration-500 group-hover:-translate-y-1 group-hover:rotate-[-3deg]" />
           <span className={`absolute inset-x-[6%] bottom-[4%] truncate rounded-full px-2.5 py-1 text-center text-[10px] font-medium shadow-card ${VERDICT_STYLE[v.kind].chip}`}>{v.short}</span>
         </div>
+        {badge && (
+          <span className={`absolute top-5 left-5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider shadow-card ${badge === "Twin favourite" ? "bg-plum-deep text-white" : "bg-surface text-plum-deep"}`}>
+            {badge}
+          </span>
+        )}
         <p className="mt-3 line-clamp-1 px-1 text-sm font-medium">{product.name}</p>
+        {product.shades && (
+          <span className="mt-1.5 flex justify-center gap-1" aria-label={`${product.shades.length} shades`}>
+            {product.shades.map((sh) => (
+              <span key={sh.name} title={sh.name} className="size-3.5 rounded-full border border-white shadow-sm" style={{ background: sh.hex }} />
+            ))}
+          </span>
+        )}
         <p className="text-[11px] text-muted">
           {product.actives[0] ? ACTIVE_LABELS[product.actives[0]] : product.brand} · {product.size}
         </p>

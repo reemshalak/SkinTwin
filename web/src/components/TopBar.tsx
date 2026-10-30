@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ScanFace } from "lucide-react";
+import { Search, ScanFace, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { ProfileMenu } from "./ProfileMenu";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -39,6 +41,7 @@ export function TopBar() {
               </Link>
             ))}
           </nav>
+          <HeaderSearch />
           <Link href="/scan" data-tour="checkin" className="hidden items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-sm font-medium text-white transition hover:bg-plum sm:inline-flex">
             <ScanFace className="size-4" /> {latest ? "Check-in" : "Start scan"}
           </Link>
@@ -70,4 +73,59 @@ function ProfileLink() {
     );
   }
   return <ProfileMenu />;
+}
+
+// Search from anywhere: products, ingredients or concerns, answered on Products.
+function HeaderSearch() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const path = usePathname();
+  // Already on Products: tell the page directly; otherwise open it with ?q=.
+  const go = (term: string) => {
+    if (path === "/shop") window.dispatchEvent(new CustomEvent("skintwin:search", { detail: term }));
+    router.push(`/shop?q=${encodeURIComponent(term)}`);
+  };
+  useEffect(() => {
+    if (open) input.current?.focus();
+  }, [open]);
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((v) => !v)} aria-label="Search" aria-expanded={open} className="grid size-9 place-items-center rounded-full text-plum hover:bg-blush-100">
+        {open ? <X className="size-4" /> : <Search className="size-4" />}
+      </button>
+      {open && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!q.trim()) return;
+            setOpen(false);
+            go(q.trim());
+          }}
+          className="absolute top-12 right-0 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-[1.5rem] border border-line bg-surface p-2 shadow-soft"
+        >
+          <label className="flex items-center gap-2 rounded-full bg-blush-50 px-3 py-2">
+            <Search className="size-4 text-muted" />
+            <input
+              ref={input}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+              placeholder="Products, ingredients, concerns…"
+              aria-label="Search products"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+          </label>
+          <p className="mt-2 flex flex-wrap gap-1.5 px-1 pb-1">
+            {["Niacinamide", "Retinol", "Fragrance-free", "SPF"].map((t) => (
+              <button key={t} type="button" onClick={() => { setOpen(false); go(t); }} className="rounded-full border border-line px-2.5 py-1 text-[11px] text-muted hover:border-plum hover:text-plum">
+                {t}
+              </button>
+            ))}
+          </p>
+        </form>
+      )}
+    </div>
+  );
 }

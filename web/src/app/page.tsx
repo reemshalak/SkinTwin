@@ -55,9 +55,9 @@ export default function Home() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: EASE, delay: 0.05 }}
-              className="mt-5 font-display text-5xl leading-[1.02] sm:text-6xl"
+              className="mt-5 font-display text-[3rem] leading-[0.95] tracking-tight sm:text-6xl 2xl:text-7xl"
             >
-              <WriteOn text="Find people with your skin. See what actually worked." mark="actually" delay={0.1} />
+              <WriteOn text="Stop guessing. See what worked on skin like yours." mark="worked" delay={0.1} />
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -65,7 +65,7 @@ export default function Home() {
               transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
               className="mt-5 max-w-sm text-base text-muted"
             >
-              A 10-second face scan matches you with people whose skin measures like yours. Their before-and-after scans show which products really worked, and which made things worse.
+              Scan your face in 10 seconds. Meet people whose skin measures like yours, and see which products cleared, calmed or broke them out. Measured by their own before-and-after scans, not star ratings.
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.25 }} className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/scan" className="inline-flex items-center gap-2 rounded-full bg-plum-deep px-7 py-3.5 text-sm font-medium text-white shadow-soft transition hover:bg-plum">
@@ -81,7 +81,7 @@ export default function Home() {
                   <Avatar key={p.id} config={personAvatar(p.id)} className="size-8 border-2 border-blush-50 text-xs" />
                 ))}
               </div>
-              <p className="text-xs text-muted">Free · no sign-up · photos stay private</p>
+              <p className="text-xs text-muted">Free · no sign-up · your photos stay private</p>
             </div>
           </div>
 
@@ -100,6 +100,29 @@ export default function Home() {
               </StaggerItem>
             ))}
           </Stagger>
+        </div>
+      </section>
+
+      {/* The pain, then three promises */}
+      <section className="border-y border-line bg-surface/70 py-16">
+        <div className="mx-auto max-w-6xl px-5 lg:px-8">
+          <h2 className="max-w-3xl font-display text-3xl leading-tight tracking-tight lg:text-5xl">
+            <WriteOn text="Bought it for the five stars, then it broke you out?" mark="broke" />
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted">Star ratings come from strangers with completely different skin. SkinTwin shows you results from people whose skin measures like yours.</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              { t: "No more shelf of regrets", d: "See what worked, and what backfired, for skin like yours before you spend a penny." },
+              { t: "Proof, not promises", d: "Every result comes from two face scans weeks apart. Nobody can type a fake review." },
+              { t: "No sponsored picks", d: "We don't sell anything, and brands can't pay to rank higher. Only results decide." },
+            ].map((x, i) => (
+              <Reveal key={x.t} className="rounded-[2rem] border border-line bg-blush-50 p-6" delay={i * 0.08}>
+                <span className="grid size-9 place-items-center rounded-full bg-plum-deep text-sm text-white"><Check className="size-4" /></span>
+                <p className="mt-4 font-display text-2xl text-ink">{x.t}</p>
+                <p className="mt-1 text-sm text-muted">{x.d}</p>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -231,16 +254,17 @@ export default function Home() {
       <section className="px-5 py-20 lg:px-8">
         <Reveal className="glow-card relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] px-8 py-16 text-center text-white shadow-soft">
           <Users className="mx-auto size-10 opacity-80" />
-          <h2 className="mt-4 font-display text-4xl lg:text-5xl">Find your skin twins</h2>
+          <h2 className="mt-4 font-display text-4xl lg:text-5xl">Your skin twins already tried it.</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm opacity-90">Before you buy your next product, see how it went for people with skin like yours.</p>
           <ul className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-x-6 gap-y-2 text-sm opacity-95">
-            {["Free", "No sign-up to start", "Photos never shared"].map((t) => (
+            {["Free, no sign-up", "No sponsored picks", "Your photos stay private"].map((t) => (
               <li key={t} className="inline-flex items-center gap-1.5">
                 <Check className="size-4" /> {t}
               </li>
             ))}
           </ul>
           <Link href="/scan" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-medium text-plum-deep">
-            Scan my skin <ArrowRight className="size-4" />
+            See what works for me <ArrowRight className="size-4" />
           </Link>
         </Reveal>
       </section>
