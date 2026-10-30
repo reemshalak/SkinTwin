@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookHeart, CalendarHeart, Check, Copy, Heart, Lock, MessageSquare, Pencil, ScanFace, Settings, Users } from "lucide-react";
-import { Avatar } from "@/components/Avatar";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { ArrowRight, Camera, Check, Copy, Heart, Lock, MessageSquare, Package, Pencil, ScanFace, Settings, Sparkles, Users } from "lucide-react";
+import { GoalCard } from "@/components/GoalCard";
+import { FaceDiagram, Ring } from "@/components/report/Visuals";
+import { Reveal } from "@/components/motion";
 import { AvatarEditor } from "@/components/AvatarEditor";
 import { useMyIdentity } from "@/components/MyAvatar";
 import { NeedScan } from "@/components/NeedScan";
@@ -20,21 +21,20 @@ import { ProductThumb } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { CONCERN_KEYS, CONCERNS, skinTypeLabel } from "@/lib/concerns";
 import { FEATURED } from "@/lib/cohort";
-import { personAvatar } from "@/lib/people";
 import { PRODUCTS } from "@/lib/products";
+import { sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 import { similarity } from "@/lib/twins";
 import { useTwins } from "@/lib/use-twins";
 
 const DATE = new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
-const today = () => new Date().toISOString().slice(0, 10);
 
 export default function MePage() {
-  const { ready, latest, scans, routine, savedTwins, savedProducts, done, setIdentity } = useStore();
+  const { ready, latest, scans, savedTwins, savedProducts, shelf, setIdentity } = useStore();
   const auth = useAuth();
   const me = useMyIdentity();
-  const { twins, featured } = useTwins();
-  const [tab, setTab] = useState<"following" | "wishlist" | "reviews">("following");
+  const { twins } = useTwins();
+  const [tab, setTab] = useState<"following" | "wishlist" | "shelf" | "reviews">("following");
   const [myReviews, setMyReviews] = useState<ReviewPost[]>([]);
   useEffect(() => {
     if (auth.user) fetchReviews({ userId: auth.user.id }).then(setMyReviews);
@@ -51,9 +51,9 @@ export default function MePage() {
   const first = scans[0];
   const change = latest.overall - first.overall;
   const focus = [...CONCERN_KEYS].sort((a, b) => latest.scores[a] - latest.scores[b]).slice(0, 2);
-  const doneToday = [...(done[`${today()}:am`] ?? []), ...(done[`${today()}:pm`] ?? [])].length;
   const following = FEATURED.filter((m) => savedTwins.includes(m.personId!)).map((member) => ({ member, similarity: similarity(latest.scores, member.scores) }));
   const wishlist = PRODUCTS.filter((p) => savedProducts.includes(p.id));
+  const shelfItems = PRODUCTS.filter((p) => shelf.includes(p.id));
 
   async function share() {
     const strongest = [...CONCERN_KEYS].sort((a, b) => latest!.scores[b] - latest!.scores[a])[0];
@@ -65,37 +65,6 @@ export default function MePage() {
     } catch {}
   }
 
-  const cards = [
-    {
-      href: "/analysis",
-      icon: ScanFace,
-      label: "My skin map",
-      big: `${latest.overall}/100`,
-      sub: `${type} skin · working on ${focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}`,
-    },
-    {
-      href: "/twins",
-      icon: Users,
-      label: "People like me",
-      big: `${twins.length}`,
-      sub: "share your skin. See what worked for them",
-      avatars: featured.slice(0, 4).map((t) => t.member.personId!),
-    },
-    {
-      href: "/journal",
-      icon: BookHeart,
-      label: "Journal",
-      big: `${scans.length} check-in${scans.length === 1 ? "" : "s"}`,
-      sub: scans.length > 1 ? `${change >= 0 ? "+" : ""}${change} points since your first scan` : "Check in weekly to see progress",
-    },
-    {
-      href: "/routine",
-      icon: CalendarHeart,
-      label: "Today's plan",
-      big: routine.length ? `${doneToday}/${routine.length}` : "Not set",
-      sub: routine.length ? "steps done today" : "Get a routine built from your twins",
-    },
-  ];
 
   return (
     <Page className="!pt-0 lg:!pt-0">
@@ -159,33 +128,71 @@ export default function MePage() {
 
       <SaveProfile className="mt-6" />
 
-      {/* Four things that matter, each one tappable */}
-      <Stagger as="div" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ href, icon: Icon, label, big, sub, avatars }, i) => (
-          <StaggerItem as="div" key={label}>
-            <Link
-              href={href}
-              className={`group flex h-full flex-col rounded-[1.75rem] p-5 transition hover:-translate-y-1 hover:shadow-soft ${
-                i === 0 ? "glow-card text-white" : "border border-line bg-surface"
-              }`}
-            >
-              <span className={`flex items-center gap-2 text-xs ${i === 0 ? "text-white/85" : "text-muted"}`}>
-                <Icon className="size-4" /> {label}
+      {/* My skin: the map, the scores, progress and the journal, always here */}
+      <section className="mt-8 grid gap-6 lg:grid-cols-[19rem_1fr]">
+        <Link href="/analysis" className="group relative block rounded-[2rem] border border-line bg-surface p-5 transition hover:shadow-soft">
+          <p className="flex items-center justify-between text-xs text-muted">
+            <span className="flex items-center gap-1.5"><ScanFace className="size-4 text-plum" /> My skin map</span>
+            <span className="font-display text-2xl text-plum-deep">{latest.overall}<span className="text-sm text-muted">/100</span></span>
+          </p>
+          <div className="mx-auto mt-2 aspect-[5/6] w-full max-w-[15rem]">
+            <FaceDiagram scores={latest.scores} />
+          </div>
+          <p className="text-center text-xs text-muted">
+            Working on {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}
+          </p>
+          <span className="mt-3 flex items-center justify-center gap-1 text-xs text-plum">
+            See it on my photo <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
+          </span>
+        </Link>
+
+        <div className="space-y-6">
+          <ul className="grid grid-cols-4 gap-3 rounded-[2rem] border border-line bg-surface p-4 sm:grid-cols-8 lg:grid-cols-4 xl:grid-cols-8">
+            {CONCERN_KEYS.map((k, i) => (
+              <li key={k}>
+                <Link href={`/report/${k}`} className="block transition hover:scale-105">
+                  <Ring value={latest.scores[k]} label={CONCERNS[k].label} i={i} size={64} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {scans.length > 1 && (
+            <Link href="/week" className="glow-card flex items-center justify-between gap-4 rounded-[2rem] p-5 text-white shadow-soft">
+              <span>
+                <span className="block text-xs text-white/80">Since your first check-in</span>
+                <span className="font-display text-3xl">{change >= 0 ? "+" : ""}{change} points</span>
               </span>
-              <span className="mt-3 font-display text-4xl">{big}</span>
-              <span className={`mt-1 text-xs leading-relaxed ${i === 0 ? "text-white/85" : "text-muted"}`}>{sub}</span>
-              {avatars && (
-                <span className="mt-3 flex -space-x-2">
-                  {avatars.map((id) => (
-                    <Avatar key={id} config={personAvatar(id)} className="size-8 border-2 border-surface text-sm" />
-                  ))}
-                </span>
-              )}
-              <ArrowRight className={`mt-auto size-4 self-end pt-1 transition group-hover:translate-x-1 ${i === 0 ? "text-white" : "text-plum"}`} />
+              <span className="flex items-center gap-1 text-xs">This week <ArrowRight className="size-4" /></span>
             </Link>
-          </StaggerItem>
-        ))}
-      </Stagger>
+          )}
+
+          <GoalCard />
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/journal" className="flex items-center gap-2 rounded-[1.5rem] border border-line bg-surface p-2 pr-4 text-sm hover:shadow-card">
+              <span className="flex -space-x-3">
+                {scans.slice(-3).map((s) => {
+                  const photo = s.photo ?? (s.sampleId ? sampleById(s.sampleId)?.image : undefined);
+                  return (
+                    <span key={s.id} className="size-10 overflow-hidden rounded-xl border-2 border-surface bg-blush-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {photo && <img src={photo} alt="" className="h-full w-full scale-110 object-cover blur-[3px]" />}
+                    </span>
+                  );
+                })}
+              </span>
+              Journal · {scans.length} check-in{scans.length === 1 ? "" : "s"}
+            </Link>
+            <Link href="/mirror" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
+              <Camera className="size-4" /> Live mirror
+            </Link>
+            <Link href="/report" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
+              <Sparkles className="size-4" /> Full report
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Following / Wishlist */}
       <Reveal className="mt-12">
@@ -195,6 +202,7 @@ export default function MePage() {
               [
                 ["following", `Following · ${following.length}`, Users],
                 ["wishlist", `Wishlist · ${wishlist.length}`, Heart],
+                ["shelf", `My shelf · ${shelfItems.length}`, Package],
                 ["reviews", `My reviews · ${myReviews.length}`, MessageSquare],
               ] as const
             ).map(([id, label, Icon]) => (
@@ -255,6 +263,24 @@ export default function MePage() {
               ))}
             </ul>
           ))}
+        {tab === "shelf" &&
+          (shelfItems.length === 0 ? (
+            <p className="mt-4 rounded-3xl border border-dashed border-blush-300 p-8 text-center text-sm text-muted">
+              Products you already own, so we can swap them into routines.{" "}
+              <Link href="/import" className="text-plum underline">Add what I own</Link>
+            </p>
+          ) : (
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {shelfItems.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/product/${p.id}`} className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-3 transition hover:shadow-card">
+                    <ProductThumb product={p} />
+                    <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ))}
         {tab === "reviews" &&
           (myReviews.length === 0 ? (
             <p className="mt-4 rounded-3xl border border-dashed border-blush-300 p-8 text-center text-sm text-muted">
@@ -280,7 +306,7 @@ export default function MePage() {
       </Reveal>
 
       <p className="mt-12 flex items-center justify-center gap-2 text-center text-xs text-muted">
-        <Lock className="size-3.5" /> Others see only your name and initial. Your scan photos stay private on this device.
+        <Lock className="size-3.5" /> Others see your name and the profile photo you chose. Scan photos and this skin page stay private to you.
       </p>
     </Page>
   );

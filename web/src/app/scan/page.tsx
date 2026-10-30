@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Droplet, ImageUp, RefreshCw, Scissors, ShieldCheck, Smile, Sun } from "lucide-react";
 import { FaceAvatar } from "@/components/FaceAvatar";
-import { ScanModeToggle } from "@/components/ScanModeToggle";
 import { Page, PageTitle } from "@/components/Page";
 import { downscale } from "@/lib/image";
 import { hashString } from "@/lib/random";
@@ -259,7 +258,6 @@ export default function ScanPage() {
               : "One clear selfie is all it takes. YouCam AI scores 8 concerns so we can find people whose skin measures like yours."
           }
         />
-        <ScanModeToggle className="mb-5 max-w-md" />
         <ul className="grid gap-3 sm:grid-cols-2">
           {TIPS.map(({ icon: Icon, title, text }) => (
             <li key={title} className="flex gap-3 rounded-3xl border border-line bg-surface p-4">

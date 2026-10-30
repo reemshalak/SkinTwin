@@ -121,7 +121,7 @@ export default function PlanPage() {
         right={
           <div className="flex gap-2">
           <Link href="/import" className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-plum">
-            <ShoppingBag className="size-4" /> Add from cart
+            <ShoppingBag className="size-4" /> Add what I own
           </Link>
           <button
             onClick={() => setEditing((v) => !v)}
@@ -255,7 +255,7 @@ export default function PlanPage() {
         <Link href="/mix" className="flex items-center gap-3 rounded-[2rem] border border-line bg-surface p-5 text-sm transition hover:shadow-card">
           <FlaskConical className="size-6 text-plum" />
           <span>
-            <span className="block font-medium">See your routine on your face</span>
+            <span className="block font-medium">Preview my routine on my face</span>
             <span className="text-xs text-muted">Mix Lab previews what these products do together →</span>
           </span>
         </Link>

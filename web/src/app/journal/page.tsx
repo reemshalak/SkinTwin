@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, Eye, EyeOff, Lock, ScanFace, Trash2 } from "lucide-react";
 import { GoalCard } from "@/components/GoalCard";
 import { EASE } from "@/components/motion";
@@ -40,6 +40,9 @@ export default function JournalPage() {
   const { ready, scans, deleteScan, updateScan, setScans } = useStore();
   const [reveal, setReveal] = useState(false);
   const [confirm, setConfirm] = useState<string | null>(null);
+  // Demo helpers only appear with ?demo in the URL (for recordings), never for shoppers.
+  const [demo, setDemo] = useState(false);
+  useEffect(() => setDemo(new URLSearchParams(window.location.search).has("demo")), []);
   if (!ready) return null;
   if (!scans.length) return <NeedScan what="your skin journal" />;
 
@@ -202,7 +205,7 @@ export default function JournalPage() {
         </AnimatePresence>
       </ol>
 
-      {scans.length < 3 && (
+      {demo && scans.length < 3 && (
         <p className="mt-12 text-center text-xs text-muted">
           Demo:{" "}
           <button onClick={addSampleWeeks} className="text-plum underline">

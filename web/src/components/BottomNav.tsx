@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { BookHeart, CircleUserRound, Compass, House, ScanFace } from "lucide-react";
+import { CalendarHeart, Compass, House, ScanFace, Users } from "lucide-react";
 
 const ITEMS = [
   { href: "/", label: "Home", icon: House },
-  { href: "/shop", label: "Discover", icon: Compass },
-  { href: "/scan", label: "Scan", icon: ScanFace, center: true },
-  { href: "/journal", label: "Journal", icon: BookHeart },
-  { href: "/me", label: "Me", icon: CircleUserRound },
+  { href: "/twins", label: "Twins", icon: Users },
+  { href: "/scan", label: "Check-in", icon: ScanFace, center: true },
+  { href: "/shop", label: "Products", icon: Compass },
+  { href: "/routine", label: "Plan", icon: CalendarHeart },
 ];
 
 export function BottomNav() {

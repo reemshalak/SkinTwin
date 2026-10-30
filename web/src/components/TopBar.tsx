@@ -7,11 +7,12 @@ import { ProfileMenu } from "./ProfileMenu";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 
+// The loop: who's like me -> what works -> my plan -> my skin.
 const LINKS = [
-  { href: "/shop", label: "Discover" },
   { href: "/twins", label: "Twins" },
-  { href: "/journal", label: "Journal" },
-  { href: "/routine", label: "My plan" },
+  { href: "/shop", label: "Products" },
+  { href: "/routine", label: "Plan" },
+  { href: "/me", label: "My skin" },
 ];
 
 export function TopBar() {

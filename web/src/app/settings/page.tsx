@@ -176,7 +176,7 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <Section icon={ScanFace} title="Skin analysis">
+        <Section icon={ScanFace} title="Analysis source (for demos)">
           <p className="mb-4 text-xs text-muted">
             Demo mode gives simulated scores in the same format as YouCam and costs nothing. Live mode sends new photos to YouCam AI Skin
             Analysis (12 API units each; repeats of the same photo are free).

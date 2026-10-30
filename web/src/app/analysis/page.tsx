@@ -142,10 +142,12 @@ export default function AnalysisPage() {
                   <br />
                   <em className="text-blush-200">scored {result!.overall}/100</em>
                 </h1>
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white/85">
-                  <span className={`size-1.5 rounded-full ${result!.source === "live" ? "bg-[#7cc6a0]" : "bg-blush-200"}`} />
-                  {result!.source === "live" ? "Live YouCam analysis" : note ?? "Demo scores"}
-                </p>
+                {(result!.source === "live" || note) && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] text-white/85">
+                    <span className={`size-1.5 rounded-full ${result!.source === "live" ? "bg-[#7cc6a0]" : "bg-blush-200"}`} />
+                    {result!.source === "live" ? "Analysed by YouCam AI" : note}
+                  </p>
+                )}
                 <p className="mt-3 hidden text-sm leading-relaxed text-white/75 lg:block">
                   Tap any marker to see what it means, how you compare with your twins, and what helped them.
                 </p>

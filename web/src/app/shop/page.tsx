@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { Camera, FlaskConical, Flame, Heart, Leaf, Search, ShoppingBag, Sparkles, Tag, Users, X } from "lucide-react";
+import { Flame, Heart, Leaf, Search, ShoppingBag, Sparkles, Tag, Users, X } from "lucide-react";
 import { EASE } from "@/components/motion";
 import { Page } from "@/components/Page";
 import { ProductVisual } from "@/components/ProductArt";
@@ -90,23 +90,12 @@ export default function ShopPage() {
 
   return (
     <Page>
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Discover</p>
+      <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Products</p>
       <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">Find what works for your skin</h1>
 
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Link href="/swipe" className="group flex items-center gap-3 rounded-[1.75rem] bg-gradient-to-br from-blush-100 to-blush-200 p-4 transition hover:shadow-card">
-          <span className="grid size-11 place-items-center rounded-2xl bg-surface text-rose shadow-card transition group-hover:rotate-[-8deg]"><Heart className="size-5 fill-current" /></span>
-          <span><span className="block text-sm font-medium text-ink">Quick pick</span><span className="text-[11px] text-muted">Swipe yes or no</span></span>
-        </Link>
-        <Link href="/mix" className="group flex items-center gap-3 rounded-[1.75rem] bg-gradient-to-br from-[#F7F2F6] to-[#E7DDF0] p-4 transition hover:shadow-card">
-          <span className="grid size-11 place-items-center rounded-2xl bg-surface text-plum shadow-card transition group-hover:rotate-[8deg]"><FlaskConical className="size-5" /></span>
-          <span><span className="block text-sm font-medium text-[#3a2430]">Mix Lab</span><span className="text-[11px] text-[#7d6370]">Try combos on your face</span></span>
-        </Link>
-        <Link href="/mirror" className="group col-span-2 flex items-center gap-3 rounded-[1.75rem] bg-gradient-to-br from-[#3a2430] to-[#7a3f5c] p-4 text-white transition hover:shadow-card sm:col-span-1">
-          <span className="grid size-11 place-items-center rounded-2xl bg-white/15 transition group-hover:scale-105"><Camera className="size-5" /></span>
-          <span><span className="block text-sm font-medium">AR mirror</span><span className="text-[11px] text-white/75">Your skin and shades, live</span></span>
-        </Link>
-      </div>
+      <Link href="/swipe" className="group mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blush-100 to-blush-200 px-4 py-2 text-xs font-medium text-plum-deep transition hover:shadow-card">
+        <Heart className="size-3.5 fill-current text-rose transition group-hover:scale-110" /> Can&apos;t decide? Quick pick
+      </Link>
 
       <label className="relative mt-5 block">
         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted" />
