@@ -34,9 +34,19 @@ SkinTwin is **not a store**. It tells you what to use and why, then links out to
 | **A verdict for your skin** on every product | **Products** ranked by what worked for your twins |
 | ![Journal book](docs/media/09-journal-book.jpg) | ![AR mirror](docs/media/10-mirror.jpg) |
 | **Skin journal**: one page per weekly check-in | **Live mirror** with YouCam makeup try-on |
+| ![Home](docs/media/13-home.jpg) | ![Plan](docs/media/14-plan.jpg) |
+| **Home**: today's skin, daily care (hydration, sleep, calm) and a tip | **Plan**: a routine built from what worked for your twins, spaced across the week |
+| ![Mix Lab](docs/media/15-mix-lab.jpg) | ![Makeup](docs/media/16-makeup-tryon.jpg) |
+| **Mix Lab**: drop products on your face and preview six weeks | **Makeup**: what works for skin like yours, plus live try-on |
+| ![Arabic](docs/media/18-arabic-twins.jpg) | ![Goal](docs/media/11-goal-simulation.jpg) |
+| **Arabic, right-to-left**: the whole app mirrors | **Your realistic goal skin**, made with YouCam AI Skin Simulation |
 
-<p align="center"><img src="docs/media/11-goal-simulation.jpg" alt="Goal skin with YouCam Skin Simulation" width="360" /><br/>
-<b>Your realistic goal skin</b>, made with YouCam AI Skin Simulation</p>
+<p align="center">
+<img src="docs/media/20-mobile-home.jpg" alt="Mobile home" width="220" />
+<img src="docs/media/21-mobile-twins.jpg" alt="Mobile twins" width="220" />
+<img src="docs/media/22-mobile-product.jpg" alt="Mobile product verdict" width="220" /><br/>
+<b>Built for phones too</b>
+</p>
 
 ## The journey
 
