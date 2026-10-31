@@ -1,8 +1,9 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Camera, Check, Copy, Heart, Lock, MessageSquare, Package, Pencil, ScanFace, Settings, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Check, Copy, Heart, Lock, MessageSquare, Package, Pencil, ScanFace, Settings, Sparkles, Users } from "lucide-react";
 import { GoalCard } from "@/components/GoalCard";
 import { Extras } from "@/components/Extras";
 import { FaceDiagram, Ring } from "@/components/report/Visuals";
@@ -18,7 +19,7 @@ import { useEngagement } from "@/lib/use-engagement";
 import { ProfileCover } from "@/components/ProfileCover";
 import { SaveHeart } from "@/components/SaveHeart";
 import { SaveProfile } from "@/components/SaveProfile";
-import { ProductThumb } from "@/components/ui";
+import { ProductThumb, TrendMark } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { CONCERN_KEYS, CONCERNS, skinTypeLabel } from "@/lib/concerns";
 import { FEATURED } from "@/lib/cohort";
@@ -29,7 +30,7 @@ import { similarity } from "@/lib/twins";
 import { useTwins } from "@/lib/use-twins";
 import { useT } from "@/lib/i18n";
 
-const DATE = new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
+const DATE = dateFormat({ month: "short", year: "numeric" });
 
 export default function MePage() {
   const { ready, latest, scans, savedTwins, savedProducts, shelf, setIdentity } = useStore();
@@ -104,7 +105,7 @@ export default function MePage() {
                   setDraft(me.name);
                   setEditingName(true);
                 }}
-                className="group flex items-center gap-2 text-left"
+                className="group flex items-center gap-2 text-start"
               >
                 <h1 className="font-display text-3xl">{me.name || "Add your name"}</h1>
                 <Pencil className="size-4 text-muted opacity-60 transition group-hover:opacity-100" />
@@ -145,7 +146,7 @@ export default function MePage() {
             {t("me.working", { a: focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ") })}
           </p>
           <span className="mt-3 flex items-center justify-center gap-1 text-xs text-plum">
-            {t("me.photo")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1" />
+            {t("me.photo")} <ArrowRight className="rtl:-scale-x-100 size-3.5 transition group-hover:translate-x-1" />
           </span>
         </Link>
 
@@ -164,16 +165,16 @@ export default function MePage() {
             <Link href="/week" className="glow-card flex items-center justify-between gap-4 rounded-[2rem] p-5 text-white shadow-soft">
               <span>
                 <span className="block text-xs text-white/80">Since your first check-in</span>
-                <span className="font-display text-3xl">{change >= 0 ? "+" : ""}{change} points</span>
+                <span className="font-display text-3xl"><TrendMark up={change >= 0} tone="onDark" /> {Math.abs(change)} points {change >= 0 ? "better" : "worse"}</span>
               </span>
-              <span className="flex items-center gap-1 text-xs">This week <ArrowRight className="size-4" /></span>
+              <span className="flex items-center gap-1 text-xs">This week <ArrowRight className="rtl:-scale-x-100 size-4" /></span>
             </Link>
           )}
 
           <GoalCard />
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/journal" className="flex items-center gap-2 rounded-[1.5rem] border border-line bg-surface p-2 pr-4 text-sm hover:shadow-card">
+            <Link href="/journal" className="flex items-center gap-2 rounded-[1.5rem] border border-line bg-surface p-2 pe-4 text-sm hover:shadow-card">
               <span className="flex -space-x-3">
                 {scans.slice(-3).map((s) => {
                   const photo = s.photo ?? (s.sampleId ? sampleById(s.sampleId)?.image : undefined);
@@ -185,10 +186,7 @@ export default function MePage() {
                   );
                 })}
               </span>
-              {t("me.journal", { n: scans.length })}
-            </Link>
-            <Link href="/mirror" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
-              <Camera className="size-4" /> {t("me.mirror")}
+              {scans.length === 1 ? t("me.journal1") : t("me.journal", { n: scans.length })}
             </Link>
             <Link href="/report" className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-3 text-sm text-plum hover:shadow-card">
               <Sparkles className="size-4" /> {t("me.report")}
@@ -200,7 +198,7 @@ export default function MePage() {
       {/* Following / Wishlist */}
       <Reveal className="mt-12">
         <div id="saved" className="flex scroll-mt-24 flex-wrap items-center justify-between gap-3">
-          <div role="tablist" aria-label="Saved" className="inline-flex rounded-full bg-blush-100 p-1 text-sm">
+          <div role="tablist" aria-label="Saved" className="inline-flex max-w-full overflow-x-auto whitespace-nowrap rounded-full bg-blush-100 p-1 text-sm [scrollbar-width:none]">
             {(
               [
                 ["following", t("me.following", { n: following.length }), Users],
@@ -252,7 +250,7 @@ export default function MePage() {
             <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {wishlist.map((p) => (
                 <li key={p.id} className="relative">
-                  <Link href={`/product/${p.id}`} className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-3 pr-14 transition hover:shadow-card">
+                  <Link href={`/product/${p.id}`} className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-3 pe-14 transition hover:shadow-card">
                     <ProductThumb product={p} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{p.name}</span>
@@ -261,7 +259,7 @@ export default function MePage() {
                       </span>
                     </span>
                   </Link>
-                  <SaveHeart productId={p.id} className="absolute top-1/2 right-3 -translate-y-1/2" />
+                  <SaveHeart productId={p.id} className="absolute top-1/2 end-3 -translate-y-1/2" />
                 </li>
               ))}
             </ul>

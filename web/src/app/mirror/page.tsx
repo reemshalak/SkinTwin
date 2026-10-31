@@ -9,6 +9,8 @@ import { predictMix } from "@/lib/mix";
 import { PRODUCTS, productById } from "@/lib/products";
 import type { Product } from "@/lib/types";
 import { useStore } from "@/lib/store";
+import { saveLook, shrink } from "@/lib/looks";
+import { YouCamTryOn } from "@/components/YouCamTryOn";
 import type { ConcernKey } from "@/lib/types";
 
 // Live AR mirror: face tracking runs in this browser (MediaPipe), nothing is
@@ -68,6 +70,21 @@ function Mirror() {
   const [strength, setStrength] = useState(0.6);
   const [shot, setShot] = useState<{ before: string; after?: string; preview: string; busy: boolean; live: boolean; note?: string } | null>(null);
   const [split, setSplit] = useState(50);
+  const [saved, setSaved] = useState<"idle" | "saving" | "done" | "full">("idle");
+  const wearing = makeup.filter((p) => picks[p.id]).map((p) => ({ id: p.id, shade: picks[p.id]!.name, hex: picks[p.id]!.hex }));
+  async function keepLook() {
+    if (!shot) return;
+    setSaved("saving");
+    const ok = saveLook({
+      id: Date.now().toString(36),
+      createdAt: new Date().toISOString(),
+      image: await shrink(shot.after ?? shot.preview),
+      before: await shrink(shot.before, 240),
+      source: shot.after ? "youcam" : "preview",
+      products: wearing,
+    });
+    setSaved(ok ? "done" : "full");
+  }
   const face = makeup.filter((p) => !isLip(p)).map((p) => picks[p.id]).find(Boolean) ?? null;
   const lip = makeup.filter(isLip).map((p) => picks[p.id]).find(Boolean) ?? null;
   const [future, setFuture] = useState(false);
@@ -125,7 +142,9 @@ function Mirror() {
           const raw = lm!.detectForVideo(v, performance.now()).faceLandmarks[0];
           // Blend with the last frame to stop the overlay jittering.
           const prev = lastPts.current;
-          const pts = raw && prev ? raw.map((p, i) => ({ x: prev[i].x * 0.45 + p.x * 0.55, y: prev[i].y * 0.45 + p.y * 0.55 })) : raw;
+          const move = raw && prev ? Math.hypot(raw[1].x - prev[1].x, raw[1].y - prev[1].y) : 1;
+          const k = Math.min(1, 0.6 + move * 80); // still: smooth out jitter; moving: follow at once
+          const pts = raw && prev ? raw.map((p, i) => ({ x: prev[i].x * (1 - k) + p.x * k, y: prev[i].y * (1 - k) + p.y * k })) : raw;
           lastPts.current = pts;
           draw(c, pts, opts.current, values.current);
         }
@@ -156,6 +175,7 @@ function Mirror() {
     paintMakeup(ctx, pts, c.width, c.height, { face, lip, strength });
     const preview = c.toDataURL("image/jpeg", 0.9);
     setSplit(50);
+    setSaved("idle");
     setShot({ before, preview, busy: true, live: liveScans });
     const res = await fetch("/api/makeup", {
       method: "POST",
@@ -166,14 +186,37 @@ function Mirror() {
     setShot((s) => s && { ...s, busy: false, after: data.image, note: data.note });
   }
 
+  if (mode === "makeup") return <YouCamTryOn initialProduct={product?.id} initialShade={shadeParam} onSkin={() => setMode("skin")} />;
+
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-ink text-white">
-      <div className="relative flex-1 overflow-hidden">
-        <video ref={video} playsInline muted className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
-        <canvas ref={canvas} className="pointer-events-none absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+    <div className="fixed inset-0 z-40 flex flex-col bg-[#1c1216] text-white">
+      <div className="relative flex-1 overflow-hidden bg-gradient-to-b from-plum-deep to-[#1c1216]">
+        {/* Vanity mirror: an arched glass with soft bulbs around it */}
+        <div className="absolute inset-x-4 top-14 bottom-3 mx-auto max-w-md sm:inset-x-0">
+          <div className="absolute -inset-3 rounded-t-[999px] rounded-b-[2.5rem] bg-gradient-to-b from-blush-200/40 to-rose/20 shadow-[0_0_60px_rgba(240,170,200,0.25)]" />
+          {Array.from({ length: 12 }, (_, i) => {
+            const a = Math.PI + (i / 11) * Math.PI;
+            return <span key={i} aria-hidden className="absolute size-2.5 rounded-full bg-[#fff4e0] shadow-[0_0_12px_4px_rgba(255,236,200,0.7)]" style={{ left: `${50 + Math.cos(a) * 52}%`, top: `${Math.min(38, 30 + Math.sin(a) * 34)}%` }} />;
+          })}
+          <div className="absolute inset-0 overflow-hidden rounded-t-[999px] rounded-b-[2rem] ring-4 ring-blush-100/70">
+            <video ref={video} playsInline muted className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+            <canvas ref={canvas} className="pointer-events-none absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/15" />
+            {wearing.length > 0 && state === "on" && (
+              <div className="absolute inset-x-3 bottom-3 flex flex-wrap justify-center gap-2">
+                {wearing.map((w) => (
+                  <Link key={w.id} href={`/product/${w.id}`} className="flex items-center gap-2 rounded-full bg-black/45 py-1 ps-1 pe-3 text-[11px] backdrop-blur">
+                    <span className="size-5 rounded-full border-2 border-white" style={{ background: w.hex }} />
+                    <span><span className="block leading-tight">{productById(w.id)?.name}</span><span className="text-white/70">{w.shade} · {productById(w.id)?.brand}</span></span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-          <p className="rounded-full bg-black/35 px-3 py-1.5 text-xs backdrop-blur">AR mirror · runs on your device</p>
+          <p className="rounded-full bg-black/35 px-3 py-1.5 text-xs backdrop-blur">Try-on mirror · {liveScans ? "capture renders with YouCam" : "demo preview"}</p>
           <Link href={product ? `/product/${product.id}` : "/me"} aria-label="Close" className="grid size-10 place-items-center rounded-full bg-black/35 backdrop-blur"><X className="size-5" /></Link>
         </div>
 
@@ -195,22 +238,23 @@ function Mirror() {
 
       {shot && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onClick={() => !shot.busy && setShot(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-[2rem] bg-ink p-4 sm:rounded-[2rem]">
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-[2rem] bg-[#1c1216] p-4 sm:rounded-[2rem]">
             <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-black">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={shot.before} alt="Before" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
-              <div className="absolute inset-0" style={{ clipPath: `inset(0 ${split}% 0 0)` }}>
+              <img src={shot.after ?? shot.preview} alt="With makeup" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+              <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - split}% 0 0)` }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={shot.after ?? shot.preview} alt="With makeup" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
+                <img src={shot.before} alt="Before" className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
               </div>
-              <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white" style={{ right: `${split}%` }}>
+              <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white" style={{ left: `${split}%` }}>
                 <span className="absolute top-1/2 left-1/2 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-plum"><MoveHorizontal className="size-4" /></span>
               </div>
               <input type="range" min={0} max={100} value={split} onChange={(e) => setSplit(Number(e.target.value))} aria-label="Compare" className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0" />
-              <span className="absolute top-3 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">{shot.busy ? "Rendering with YouCam…" : shot.after ? "YouCam render" : "App preview"}</span>
-              <span className="absolute top-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">Before</span>
+              <span className="absolute top-3 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">Before</span>
+              <span className="absolute top-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[10px] backdrop-blur">{shot.busy ? "Rendering with YouCam…" : shot.after ? "YouCam render" : "App preview"}</span>
               {shot.busy && <Loader2 className="absolute inset-0 m-auto size-8 animate-spin text-white/80" />}
             </div>
+            {saved === "done" && <Link href="/journal#looks" className="mt-2 block text-center text-xs text-blush-200 underline">See it in My looks →</Link>}
             <p className="mt-3 text-[11px] text-white/70">
               {shot.after ? "Rendered by YouCam Makeup Try-On with the product's real shade." : shot.live ? (shot.note ?? "") : "Demo mode: this is the app's preview. Turn on YouCam live in Settings for a realistic render."}
             </p>
@@ -220,6 +264,9 @@ function Mirror() {
                   <ShoppingBag className="size-3.5" /> {isLip(p) ? "Lip" : "Foundation"} · {picks[p.id]!.name}
                 </Link>
               ))}
+              <button onClick={keepLook} disabled={shot.busy || saved === "saving" || saved === "done"} className="rounded-full bg-rose px-4 text-xs font-medium text-white disabled:opacity-70">
+                {saved === "done" ? "Saved ✓" : saved === "full" ? "Storage full" : "Save to My looks"}
+              </button>
               <button onClick={() => setShot(null)} disabled={shot.busy} className="rounded-full border border-white/30 px-4 text-xs">Close</button>
             </div>
           </div>
@@ -227,7 +274,7 @@ function Mirror() {
       )}
 
       {/* Controls */}
-      <div className="space-y-3 bg-ink p-4 pb-6">
+      <div className="space-y-3 bg-[#1c1216] p-4 pb-6">
         <div role="tablist" className="mx-auto flex w-fit rounded-full bg-white/10 p-1 text-sm">
           {(["skin", "makeup"] as const).map((m) => (
             <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`rounded-full px-5 py-2 ${mode === m ? "bg-surface text-plum-deep" : "text-white/80"}`}>
@@ -321,9 +368,13 @@ function paintMakeup(
     path(ctx, pts, LIPS, w, h);
     path(ctx, pts, MOUTH, w, h);
     ctx.clip("evenodd");
-    ctx.globalCompositeOperation = "multiply";
-    ctx.globalAlpha = 0.35 + o.strength * 0.55;
+    ctx.filter = `blur(${Math.max(1, Math.round(w / 500))}px)`;
+    ctx.globalCompositeOperation = "color"; // shade's hue, your lips' light and texture
+    ctx.globalAlpha = 0.55 + o.strength * 0.4;
     ctx.fillStyle = o.lip.hex;
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalCompositeOperation = "soft-light";
+    ctx.globalAlpha = 0.25 + o.strength * 0.35;
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }

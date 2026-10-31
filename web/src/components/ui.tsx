@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, Info } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, Info } from "lucide-react";
 import { CountUp, GrowBar, MotionCircle } from "./motion";
 import { ProductVisual } from "./ProductArt";
 import type { Confidence } from "@/lib/twins";
@@ -52,7 +52,7 @@ export function PageHeader({ title, back, right }: { title: string; back?: strin
     <header className="flex items-center justify-between px-5 pt-6 pb-3">
       {back ? (
         <Link href={back} aria-label="Back" className="grid size-10 place-items-center rounded-full bg-surface shadow-card">
-          <ChevronLeft className="size-5 text-ink" />
+          <ChevronLeft className="rtl:-scale-x-100 size-5 text-ink" />
         </Link>
       ) : (
         <span className="size-10" />
@@ -81,12 +81,31 @@ export function ProductThumb({ product, size = "md" }: { product: Product; size?
   );
 }
 
-export function Delta({ value }: { value: number }) {
-  const cls = value >= 1 ? "text-good" : value <= -1 ? "text-bad" : "text-muted";
+// A score change. Every score is "higher is healthier", so up is always better.
+// Shown as an arrow and a whole number, with "better"/"worse" spelled out when asked.
+// A small round badge with a soft arrow: sage when skin got better, rose when worse.
+// "onDark" sits on the plum gradient cards.
+export function TrendMark({ up, tone = "soft", className = "" }: { up: boolean; tone?: "soft" | "onDark" | "bare"; className?: string }) {
+  const Icon = up ? ArrowUp : ArrowDown;
+  const colors = tone === "bare" ? "" : tone === "onDark" ? "bg-white/20 text-white ring-1 ring-white/30" : up ? "bg-good-soft text-good ring-1 ring-good/15" : "bg-bad-soft text-bad ring-1 ring-bad/15";
   return (
-    <span className={`tabular-nums font-medium ${cls}`}>
-      {value > 0 ? "+" : ""}
-      {value.toFixed(1)}
+    <span aria-hidden className={`inline-grid size-[1.15em] shrink-0 place-items-center rounded-full align-[-0.18em] ${colors} ${className}`}>
+      <Icon className={tone === "bare" ? "size-[1.1em]" : "size-[0.68em]"} strokeWidth={2.6} />
+    </span>
+  );
+}
+
+export function Delta({ value, words = false }: { value: number; words?: boolean }) {
+  const n = Math.abs(value) >= 1 ? Math.round(Math.abs(value)) : Math.round(Math.abs(value) * 10) / 10;
+  const up = value >= 0.5;
+  const down = value <= -0.5;
+  const cls = up ? "text-good" : down ? "text-bad" : "text-muted";
+  const word = up ? "better" : down ? "worse" : "no change";
+  return (
+    <span className={`inline-flex items-center gap-1 tabular-nums font-medium ${cls}`} title={`${n} point${n === 1 ? "" : "s"} ${word}`}>
+      {up || down ? <TrendMark up={up} /> : <span aria-hidden>•</span>}
+      {up || down ? n : ""}
+      {words ? ` ${word}` : <span className="sr-only"> {word}</span>}
     </span>
   );
 }

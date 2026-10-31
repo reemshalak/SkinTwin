@@ -23,7 +23,7 @@ export function ScanModeToggle({ className = "" }: { className?: string }) {
               role="radio"
               aria-checked={on}
               onClick={() => setLiveScans(live)}
-              className={`relative rounded-xl px-3 py-2 text-left transition ${on ? "text-plum" : "text-muted hover:text-plum"}`}
+              className={`relative rounded-xl px-3 py-2 text-start transition ${on ? "text-plum" : "text-muted hover:text-plum"}`}
             >
               {on && <motion.span layoutId="scan-mode" className="absolute inset-0 rounded-xl bg-surface shadow-card" />}
               <span className="relative flex items-center gap-1.5 text-sm font-medium">

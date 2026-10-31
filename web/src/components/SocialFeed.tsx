@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendMark } from "./ui";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
@@ -16,7 +17,7 @@ import { HAS_PORTRAIT, personAvatar, personById, portraitPath } from "@/lib/peop
 import { productById } from "@/lib/products";
 import type { ConcernKey, Scores } from "@/lib/types";
 
-// Instagram-style row of round avatars with a gradient ring.
+// Story-style row of round avatars with a gradient ring.
 export function StoryRow({ people }: { people: { id: string; match: number; seen?: boolean }[] }) {
   return (
     <ul className="-mx-5 flex snap-x scroll-px-5 lg:scroll-px-0 gap-4 overflow-x-auto px-5 pt-1 pb-3 lg:mx-0 lg:px-0">
@@ -67,19 +68,18 @@ export function PostTile({ post, onOpen, i = 0 }: { post: ReviewPost; onOpen: ()
     <motion.li initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.05, ease: EASE }}>
       <button
         onClick={onOpen}
-        className={`group relative block aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br text-left ${product.hue} transition hover:-translate-y-0.5 hover:shadow-soft`}
+        className={`group relative block aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] bg-gradient-to-br text-start ${product.hue} transition hover:-translate-y-0.5 hover:shadow-soft`}
         aria-label={`${post.authorName} on ${product.name}, ${post.rating} stars`}
       >
         <ProductVisual product={product} className="absolute inset-x-[14%] top-[12%] h-[62%] w-[72%] transition duration-500 group-hover:scale-105 group-hover:rotate-[-3deg]" />
 
-        {verdict && <span className={`absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-medium shadow-card ${verdict.cls}`}>{verdict.label}</span>}
+        {verdict && <span className={`absolute top-3 start-3 rounded-full px-2.5 py-1 text-[10px] font-medium shadow-card ${verdict.cls}`}>{verdict.label}</span>}
         {h && (
-          <span className="absolute top-3 right-3 rounded-2xl bg-surface/90 px-2.5 py-1.5 text-right shadow-card backdrop-blur">
+          <span className="absolute top-3 end-3 rounded-2xl bg-surface/90 px-2.5 py-1.5 text-end shadow-card backdrop-blur">
             <span className={`block font-display text-xl leading-none ${h.v > 0 ? "text-good" : "text-bad"}`}>
-              {h.v > 0 ? "+" : "−"}
-              {Math.abs(Math.round(h.v))}
+              <TrendMark up={h.v > 0} /> {Math.abs(Math.round(h.v))}
             </span>
-            <span className="block text-[9px] uppercase tracking-wider text-muted">{CONCERNS[h.k].label}</span>
+            <span className="block text-[9px] uppercase tracking-wider text-muted">{CONCERNS[h.k].label} {h.v > 0 ? "better" : "worse"}</span>
           </span>
         )}
 
@@ -142,11 +142,11 @@ export function PostSheet({
           >
             <div className={`relative h-56 bg-gradient-to-br ${product.hue}`}>
               <ProductVisual product={product} className="absolute inset-x-0 top-[8%] mx-auto h-[84%] w-[60%]" />
-              <button onClick={onClose} aria-label="Close" className="absolute top-3 right-3 grid size-9 place-items-center rounded-full bg-surface/90 text-ink shadow-card">
+              <button onClick={onClose} aria-label="Close" className="absolute top-3 end-3 grid size-9 place-items-center rounded-full bg-surface/90 text-ink shadow-card">
                 <X className="size-4" />
               </button>
               {post.personId && HAS_PORTRAIT.has(post.personId) && (
-                <div className="absolute bottom-3 left-3 rounded-2xl bg-surface/90 p-2 shadow-card">
+                <div className="absolute bottom-3 start-3 rounded-2xl bg-surface/90 p-2 shadow-card">
                   <SkinPatches photo={portraitPath(post.personId)} keys={(Object.keys(post.delta) as ConcernKey[]).slice(0, 3)} size="size-10" labels={false} />
                 </div>
               )}

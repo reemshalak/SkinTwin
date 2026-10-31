@@ -19,7 +19,7 @@ export function PersonCard({ twin }: { twin: Twin }) {
       className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-line bg-surface transition hover:-translate-y-0.5 hover:shadow-soft"
     >
       <div className="relative bg-gradient-to-br from-blush-100 to-blush-200 px-4 pt-4 pb-6">
-        <span className="absolute top-3 right-3 rounded-full bg-surface/90 px-2.5 py-1 text-xs font-medium text-plum shadow-card">{twin.similarity}% match</span>
+        <span className="absolute top-3 end-3 rounded-full bg-surface/90 px-2.5 py-1 text-xs font-medium text-plum shadow-card">{twin.similarity}% match</span>
         <Avatar config={personAvatar(person.id)} label={`${person.name}'s avatar`} className="size-16 ring-4 ring-surface transition duration-500 group-hover:scale-105" />
         <p className="mt-3 text-base font-medium">
           {person.name}, {person.age}

@@ -1,4 +1,5 @@
 import { PRODUCTS } from "./products";
+import type { Active, Product } from "./types";
 
 // Turns messy text (a cart screenshot read on-device, or a store page) into
 // products from our catalogue. A line that names our brand is an exact match;
@@ -27,10 +28,29 @@ const RULES: Record<string, [RegExp, number][]> = {
   "botanical-glow-renewal": [[/encapsulated|renewal|bakuchiol|anti.?ag/, 2], [/retinol|serum/, 1]],
   "aura-clarifying-cleanser": [[/cleanser|face wash|foaming|gel wash/, 3], [/salicylic|\bbha\b|acne|clarif/, 2]],
   "ceramide-labs-cleanser": [[/cleanser|face wash|cleansing/, 3], [/hydrat|gentle|cream|ceramide/, 2]],
-  "solis-shield-spf": [[/spf|sunscreen|sun ?cream|uv|sun fluid/, 4]],
-  "solis-silk-foundation": [[/foundation|skin tint|bb cream|cc cream/, 4]],
-  "solis-silk-lip": [[/lip/, 3], [/balm|butter|oil/, 1]],
+  "sunmere-shield-spf": [[/spf|sunscreen|sun ?cream|uv|sun fluid/, 4]],
+  "sunmere-silk-foundation": [[/foundation|skin tint|bb cream|cc cream/, 4]],
+  "sunmere-silk-lip": [[/lip/, 3], [/balm|butter|oil/, 1]],
 };
+
+// Products without hand-written rules: match on their actives, type and distinctive name words.
+const ACTIVE_WORDS: Partial<Record<Active, RegExp>> = {
+  bha: /salicylic|\bbha\b/, aha: /glycolic|lactic|mandelic|\baha\b/, retinoid: /retinol|retinal|retinoid/, vitamin_c: /vitamin c|vit\.? c|ascorbic/,
+  niacinamide: /niacinamide/, ceramides: /ceramide/, hyaluronic_acid: /hyaluronic|\bha\b/, benzoyl_peroxide: /benzoyl|\bbpo\b|spot/, spf: /\bspf\b|sunscreen|sun ?cream|\buv\b/,
+};
+const CAT_WORDS: Record<Product["category"], RegExp> = {
+  cleanser: /cleanser|face wash|cleansing|gel wash/, serum: /serum|essence|drops|oil|mist|toner/, moisturizer: /moisturi[sz]|cream|lotion|balm|gel cream/,
+  exfoliant: /exfoliat|peel|toner|pads|acid/, sunscreen: /spf|sunscreen|sun/, treatment: /treatment|spot|mask|night cream/, makeup: /foundation|tint|concealer|lip/,
+};
+const GENERIC = new Set(["serum", "cream", "daily", "night", "facial", "gentle", "repair", "moisturiser", "cleanser", "lotion", "toner", "with"]);
+function autoRules(p: Product): [RegExp, number][] {
+  const words = p.name.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter((w) => w.length > 3 && !GENERIC.has(w));
+  return [
+    ...p.actives.flatMap((a) => (ACTIVE_WORDS[a] ? [[ACTIVE_WORDS[a]!, 2] as [RegExp, number]] : [])),
+    [CAT_WORDS[p.category], 1],
+    ...words.map((w) => [new RegExp(`\\b${w}`), 2] as [RegExp, number]),
+  ];
+}
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9%.\s-]/g, " ").replace(/\s+/g, " ").trim();
 // Prices, totals, shipping and other cart chrome are not products.
@@ -42,7 +62,7 @@ function scoreLine(line: string) {
     const words = norm(p.name).split(" ").filter((w) => w.length > 3);
     const hits = words.filter((w) => line.includes(w)).length;
     const exact = line.includes(p.brand.toLowerCase()) && hits >= Math.min(2, words.length);
-    const rule = (RULES[p.id] ?? []).reduce((n, [re, w]) => n + (re.test(line) ? w : 0), 0);
+    const rule = (RULES[p.id] ?? autoRules(p)).reduce((n, [re, w]) => n + (re.test(line) ? w : 0), 0);
     return { productId: p.id, exact, score: exact ? 10 + hits : rule + (line.includes(name) ? 10 : 0) };
   }).sort((a, b) => b.score - a.score)[0];
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 import { useParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { Check, ChevronLeft, Copy, MapPin, Moon, Plus, Sun, Target, UserCheck, UserPlus } from "lucide-react";
+import { Check, Copy, MapPin, Moon, Plus, Sun, Target, UserCheck, UserPlus } from "lucide-react";
 import { AdoptRoutine } from "@/components/AdoptRoutine";
 import { Avatar } from "@/components/Avatar";
 import { ProfileCover } from "@/components/ProfileCover";
@@ -14,7 +15,8 @@ import { Page, PageTitle } from "@/components/Page";
 import { Delta, ProductThumb, Stars } from "@/components/ui";
 import { CONCERN_KEYS, CONCERNS, skinTypeLabel } from "@/lib/concerns";
 import { FEATURED, trialVerdict } from "@/lib/cohort";
-import { HAS_PORTRAIT, personAvatar, personById, portraitPath } from "@/lib/people";
+import { HAS_AFTER, HAS_PORTRAIT, afterPath, personAvatar, personById, portraitPath } from "@/lib/people";
+import { BeforeAfter } from "@/components/BeforeAfter";
 import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { similarity, storyOf } from "@/lib/twins";
@@ -61,9 +63,7 @@ export default function TwinProfilePage() {
       <section className="relative -mx-5 lg:-mx-8">
         <div className="relative h-48 overflow-hidden lg:h-64 lg:rounded-b-[2.5rem]">
           <ProfileCover className="h-full" />
-          <Link href="/twins" className="absolute top-5 left-5 inline-flex items-center gap-1 rounded-full bg-surface/85 px-3 py-1.5 text-sm text-plum backdrop-blur lg:left-8">
-            <ChevronLeft className="size-4" /> All twins
-          </Link>
+          <BackLink href="/twins" className="absolute top-5 start-5 inline-flex items-center gap-1 rounded-full bg-surface/85 px-3 py-1.5 text-sm text-plum backdrop-blur lg:start-8">Back</BackLink>
         </div>
         <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-5 lg:px-8">
           <div className="relative z-10 -mt-20 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:gap-5">
@@ -120,6 +120,12 @@ export default function TwinProfilePage() {
             </p>
             {photo && (
               <div className="mt-5 border-t border-line pt-4">
+                {HAS_AFTER.has(person.id) && (
+                  <>
+                    <p className="mb-2 text-xs text-muted">{person.name}&apos;s first scan and week 8</p>
+                    <BeforeAfter before={photo} after={afterPath(person.id)} labels={["Week 1", "Week 8"]} className="mb-4 aspect-[3/4] rounded-[1.5rem]" />
+                  </>
+                )}
                 <p className="mb-2 text-xs text-muted">Skin close-ups shared by {person.name}</p>
                 <SkinPatches photo={photo} keys={[...CONCERN_KEYS].sort((a, b) => member.scores[a] - member.scores[b]).slice(0, 3)} />
               </div>
@@ -190,10 +196,10 @@ export default function TwinProfilePage() {
                     const p = productById(t.productId)!;
                     const v = trialVerdict(t.delta);
                     return (
-                      <li key={t.productId} className="rounded-3xl border border-line bg-surface p-5">
+                      <li key={t.productId} className="relative rounded-3xl border border-line bg-surface p-5 transition hover:border-plum hover:shadow-card">
                         <div className="flex flex-wrap items-center gap-4">
                           <ProductThumb product={p} size="sm" />
-                          <Link href={`/product/${p.id}`} className="min-w-0 flex-1">
+                          <Link href={`/product/${p.id}`} className="min-w-0 flex-1 after:absolute after:inset-0 after:rounded-3xl after:content-['']">
                             <p className="text-sm font-medium">{p.name}</p>
                             <p className="text-[11px] text-muted">
                               {t.weeks} weeks · <Stars value={t.rating} />

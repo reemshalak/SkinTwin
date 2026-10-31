@@ -50,7 +50,7 @@ export function HeroScan() {
                 </span>
                 <div className={`absolute top-0 flex -translate-y-1/2 items-center ${z.side === "left" ? "right-2 flex-row-reverse" : "left-2"}`}>
                   <span className="h-px w-6 bg-surface/80" />
-                  <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-ink/40 p-1.5 pr-3 text-white backdrop-blur-md">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-ink/40 p-1.5 pe-3 text-white backdrop-blur-md">
                     <span className="size-9 rounded-lg border border-white/40" style={patchStyle(PHOTO, k)} aria-hidden />
                     <span>
                       <span className="block text-[9px] uppercase tracking-[0.16em] opacity-80">{CONCERNS[k].label}</span>
@@ -67,7 +67,7 @@ export function HeroScan() {
       <AnimatePresence>
         {step > SHOW.length && (
           <motion.div
-            className="absolute -right-3 bottom-8 rounded-2xl bg-surface p-3 pr-5 shadow-soft sm:-right-8"
+            className="absolute -end-3 bottom-8 rounded-2xl bg-surface p-3 pe-5 shadow-soft sm:-end-8"
             initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8 }}

@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { DICTS, LANG_KEY as KEY, setCurrentLang, tr, type Lang, type TKey } from "./i18n-core";
+import { AutoArabic } from "@/components/AutoArabic";
+import { DICTS,LANG_KEY as KEY, setCurrentLang, tr, type Lang, type TKey } from "./i18n-core";
 
 export { LANGS, tr } from "./i18n-core";
 export type { Lang, TKey } from "./i18n-core";
@@ -34,6 +35,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ lang, setLang, t }}>
       <div key={lang} className="contents">{children}</div>
+      {lang === "ar" && <AutoArabic />}
     </Ctx.Provider>
   );
 }

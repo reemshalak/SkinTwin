@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { FeedCard } from "@/components/FeedCard";
+import { TwinIngredients } from "@/components/TwinIngredients";
+import { CIRCLE_INFO, CIRCLES, circleOf, memberCount } from "@/lib/circles";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, MapPin, MessagesSquare, PenLine, Search, X } from "lucide-react";
+import { Users, AlertTriangle, BadgeCheck, MapPin, PenLine, Search, X } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { NextStep } from "@/components/Journey";
 import { CountUp, EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
 import { Page } from "@/components/Page";
 import { ProductVisual } from "@/components/ProductArt";
-import { PostSheet, PostTile, StoryRow } from "@/components/SocialFeed";
+import { PostSheet, StoryRow } from "@/components/SocialFeed";
 import { TwinMatcher } from "@/components/TwinMatcher";
 import { fetchReviews, SAMPLE_POSTS, type ReviewPost } from "@/lib/community";
-import { COHORT_SIZE, FEATURED } from "@/lib/cohort";
+import { FEATURED } from "@/lib/cohort";
 import { skinTypeLabel } from "@/lib/concerns";
 import { PEOPLE, personAvatar } from "@/lib/people";
 import { PRODUCTS, productById } from "@/lib/products";
@@ -28,8 +31,9 @@ const scoresOf = (personId: string) => FEATURED.find((m) => m.personId === perso
 export default function TwinsPage() {
   const { latest, ready, savedTwins } = useStore();
   const { twins, featured } = useTwins();
+  const loose = twins.some((x) => x.similarity < TWIN_THRESHOLD);
   const { t } = useT();
-  const [tab, setTab] = useState<"foryou" | "following">("foryou");
+  const [tab, setTab] = useState<"foryou" | "following" | "groups">("foryou");
   const [real, setReal] = useState<ReviewPost[]>([]);
   const [nudge, setNudge] = useState(false);
   const [q, setQ] = useState("");
@@ -69,7 +73,9 @@ export default function TwinsPage() {
   // Posts from people whose skin measures close to yours, newest first.
   const feed = useMemo(() => {
     if (!latest) return [];
-    const close = (p: ReviewPost) => !p.skin || similarity(latest.scores, p.skin) >= TWIN_THRESHOLD - 15;
+    // Uncommon skin: widen the circle to the closest people we found.
+    const floor = Math.min(TWIN_THRESHOLD - 15, (twins[twins.length - 1]?.similarity ?? TWIN_THRESHOLD) - 5);
+    const close = (p: ReviewPost) => !p.skin || similarity(latest.scores, p.skin) >= floor;
     const notSelf = (p: ReviewPost) => !latest.sampleId || p.personId !== latest.sampleId;
     let posts = [...real, ...SAMPLE_POSTS].filter((p) => notSelf(p) && (query ? true : close(p)));
     if (query) {
@@ -81,9 +87,13 @@ export default function TwinsPage() {
       });
     } else if (tab === "following") {
       posts = posts.filter((p) => p.personId && savedTwins.includes(p.personId));
+    } else if (!posts.length) {
+      // Nobody posted from close skin: show the most similar people's posts instead of nothing.
+      const sim = (p: ReviewPost) => (p.skin ? similarity(latest.scores, p.skin) : 0);
+      return [...real, ...SAMPLE_POSTS].filter(notSelf).sort((a, b) => sim(b) - sim(a)).slice(0, 12);
     }
     return posts.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 36);
-  }, [latest, real, tab, savedTwins, query]);
+  }, [latest, real, tab, savedTwins, query, twins]);
 
   const foundPeople = useMemo(
     () =>
@@ -107,35 +117,33 @@ export default function TwinsPage() {
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">{t("twins.eyebrow")}</p>
           <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">
-            {t("twins.title", { n: "§" }).split("§")[0]}
+            {t(loose ? "twins.closest" : "twins.title", { n: "§" }).split("§")[0]}
             <span className="text-plum">
               <CountUp value={twins.length} duration={0.8} />
             </span>
-            {t("twins.title", { n: "§" }).split("§")[1]}
+            {t(loose ? "twins.closest" : "twins.title", { n: "§" }).split("§")[1]}
           </h1>
-          <p className="mt-1 text-xs text-muted">{t("twins.sub", { n: COHORT_SIZE.toLocaleString() })}</p>
+          <p className="mt-1 max-w-xl text-sm text-muted">
+            {loose ? t("twins.closestSub") : "People whose 8 skin scores match yours. See what worked for them, then copy or follow."}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/circles" className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-5 py-3 text-sm font-medium text-plum shadow-card hover:border-plum">
-            <MessagesSquare className="size-4" /> {t("twins.circles")}
-          </Link>
-          <Link href="/share" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-3 text-sm font-medium text-white shadow-soft hover:bg-plum">
-            <PenLine className="size-4" /> {t("twins.post")}
-          </Link>
-        </div>
+        <Link href="/share" title="Your measured change is attached automatically" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-3 text-sm font-medium text-white shadow-soft hover:bg-plum">
+          <PenLine className="size-4" /> Share my result
+        </Link>
       </header>
 
+
       <label className="relative mt-6 block">
-        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted" />
+        <Search className="pointer-events-none absolute top-1/2 start-4 size-4 -translate-y-1/2 text-muted" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("twins.search")}
           aria-label="Search the community"
-          className="w-full rounded-full border border-line bg-surface py-3.5 pr-11 pl-11 text-sm shadow-card outline-none transition focus:border-plum"
+          className="w-full rounded-full border border-line bg-surface py-3.5 pe-11 ps-11 text-sm shadow-card outline-none transition focus:border-plum"
         />
         {q && (
-          <button onClick={() => setQ("")} aria-label="Clear search" className="absolute top-1/2 right-3 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted hover:bg-blush-100">
+          <button onClick={() => setQ("")} aria-label="Clear search" className="absolute top-1/2 end-3 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted hover:bg-blush-100">
             <X className="size-4" />
           </button>
         )}
@@ -170,6 +178,7 @@ export default function TwinsPage() {
         ) : (
           <motion.div key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <section className="mt-6">
+              <h2 className="mb-2 text-sm font-medium">1 · Your twins</h2>
               {/* Only real twins (80%+); if there are very few, show the closest few instead. */}
               <StoryRow
                 people={(people.filter((p) => p.match >= TWIN_THRESHOLD).length >= 3 ? people.filter((p) => p.match >= TWIN_THRESHOLD) : people.slice(0, 4)).map(({ person, match }) => ({
@@ -180,16 +189,18 @@ export default function TwinsPage() {
               />
             </section>
 
+            <TwinIngredients twins={twins} />
+
             {ranked.worked.length > 0 && (
               <section className="mt-6">
-                <h2 className="text-sm font-medium">{t("twins.working")}</h2>
+                <h2 className="text-sm font-medium">2 · What worked for them <span className="font-normal text-muted">(% of twins who improved)</span></h2>
                 <ul className="-mx-5 mt-3 flex snap-x scroll-px-5 lg:scroll-px-0 gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
                   {ranked.worked.map(({ product, twin }, i) => (
                     <motion.li key={product.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, ease: EASE }} className="shrink-0 snap-start">
                       <Link href={`/product/${product.id}`} className="group block w-36 text-center">
                         <span className={`relative block aspect-square overflow-hidden rounded-[1.5rem] bg-gradient-to-br ${product.hue}`}>
                           <ProductVisual product={product} className="absolute inset-[14%] h-[72%] w-[72%] transition duration-500 group-hover:scale-105" />
-                          <span className="absolute bottom-2 left-2 rounded-full bg-good px-2 py-0.5 text-[11px] font-medium text-white shadow-card">{twin.improvedPct}%</span>
+                          <span className="absolute bottom-2 start-2 rounded-full bg-good px-2 py-0.5 text-[11px] font-medium text-white shadow-card">{twin.improvedPct}%</span>
                         </span>
                         <span className="mt-2 line-clamp-1 text-xs">{product.name}</span>
                       </Link>
@@ -200,7 +211,7 @@ export default function TwinsPage() {
                       <Link href={`/product/${ranked.trap.product.id}`} className="group block w-36 text-center">
                         <span className={`relative block aspect-square overflow-hidden rounded-[1.5rem] bg-gradient-to-br ring-2 ring-warn ${ranked.trap.product.hue}`}>
                           <ProductVisual product={ranked.trap.product} className="absolute inset-[14%] h-[72%] w-[72%] opacity-80 grayscale-[40%]" />
-                          <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-warn px-2 py-0.5 text-[11px] font-medium text-white shadow-card">
+                          <span className="absolute bottom-2 start-2 flex items-center gap-1 rounded-full bg-warn px-2 py-0.5 text-[11px] font-medium text-white shadow-card">
                             <AlertTriangle className="size-3" /> {ranked.trap.twin.worsenedPct}% worse
                           </span>
                         </span>
@@ -212,12 +223,14 @@ export default function TwinsPage() {
               </section>
             )}
 
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-              <div role="tablist" aria-label="Feed" className="inline-flex rounded-full bg-blush-100 p-1 text-sm">
+            <h2 className="mt-8 text-sm font-medium">3 · Their results, scan-verified</h2>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <div role="tablist" aria-label="Feed" className="inline-flex max-w-full overflow-x-auto whitespace-nowrap rounded-full bg-blush-100 p-1 text-sm [scrollbar-width:none]">
                 {(
                   [
                     ["foryou", t("twins.forYou")],
                     ["following", t("twins.following", { n: savedTwins.length })],
+                    ["groups", "Groups"],
                   ] as const
                 ).map(([id, label]) => (
                   <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`relative rounded-full px-5 py-2 transition ${tab === id ? "text-plum" : "text-muted"}`}>
@@ -240,7 +253,20 @@ export default function TwinsPage() {
         </p>
       )}
 
-      {feed.length === 0 ? (
+      {tab === "groups" ? (
+        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[circleOf(latest.scores), ...CIRCLES.filter((c) => c !== circleOf(latest.scores))].map((c, i) => (
+            <motion.li key={c} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Link href={`/circles?c=${encodeURIComponent(c)}`} className={`flex h-full flex-col rounded-[1.5rem] bg-gradient-to-br p-4 text-[#3a2430] transition hover:-translate-y-1 hover:shadow-soft ${CIRCLE_INFO[c].hue}`}>
+                {i === 0 && <span className="mb-1 w-fit rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#7a3f5c]">Your group</span>}
+                <span className="font-display text-xl leading-tight">{c}</span>
+                <span className="text-[11px] opacity-75">{CIRCLE_INFO[c].blurb}</span>
+                <span className="mt-auto flex items-center gap-1 pt-3 text-[11px] opacity-80"><Users className="size-3" /> {memberCount(c).toLocaleString()} members</span>
+              </Link>
+            </motion.li>
+          ))}
+        </ul>
+      ) : feed.length === 0 ? (
         <p className="mt-6 rounded-3xl border border-dashed border-blush-300 p-8 text-center text-sm text-muted">
           {query ? (
             "No posts match that search."
@@ -254,9 +280,9 @@ export default function TwinsPage() {
           )}
         </p>
       ) : (
-        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="mt-4 columns-1 gap-4 md:columns-2 xl:columns-3">
           {feed.map((p, i) => (
-            <PostTile key={p.key} post={p} i={i} onOpen={() => setOpen(p)} />
+            <FeedCard key={p.key} post={p} i={i} viewer={latest.scores} helpful={engagement.get(p.key)} onHelpful={() => !engagement.toggle(p.key) && setNudge(true)} onOpen={() => setOpen(p)} />
           ))}
         </ul>
       )}

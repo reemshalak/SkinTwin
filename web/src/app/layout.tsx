@@ -14,6 +14,8 @@ const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SkinTwin",
   description: "See what actually worked for people whose skin measures like yours.",
+  appleWebApp: { capable: true, title: "SkinTwin", statusBarStyle: "default" },
+  icons: { icon: "/pwa-icon/192", apple: "/pwa-icon/180" },
 };
 
 export const viewport: Viewport = {

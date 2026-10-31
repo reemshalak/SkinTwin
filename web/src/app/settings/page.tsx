@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Bell, Check, Download, ImageOff, Loader2, LogOut, Monitor, Moon, Palette, RotateCcw, ScanFace, Shield, Sun, UserRound } from "lucide-react";
+import { Bell, CalendarPlus, Check, Download, ImageOff, Loader2, LogOut, Monitor, Moon, Palette, RotateCcw, ScanFace, Shield, Sun, UserRound } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { ScanModeToggle } from "@/components/ScanModeToggle";
 import { TOUR_KEY } from "@/components/Tour";
 import { LanguagePicker } from "@/components/LanguagePicker";
-import { useT } from "@/lib/i18n";
+import { useT, type TKey } from "@/lib/i18n";
+import { downloadCheckinIcs } from "@/lib/calendar";
 import { Page, PageTitle } from "@/components/Page";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
@@ -124,7 +125,7 @@ export default function SettingsPage() {
                   </button>
                 </form>
               </Row>
-              {status.name && <p className="-mt-2 mb-2 text-right text-xs text-good">{status.name}</p>}
+              {status.name && <p className="-mt-2 mb-2 text-end text-xs text-good">{status.name}</p>}
               <Row label="Email" hint="Used to log in">
                 <span className="text-sm text-muted">{auth.user.email}</span>
               </Row>
@@ -143,7 +144,7 @@ export default function SettingsPage() {
                   </button>
                 </form>
               </Row>
-              {status.pw && <p className="text-right text-xs text-muted">{status.pw}</p>}
+              {status.pw && <p className="text-end text-xs text-muted">{status.pw}</p>}
             </>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -166,7 +167,7 @@ export default function SettingsPage() {
                 role="radio"
                 aria-checked={theme === id}
                 onClick={() => setTheme(id)}
-                className={`rounded-3xl border p-4 text-left transition ${theme === id ? "border-plum bg-blush-100" : "border-line hover:border-blush-300"}`}
+                className={`rounded-3xl border p-4 text-start transition ${theme === id ? "border-plum bg-blush-100" : "border-line hover:border-blush-300"}`}
               >
                 <span className={`grid size-9 place-items-center rounded-full ${id === "dark" ? "bg-[#231a22] text-[#f0c9d9]" : id === "light" ? "bg-[#fdfcff] text-[#9c5a78] ring-1 ring-[#ecdde5]" : "bg-gradient-to-br from-[#fdfcff] to-[#231a22] text-[#9c5a78]"}`}>
                   <Icon className="size-4" />
@@ -208,6 +209,15 @@ export default function SettingsPage() {
         <Section icon={Bell} title={t("set.reminders")}>
           <Row label="Reminders" hint="A browser notification while SkinTwin is open">
             <Switch on={store.reminders} onChange={toggleReminders} label="Routine reminders" />
+          </Row>
+          <Row label="Weekly check-in" hint={t("cal.hint" as TKey)}>
+            <button
+              type="button"
+              onClick={() => downloadCheckinIcs(store.latest?.capturedAt, store.reminderTimes.am)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2 text-sm text-plum hover:border-plum"
+            >
+              <CalendarPlus className="size-4" /> {t("cal.add" as TKey)}
+            </button>
           </Row>
           <Row label="Morning routine">
             <input type="time" value={store.reminderTimes.am} onChange={(e) => store.setReminderTimes({ ...store.reminderTimes, am: e.target.value })} className={input} aria-label="Morning reminder time" />

@@ -17,6 +17,8 @@ const enBase = {
   "nav.products": "Products",
   "nav.plan": "Plan",
   "nav.skin": "My skin",
+  "nav.journal": "Journal",
+  "nav.tryon": "Try on",
   "nav.checkin": "Check-in",
   "nav.startScan": "Start scan",
   "nav.login": "Log in",
@@ -94,28 +96,30 @@ const enBase = {
   "tour.skip": "Skip tour",
   "tour.next": "Next",
   "tour.done": "Got it",
-  "tour.skin.t": "Your skin, always here",
-  "tour.skin.d": "Your skin map and 8 scores live in My skin, with your progress and goal.",
+  "tour.skin.t": "Your skin journal",
+  "tour.skin.d": "Every weekly check-in becomes a page in your book. Flip back to see how far you have come.",
   "tour.twins.t": "People with your skin",
-  "tour.twins.d": "Your skin twins: people whose scores sit close to yours. Their results are measured by scans, not typed.",
+  "tour.twins.d": "Twins are people whose 8 skin scores match yours. See what measurably worked for them, then copy a routine or follow them.",
   "tour.products.t": "What works for you",
-  "tour.products.d": "Every product says how it went for twins like you. Green worked, orange was risky.",
+  "tour.products.d": "Every product shows how it went for your twins. Filter by budget, skin area or what worked, and sort by price or trend.",
   "tour.plan.t": "Your routine",
-  "tour.plan.d": "A morning and evening plan built from what worked, with strong products spaced so they never clash.",
+  "tour.plan.d": "Your week, planned: what to use each morning and evening, with strong actives on their own nights. Tick off today's steps.",
   "tour.checkin.t": "Check in weekly",
-  "tour.checkin.d": "One selfie a week shows what's changing, and which products are actually working.",
+  "tour.checkin.d": "One selfie a week opens a new page in your journal, where you set a goal and see if you reached it.",
 
   "v.good": "Good match for you",
   "v.mixed": "Mixed for skin like yours",
   "v.risky": "Risky for your skin",
   "v.few": "Few twins have tried this",
+  "v.basic": "An everyday basic",
+  "v.tryon": "Try it on your face",
   "v.noscan": "Will it suit you?",
 };
 const en = { ...enBase, ...EXTRA_EN };
 export type TKey = keyof typeof en;
 
 const es: Partial<Record<TKey, string>> = {
-  "nav.home": "Inicio", "nav.twins": "Gemelos", "nav.circles": "Círculos", "nav.products": "Productos", "nav.plan": "Plan", "nav.skin": "Mi piel", "nav.checkin": "Revisión", "nav.startScan": "Escanear", "nav.login": "Entrar", "nav.signup": "Registrarse", "nav.language": "Idioma",
+  "nav.home": "Inicio", "nav.tryon": "Probar", "nav.twins": "Gemelos", "nav.circles": "Círculos", "nav.products": "Productos", "nav.plan": "Plan", "nav.skin": "Mi piel", "nav.journal": "Diario", "nav.checkin": "Revisión", "nav.startScan": "Escanear", "nav.login": "Entrar", "nav.signup": "Registrarse", "nav.language": "Idioma",
   "hero.eyebrow": "Con el análisis de piel YouCam AI",
   "hero.title": "Deja de adivinar. Mira lo que funcionó en piel como la tuya.",
   "hero.mark": "funcionó",
@@ -137,11 +141,11 @@ const es: Partial<Record<TKey, string>> = {
   "tour.products.t": "Lo que te funciona", "tour.products.d": "Cada producto dice cómo les fue a gemelos como tú. Verde funcionó, naranja fue arriesgado.",
   "tour.plan.t": "Tu rutina", "tour.plan.d": "Un plan de mañana y noche basado en lo que funcionó, sin mezclar activos fuertes.",
   "tour.checkin.t": "Revisión semanal", "tour.checkin.d": "Un selfie a la semana muestra qué cambia y qué productos funcionan de verdad.",
-  "v.good": "Buena opción para ti", "v.mixed": "Resultados mixtos para tu piel", "v.risky": "Arriesgado para tu piel", "v.few": "Pocos gemelos lo han probado", "v.noscan": "¿Te irá bien?",
+  "v.good": "Buena opción para ti", "v.mixed": "Resultados mixtos para tu piel", "v.risky": "Arriesgado para tu piel", "v.few": "Pocos gemelos lo han probado", "v.basic": "Un básico diario", "v.tryon": "Pruébalo en tu cara", "v.noscan": "¿Te irá bien?",
 };
 
 const ar: Partial<Record<TKey, string>> = {
-  "nav.home": "الرئيسية", "nav.twins": "التوائم", "nav.circles": "الدوائر", "nav.products": "المنتجات", "nav.plan": "الخطة", "nav.skin": "بشرتي", "nav.checkin": "الفحص", "nav.startScan": "ابدأ الفحص", "nav.login": "تسجيل الدخول", "nav.signup": "إنشاء حساب", "nav.language": "اللغة",
+  "nav.home": "الرئيسية", "nav.tryon": "جرّبي", "nav.twins": "التوائم", "nav.circles": "الدوائر", "nav.products": "المنتجات", "nav.plan": "الخطة", "nav.skin": "بشرتي", "nav.journal": "اليوميات", "nav.checkin": "الفحص", "nav.startScan": "ابدأ الفحص", "nav.login": "تسجيل الدخول", "nav.signup": "إنشاء حساب", "nav.language": "اللغة",
   "hero.eyebrow": "بتقنية تحليل البشرة من YouCam AI",
   "hero.title": "توقّفي عن التخمين. شاهدي ما نجح مع بشرة مثل بشرتك.",
   "hero.mark": "نجح",
@@ -163,11 +167,11 @@ const ar: Partial<Record<TKey, string>> = {
   "tour.products.t": "ما يناسبك", "tour.products.d": "كل منتج يوضّح نتيجته مع توائم مثلك. الأخضر نجح، والبرتقالي كان محفوفًا بالمخاطر.",
   "tour.plan.t": "روتينك", "tour.plan.d": "خطة صباحية ومسائية مبنية على ما نجح، مع فصل المكونات القوية حتى لا تتعارض.",
   "tour.checkin.t": "افحصي أسبوعيًا", "tour.checkin.d": "صورة واحدة في الأسبوع تُظهر ما يتغيّر وأي المنتجات تنجح فعلًا.",
-  "v.good": "مناسب لك", "v.mixed": "نتائج متفاوتة لبشرتك", "v.risky": "محفوف بالمخاطر لبشرتك", "v.few": "قلّة من التوائم جرّبوه", "v.noscan": "هل سيناسبك؟",
+  "v.good": "مناسب لك", "v.mixed": "نتائج متفاوتة لبشرتك", "v.risky": "محفوف بالمخاطر لبشرتك", "v.few": "قلّة من التوائم جرّبوه", "v.basic": "منتج أساسي يومي", "v.tryon": "جرّبيه على وجهك", "v.noscan": "هل سيناسبك؟",
 };
 
 const zh: Partial<Record<TKey, string>> = {
-  "nav.home": "首頁", "nav.twins": "膚質雙胞胎", "nav.circles": "圈子", "nav.products": "產品", "nav.plan": "計畫", "nav.skin": "我的肌膚", "nav.checkin": "每週檢測", "nav.startScan": "開始檢測", "nav.login": "登入", "nav.signup": "註冊", "nav.language": "語言",
+  "nav.home": "首頁", "nav.tryon": "試妝", "nav.twins": "膚質雙胞胎", "nav.circles": "圈子", "nav.products": "產品", "nav.plan": "計畫", "nav.skin": "我的肌膚", "nav.journal": "日記", "nav.checkin": "每週檢測", "nav.startScan": "開始檢測", "nav.login": "登入", "nav.signup": "註冊", "nav.language": "語言",
   "hero.eyebrow": "由 YouCam AI 肌膚分析提供",
   "hero.title": "別再猜了。看看什麼對和你一樣的肌膚有效。",
   "hero.mark": "有效。",
@@ -189,7 +193,7 @@ const zh: Partial<Record<TKey, string>> = {
   "tour.products.t": "什麼適合你", "tour.products.d": "每個產品都會顯示它在相似膚質者身上的效果。綠色代表有效，橘色代表有風險。",
   "tour.plan.t": "你的保養計畫", "tour.plan.d": "依據有效結果建立的早晚保養，強效成分會錯開使用，避免衝突。",
   "tour.checkin.t": "每週檢測", "tour.checkin.d": "每週一張自拍，就能看到變化，以及哪些產品真正有效。",
-  "v.good": "很適合你", "v.mixed": "對你的膚質效果不一", "v.risky": "對你的肌膚有風險", "v.few": "試過的雙胞胎還不多", "v.noscan": "適合你嗎？",
+  "v.good": "很適合你", "v.mixed": "對你的膚質效果不一", "v.risky": "對你的肌膚有風險", "v.few": "試過的雙胞胎還不多", "v.basic": "日常基礎品", "v.tryon": "在你的臉上試試", "v.noscan": "適合你嗎？",
 };
 
 export const DICTS: Record<Lang, Partial<Record<TKey, string>>> = { en, es: { ...es, ...EXTRA_ES }, ar: { ...ar, ...EXTRA_AR }, zh: { ...zh, ...EXTRA_ZH } };
@@ -205,3 +209,8 @@ export function tr(k: TKey, vars?: Record<string, string | number>) {
   return s;
 }
 
+
+// Dates follow the app language (Arabic keeps Western digits to match the scores).
+export const locale = () => (current === "ar" ? "ar-u-nu-latn" : current === "zh" ? "zh-Hant" : current === "es" ? "es" : "en");
+export const currentLang = () => current;
+export const dateFormat = (o: Intl.DateTimeFormatOptions) => ({ format: (d: Date | number) => new Intl.DateTimeFormat(locale(), o).format(d) });

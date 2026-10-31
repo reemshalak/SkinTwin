@@ -19,12 +19,16 @@ export function similarity(a: Scores, b: Scores) {
 export const TWIN_THRESHOLD = 80;
 
 // `self` is the sample person being scanned, so they never match themselves.
+// Uncommon skin can have few close matches. Rather than a dead end, use the closest
+// people we have, so plans and verdicts still come from the most similar skin.
+export const MIN_TWINS = 40;
 export function findTwins(scores: Scores, self?: string, cohort: CohortMember[] = COHORT): Twin[] {
-  return cohort
+  const all = cohort
     .filter((m) => !self || m.personId !== self)
     .map((member) => ({ member, similarity: similarity(scores, member.scores) }))
-    .filter((t) => t.similarity >= TWIN_THRESHOLD)
     .sort((a, b) => b.similarity - a.similarity);
+  const close = all.filter((t) => t.similarity >= TWIN_THRESHOLD);
+  return close.length >= MIN_TWINS ? close : all.slice(0, Math.max(MIN_TWINS, close.length));
 }
 
 // Closest people with a public profile, allowing a little below the twin threshold.

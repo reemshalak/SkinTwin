@@ -186,7 +186,7 @@ export default function ImportPage() {
               <p className="font-display text-2xl text-ink">
                 {stage.matches.length ? `Found ${stage.matches.length} product${stage.matches.length === 1 ? "" : "s"}` : "No skincare found"}
               </p>
-              <button onClick={() => setStage({ kind: "pick" })} className="ml-auto text-sm text-plum underline">Try another</button>
+              <button onClick={() => setStage({ kind: "pick" })} className="ms-auto text-sm text-plum underline">Try another</button>
             </div>
             {stage.note && <p className="mb-4 rounded-2xl bg-blush-100 p-3 text-xs text-ink">{stage.note}</p>}
 

@@ -58,7 +58,7 @@ export function SplitRating() {
                 <span>{s.label}</span>
                 <span className="text-xs">
                   <b className={`font-medium ${s.o.improvedPct >= 60 ? "text-good" : s.o.improvedPct < 40 ? "text-bad" : "text-ink"}`}>{s.o.improvedPct}% improved</b>
-                  {s.o.worsenedPct >= 15 && <span className="ml-2 text-bad">{s.o.worsenedPct}% got worse</span>}
+                  {s.o.worsenedPct >= 15 && <span className="ms-2 text-bad">{s.o.worsenedPct}% got worse</span>}
                 </span>
               </div>
               <div className="flex h-3 overflow-hidden rounded-full bg-blush-100">
@@ -70,7 +70,7 @@ export function SplitRating() {
                   transition={{ duration: 1, delay: i * 0.12, ease: EASE }}
                 />
                 <motion.div
-                  className="ml-auto h-full bg-bad/80"
+                  className="ms-auto h-full bg-bad/80"
                   initial={{ width: 0 }}
                   whileInView={{ width: `${s.o.worsenedPct}%` }}
                   viewport={{ once: true }}

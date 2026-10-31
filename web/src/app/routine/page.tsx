@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { CelebrateWhen } from "@/components/Celebrate";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { AlertTriangle, Check, CheckCircle2, FlaskConical, Leaf, Moon, Pencil, PartyPopper, Plus, ShoppingBag, Sparkles, Sun, X } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Moon, Pencil, PartyPopper, Plus, ShoppingBag, Sparkles, Sun, X } from "lucide-react";
 import { AdoptRoutine } from "@/components/AdoptRoutine";
+import { PlanCalendar, useSchedule } from "@/components/PlanCalendar";
 import { Avatar } from "@/components/Avatar";
 import { EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
@@ -14,7 +16,7 @@ import { DemoNote, ProductThumb } from "@/components/ui";
 import { trialVerdict } from "@/lib/cohort";
 import { findConflicts } from "@/lib/conflicts";
 import { personAvatar, personById } from "@/lib/people";
-import { DAYS, itemsFor, planWeek, separated, weekday } from "@/lib/planner";
+import { DAYS, planWeek, separated, weekday } from "@/lib/planner";
 import { useSuggestedPlan } from "@/lib/plan";
 import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
@@ -29,6 +31,8 @@ export default function PlanPage() {
   const { ready, latest, routine, replaceRoutine, removeFromRoutine, done, toggleDone } = useStore();
   const { plan, improved, twins } = useSuggestedPlan();
   const [editing, setEditing] = useState(false);
+  const sched = useSchedule(routine, latest?.scores);
+  const preview = useSchedule(plan, latest?.scores);
 
   if (!ready) return null;
   if (!latest) return <NeedScan what="your plan" />;
@@ -40,8 +44,10 @@ export default function PlanPage() {
         <PageTitle
           eyebrow={t("plan.eyebrow")}
           title={t("plan.ready")}
-          subtitle={`Built from what measurably worked for your ${twins} skin twins, with no ingredient clashes. One tap to start.`}
+          subtitle={`Your plan is which product to use, morning and evening, every day of the week. This one is built from what measurably worked for the ${twins} people whose skin is closest to yours, with no ingredient clashes.`}
         />
+        <HowItWorks />
+        <PlanCalendar routine={plan} {...preview} today={weekday()} readOnly />
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
           <section className="rounded-[2rem] border border-line bg-surface p-6">
             {(["am", "pm"] as const).map((slot) => {
@@ -102,8 +108,10 @@ export default function PlanPage() {
   const key = (slot: "am" | "pm") => `${today()}:${slot}`;
   const week = planWeek(routine, latest.scores);
   const todayIdx = weekday();
-  const tonight = itemsFor(routine, week, todayIdx, "pm");
-  const todays = [...routine.filter((r) => r.slot === "am"), ...tonight];
+  const fromIds = (ids: string[], slot: "am" | "pm") => ids.map((id) => routine.find((r) => r.productId === id && r.slot === slot) ?? { productId: id, slot });
+  const amToday = fromIds(sched.schedule[todayIdx].am, "am");
+  const tonight = fromIds(sched.schedule[todayIdx].pm, "pm");
+  const todays = [...amToday, ...tonight];
   const total = todays.length;
   const doneCount = todays.filter((r) => done[key(r.slot)]?.includes(r.productId)).length;
   const all = findConflicts(routine);
@@ -138,7 +146,8 @@ export default function PlanPage() {
         <motion.div className="h-full rounded-full bg-gradient-to-r from-blush-400 to-plum" animate={{ width: `${(doneCount / total) * 100}%` }} transition={{ duration: 0.5, ease: EASE }} />
       </div>
 
-      <WeekStrip week={week} today={todayIdx} />
+      <PlanCalendar routine={routine} {...sched} today={todayIdx} />
+      <h2 className="mb-3 text-sm font-medium">Today&apos;s checklist</h2>
 
       {handled.map((c, i) => (
         <p key={i} className="mb-3 flex gap-2 rounded-2xl bg-good-soft p-3 text-xs text-good">
@@ -165,15 +174,15 @@ export default function PlanPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {(["am", "pm"] as const).map((slot) => {
-          const items = slot === "am" ? routine.filter((r) => r.slot === "am") : tonight;
-          const resting = slot === "pm" ? routine.filter((r) => r.slot === "pm" && !tonight.includes(r)) : [];
+          const items = slot === "am" ? amToday : tonight;
+          const resting = slot === "pm" ? routine.filter((r) => r.slot === "pm" && !tonight.some((x) => x.productId === r.productId)) : [];
           const ticked = done[key(slot)] ?? [];
           return (
             <section key={slot} className="rounded-[2rem] border border-line bg-surface p-5">
               <h2 className="flex items-center gap-2 text-base font-medium">
                 {slot === "am" ? <Sun className="size-4 text-warn" /> : <Moon className="size-4 text-plum" />}
                 {slot === "am" ? t("prod.am") : t("prod.pm")}
-                <span className="ml-auto text-xs font-normal text-muted">
+                <span className="ms-auto text-xs font-normal text-muted">
                   {items.filter((r) => ticked.includes(r.productId)).length}/{items.length}
                 </span>
               </h2>
@@ -217,7 +226,7 @@ export default function PlanPage() {
                       <ProductThumb product={p} size="sm" />
                       <span className="min-w-0 flex-1 text-xs">
                         <span className="block truncate">{p.name}</span>
-                        <span className="text-muted">Not tonight · {week.nights[p.id]?.map((d) => DAYS[d]).join(", ") || "paused"}</span>
+                        <span className="text-muted">Not tonight · {DAYS.filter((_, d) => sched.schedule[d].pm.includes(p.id)).join(", ") || "not planned this week"}</span>
                       </span>
                       {editing && (
                         <button onClick={() => removeFromRoutine(p.id, "pm")} aria-label={`Remove ${p.name}`} className="grid size-8 place-items-center rounded-full text-muted hover:bg-bad-soft hover:text-bad">
@@ -239,6 +248,7 @@ export default function PlanPage() {
       </div>
 
       <AnimatePresence>
+        <CelebrateWhen when={allDone && total > 0} id="routine" title="Routine complete!" sub="Every step ticked today. Consistency is what shows in your scans." emoji="💖" />
         {allDone && (
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -251,14 +261,7 @@ export default function PlanPage() {
         )}
       </AnimatePresence>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <Link href="/mix" className="flex items-center gap-3 rounded-[2rem] border border-line bg-surface p-5 text-sm transition hover:shadow-card">
-          <FlaskConical className="size-6 text-plum" />
-          <span>
-            <span className="block font-medium">{t("plan.preview")}</span>
-            <span className="text-xs text-muted">Mix Lab previews what these products do together →</span>
-          </span>
-        </Link>
+      <div className="mt-8">
         <Link href="/journal" className="rounded-[2rem] border border-line bg-surface p-5 text-sm transition hover:shadow-card">
           <p className="font-medium">Is it working?</p>
           <p className="text-xs text-muted">Your journal tracks the measured change week by week →</p>
@@ -274,40 +277,24 @@ export default function PlanPage() {
   );
 }
 
-// The week at a glance: which strong product runs each night, and rest nights.
-function WeekStrip({ week, today }: { week: ReturnType<typeof planWeek>; today: number }) {
-  const { t } = useT();
-  const strong = Object.keys(week.nights);
-  if (!strong.length) return null;
+function HowItWorks() {
+  const steps = [
+    { icon: <Sparkles className="size-4" />, t: "Built from your twins", d: "Products that measurably improved skin like yours." },
+    { icon: <Moon className="size-4" />, t: "Spread across the week", d: "Strong actives get their own nights, with rest nights between." },
+    { icon: <Check className="size-4" />, t: "Tick it off, then check in", d: "Your weekly scan shows if it's working." },
+  ];
   return (
-    <section className="mb-6 rounded-[2rem] border border-line bg-surface p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">{t("plan.week")}</h2>
-        <p className="text-[11px] text-muted">{week.gentleStart ? "Gentle start for your skin: fewer strong nights" : "Strong products never share a night"}</p>
-      </div>
-      <ol className="mt-3 grid grid-cols-7 gap-1.5">
-        {DAYS.map((d, i) => {
-          const ids = strong.filter((id) => week.nights[id].includes(i));
-          return (
-            <li key={d} className={`flex flex-col items-center gap-1.5 rounded-2xl p-2 ${i === today ? "bg-plum-deep text-white" : "bg-blush-50"}`}>
-              <span className="text-[10px] font-medium uppercase tracking-wider">{d}</span>
-              {ids.length ? (
-                ids.map((id) => (
-                  <span key={id} title={productById(id)?.name} className="block">
-                    <ProductThumb product={productById(id)!} size="sm" />
-                  </span>
-                ))
-              ) : (
-                <span className={`grid size-12 place-items-center rounded-xl ${i === today ? "bg-white/15" : "bg-good-soft text-good"}`} title="Recovery night">
-                  <Leaf className="size-4" />
-                </span>
-              )}
-              <span className="text-[9px] opacity-80">{ids.length ? t("plan.active") : t("plan.rest")}</span>
-            </li>
-          );
-        })}
-      </ol>
-    </section>
+    <ol className="mb-6 grid gap-3 sm:grid-cols-3">
+      {steps.map((s, i) => (
+        <li key={s.t} className="flex gap-3 rounded-2xl border border-line bg-surface p-4">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-blush-100 text-plum">{s.icon}</span>
+          <span>
+            <span className="block text-sm font-medium">{i + 1}. {s.t}</span>
+            <span className="text-xs text-muted">{s.d}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -318,9 +305,29 @@ function TwinRoutines() {
   const { featured } = useTwins();
   const [adopt, setAdopt] = useState<{ personId: string; ids: string[] } | null>(null);
   const owned = Array.from(new Set([...shelf, ...routine.map((r) => r.productId)]));
+  // One product per kind you'd only use once (cleanser, moisturiser, sunscreen), and no two identical cards.
+  const once = new Set(["cleanser", "moisturizer", "sunscreen"]);
+  const tidy = (ids: string[]) => {
+    const seen = new Set<string>();
+    return Array.from(new Set(ids)).filter((id) => {
+      const cat = productById(id)?.category;
+      if (!cat) return false;
+      if (once.has(cat)) {
+        if (seen.has(cat)) return false;
+        seen.add(cat);
+      }
+      return true;
+    });
+  };
+  const keys = new Set<string>();
   const cards = featured
-    .map((t) => ({ t, ids: t.member.trials.filter((x) => trialVerdict(x.delta) === "worked").map((x) => x.productId) }))
-    .filter((c) => c.ids.length >= 2)
+    .map((t) => ({ t, ids: tidy(t.member.trials.filter((x) => trialVerdict(x.delta) === "worked").map((x) => x.productId)) }))
+    .filter((c) => {
+      const key = [...c.ids].sort().join();
+      if (c.ids.length < 2 || keys.has(key)) return false;
+      keys.add(key);
+      return true;
+    })
     .slice(0, 3);
   if (!cards.length) return null;
   return (
@@ -348,7 +355,7 @@ function TwinRoutines() {
                 <button
                   onClick={() => toggleSavedTwin(person.id)}
                   aria-pressed={savedTwins.includes(person.id)}
-                  className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-surface/90 px-3 py-1.5 text-xs font-medium text-ink shadow-card backdrop-blur"
+                  className="absolute top-2.5 end-2.5 inline-flex items-center gap-1 rounded-full bg-surface/90 px-3 py-1.5 text-xs font-medium text-ink shadow-card backdrop-blur"
                 >
                   {savedTwins.includes(person.id) ? <Check className="size-3.5" /> : <Plus className="size-3.5" />}
                   {savedTwins.includes(person.id) ? "Following" : "Follow"}
@@ -356,7 +363,7 @@ function TwinRoutines() {
               </div>
 
               {/* Avatar with a match ring */}
-              <div className="relative -mt-9 ml-4 flex items-end gap-2">
+              <div className="relative -mt-9 ms-4 flex items-end gap-2">
                 <span className="relative grid size-[4.5rem] place-items-center rounded-full bg-surface">
                   <svg viewBox="0 0 72 72" className="absolute inset-0 -rotate-90" aria-hidden>
                     <circle cx="36" cy="36" r="33" fill="none" strokeWidth="3" className="stroke-blush-100" />

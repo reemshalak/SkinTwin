@@ -11,7 +11,7 @@ export function NextStep({ href, label, hint }: { href: string; label: string; h
         href={href}
         className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose to-plum px-8 py-4 text-sm font-medium text-white shadow-soft transition hover:brightness-105"
       >
-        {label} <ArrowRight className="size-4" />
+        {label} <ArrowRight className="rtl:-scale-x-100 size-4" />
       </Link>
     </div>
   );

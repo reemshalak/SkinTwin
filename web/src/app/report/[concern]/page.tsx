@@ -50,7 +50,7 @@ export default function ConcernPage() {
   if (!valid) return <NeedScan what="that measurement" />;
 
   const photo = latest.photo ?? (latest.sampleId ? sampleById(latest.sampleId)?.image : undefined);
-  const score = latest.display[concern];
+  const score = latest.scores[concern];
   const tone = scoreTone(latest.scores[concern]);
   const idx = CONCERN_KEYS.indexOf(concern);
   const next = CONCERN_KEYS[(idx + 1) % CONCERN_KEYS.length];
@@ -60,7 +60,7 @@ export default function ConcernPage() {
     <Page>
       <div className="mb-6 flex items-center justify-between">
         <Link href="/analysis" className="inline-flex items-center gap-1 text-sm text-plum">
-          <ChevronLeft className="size-4" /> Skin map
+          <ChevronLeft className="rtl:-scale-x-100 size-4" /> Skin map
         </Link>
         <div className="flex gap-2 text-sm">
           <Link href={`/report/${prev}`} className="rounded-full border border-line bg-surface px-3 py-1.5 text-muted hover:text-plum">
@@ -72,7 +72,7 @@ export default function ConcernPage() {
         </div>
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,26rem)_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <Reveal>
           <div className="relative overflow-hidden rounded-[2rem] bg-ink shadow-soft">
             {photo ? (
@@ -80,7 +80,7 @@ export default function ConcernPage() {
             ) : (
               <div className="aspect-square w-full bg-gradient-to-br from-blush-200 to-plum" />
             )}
-            <span className="absolute top-4 left-4 inline-flex items-center gap-1 rounded-full bg-surface/90 px-3 py-1 text-xs text-plum">
+            <span className="absolute top-4 start-4 inline-flex items-center gap-1 rounded-full bg-surface/90 px-3 py-1 text-xs text-plum">
               <MapPin className="size-3" /> {ZONES[concern].area}
             </span>
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent p-6 pt-16 text-white">
@@ -134,7 +134,7 @@ export default function ConcernPage() {
                           <ConfidenceBadge level={o.confidence} n={o.n} />
                         </p>
                       </div>
-                      <ChevronRight className="size-4 text-muted transition group-hover:translate-x-1" />
+                      <ChevronRight className="rtl:-scale-x-100 size-4 text-muted transition group-hover:translate-x-1" />
                     </Link>
                   </StaggerItem>
                 ))}

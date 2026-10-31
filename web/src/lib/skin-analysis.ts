@@ -29,7 +29,8 @@ export function profileFromYouCam(
     scores[k] = Math.round(o?.raw_score ?? 50);
     display[k] = Math.round(o?.ui_score ?? toUi(scores[k]));
   }
-  const overall = Math.round(CONCERN_KEYS.reduce((s, k) => s + display[k], 0) / CONCERN_KEYS.length);
+  // Same numbers the user sees on every page, so the headline matches the scores under it.
+  const overall = Math.round(CONCERN_KEYS.reduce((s, k) => s + scores[k], 0) / CONCERN_KEYS.length);
   return {
     id: crypto.randomUUID(),
     capturedAt: new Date().toISOString(),

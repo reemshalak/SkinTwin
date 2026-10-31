@@ -59,7 +59,7 @@ export function AvatarEditor({ className = "size-28 text-5xl" }: { className?: s
     <div ref={box} className="relative inline-block">
       <button onClick={() => (identity.avatar ? setOpen((v) => !v) : input.current?.click())} aria-label={identity.avatar ? "Change profile photo" : "Add a profile photo"} className="group relative block rounded-full">
         <MyAvatar className={`${className} ring-[6px] ring-blush-50 transition group-hover:brightness-95`} />
-        <span className="absolute right-1 bottom-1 grid size-9 place-items-center rounded-full border-2 border-blush-50 bg-plum-deep text-white shadow-card transition group-hover:scale-110">
+        <span className="absolute end-1 bottom-1 grid size-9 place-items-center rounded-full border-2 border-blush-50 bg-plum-deep text-white shadow-card transition group-hover:scale-110">
           <Camera className="size-4" />
         </span>
       </button>
@@ -67,11 +67,11 @@ export function AvatarEditor({ className = "size-28 text-5xl" }: { className?: s
 
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-full left-0 z-30 mt-2 w-52 overflow-hidden rounded-2xl border border-line bg-surface p-1 text-sm shadow-soft">
-            <button onClick={() => input.current?.click()} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left hover:bg-blush-50">
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-full start-0 z-30 mt-2 w-52 overflow-hidden rounded-2xl border border-line bg-surface p-1 text-sm shadow-soft">
+            <button onClick={() => input.current?.click()} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start hover:bg-blush-50">
               <ImageUp className="size-4 text-plum" /> Change photo
             </button>
-            <button onClick={() => { setIdentity({ avatar: undefined }); setOpen(false); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-bad hover:bg-bad-soft">
+            <button onClick={() => { setIdentity({ avatar: undefined }); setOpen(false); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-bad hover:bg-bad-soft">
               <Trash2 className="size-4" /> Remove photo
             </button>
           </motion.div>

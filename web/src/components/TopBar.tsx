@@ -17,8 +17,9 @@ const LINKS = [
   { href: "/", label: "nav.home", tour: "home" },
   { href: "/twins", label: "nav.twins", tour: "twins" },
   { href: "/shop", label: "nav.products", tour: "products" },
+  { href: "/mirror", label: "nav.tryon", tour: undefined },
   { href: "/routine", label: "nav.plan", tour: "plan" },
-  { href: "/me", label: "nav.skin", tour: "skin" },
+  { href: "/journal", label: "nav.journal", tour: "skin" },
 ] as const;
 
 export function TopBar() {
@@ -44,14 +45,14 @@ export function TopBar() {
                 href={l.href}
                 data-tour={l.tour}
                 aria-current={on ? "page" : undefined}
-                className={`rounded-full px-4 py-2 text-sm transition ${on ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
+                className={`whitespace-nowrap rounded-full px-3 py-2 text-sm transition xl:px-4 ${on ? "bg-blush-100 text-plum" : "text-muted hover:text-plum"}`}
               >
                 {t(l.label)}
               </Link>
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <div className="ms-auto flex items-center gap-1 md:ms-0">
           <span className="hidden sm:block"><HeaderSearch /></span>
           {signedIn ? (
             <>
@@ -90,10 +91,10 @@ function AuthLinks() {
   const next = `?next=${encodeURIComponent(path)}`;
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/login${next}`} className="rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
+      <Link href={`/login${next}`} className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-ink hover:bg-blush-100">
         {t("nav.login")}
       </Link>
-      <Link href={`/signup${next}`} className="hidden rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
+      <Link href={`/signup${next}`} className="hidden whitespace-nowrap rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-plum-deep shadow-card hover:border-plum sm:inline-block">
         {t("nav.signup")}
       </Link>
     </div>
@@ -128,7 +129,7 @@ function HeaderSearch() {
             setOpen(false);
             go(q.trim());
           }}
-          className="absolute top-12 right-0 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-[1.5rem] border border-line bg-surface p-2 shadow-soft"
+          className="absolute top-12 end-0 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-[1.5rem] border border-line bg-surface p-2 shadow-soft"
         >
           <label className="flex items-center gap-2 rounded-full bg-blush-50 px-3 py-2">
             <Search className="size-4 text-muted" />

@@ -4,9 +4,10 @@
 export const EXTRA_EN = {
   "x.title": "Extras", "x.sub": "Fun tools that help with the same four questions.",
   "x.mirror": "Live mirror", "x.mirror.d": "Try shades matched to your skin tone",
-  "x.mix": "Mix Lab", "x.mix.d": "Preview what products do together",
+  "x.mix": "Preview a combo", "x.mix.d": "See your skin after 6 weeks of products together",
   "x.swipe": "Quick picks", "x.swipe.d": "Swipe through products your twins rate",
   "x.import": "Check my cart", "x.import.d": "See if what you're about to buy suits you",
+  "cal.add": "Add weekly check-in to my calendar", "cal.hint": "Works with Google, Apple and Outlook calendars, even when SkinTwin is closed",
   "c.moisture": "Hydration", "c.oiliness": "Oil balance", "c.redness": "Calmness", "c.texture": "Smoothness", "c.pore": "Pores", "c.acne": "Clarity", "c.radiance": "Glow", "c.wrinkle": "Fine lines",
   "cl.moisture": "Dehydrated", "cl.oiliness": "Oily", "cl.redness": "Prone to redness", "cl.texture": "Uneven texture", "cl.pore": "Visible pores", "cl.acne": "Breakout-prone", "cl.radiance": "Dull", "cl.wrinkle": "Visible lines",
   "ch.moisture": "Well hydrated", "ch.oiliness": "Balanced", "ch.redness": "Calm", "ch.texture": "Smooth", "ch.pore": "Refined", "ch.acne": "Clear", "ch.radiance": "Radiant", "ch.wrinkle": "Smooth lines",
@@ -14,6 +15,8 @@ export const EXTRA_EN = {
 
   "twins.eyebrow": "Your skin twins",
   "twins.title": "{n} people share your skin",
+  "twins.closest": "Your {n} closest skin matches",
+  "twins.closestSub": "Your mix of scores is uncommon, so these are the nearest people we have. Their results are still the best guide for you.",
   "twins.sub": "Matched on 8 measured scores · {n} profiles",
   "twins.search": "Search people, cities, skin types or products",
   "twins.working": "Working for people like you",
@@ -37,11 +40,11 @@ export const EXTRA_EN = {
   "prod.where": "Where to buy", "prod.whereSub": "SkinTwin doesn't sell anything. We point you to shops and to links from people who tried it.", "prod.compare": "Compare shops", "prod.stores": "Stores nearby", "prod.reviewerLinks": "Shop links from verified reviewers",
   "prod.yourTwins": "Your skin twins", "prod.everyone": "Everyone", "prod.reviewsLike": "Reviews from people like you", "prod.allReviews": "All reviews",
 
-  "plan.eyebrow": "Your plan", "plan.ready": "Your routine is ready", "plan.use": "Use this routine", "plan.owned": "Use what I already bought", "plan.later": "You can swap or remove any step later.",
+  "plan.eyebrow": "Your plan", "plan.ready": "Your routine is ready", "plan.use": "Start with this plan", "plan.owned": "Build it from products I already own", "plan.later": "You can swap or remove any step later.",
   "plan.today": "Today", "plan.done": "{d} of {t} steps done", "plan.allDone": "All done for today", "plan.edit": "Edit routine", "plan.editDone": "Done editing", "plan.addOwn": "Add what I own",
   "plan.week": "Your week", "plan.rest": "Rest", "plan.active": "Active", "plan.preview": "Preview my routine on my face", "plan.twinRoutines": "Routines from people like you", "plan.adopt": "Adopt routine",
 
-  "me.map": "My skin map", "me.working": "Working on {a}", "me.photo": "See it on my photo", "me.journal": "Journal · {n} check-ins", "me.mirror": "Live mirror", "me.report": "Full report",
+  "me.map": "My skin map", "me.working": "Working on {a}", "me.photo": "See it on my photo", "me.journal": "Journal · {n} check-ins", "me.journal1": "Journal · 1 check-in", "me.mirror": "Live mirror", "me.report": "Full report",
   "me.following": "Following · {n}", "me.wishlist": "Wishlist · {n}", "me.shelf": "My shelf · {n}", "me.reviews": "My reviews · {n}", "me.checkin": "Weekly check-in", "me.share": "Share", "me.name": "Add your name",
 
   "circ.eyebrow": "Twin Circles", "circ.title": "Ask people with your skin.", "circ.mark": "your", "circ.sub": "Questions and progress from people whose skin measures like yours. Everything here is public; scan photos never are.",
@@ -67,11 +70,12 @@ export const EXTRA_EN = {
 export type ExtraKey = keyof typeof EXTRA_EN;
 
 export const EXTRA_ES: Partial<Record<ExtraKey, string>> = {
+  "cal.add": "Añadir el check-in semanal a mi calendario", "cal.hint": "Funciona con Google, Apple y Outlook, incluso con SkinTwin cerrado",
   "c.moisture": "Hidratación", "c.oiliness": "Equilibrio de grasa", "c.redness": "Calma", "c.texture": "Suavidad", "c.pore": "Poros", "c.acne": "Claridad", "c.radiance": "Luminosidad", "c.wrinkle": "Líneas finas",
   "cl.moisture": "Deshidratada", "cl.oiliness": "Grasa", "cl.redness": "Con rojeces", "cl.texture": "Textura irregular", "cl.pore": "Poros visibles", "cl.acne": "Con brotes", "cl.radiance": "Apagada", "cl.wrinkle": "Líneas visibles",
   "ch.moisture": "Bien hidratada", "ch.oiliness": "Equilibrada", "ch.redness": "Calmada", "ch.texture": "Suave", "ch.pore": "Afinados", "ch.acne": "Limpia", "ch.radiance": "Radiante", "ch.wrinkle": "Líneas suaves",
   "st.Oily": "Grasa", "st.Combination": "Mixta", "st.Dry & sensitive": "Seca y sensible", "st.Dry": "Seca", "st.Sensitive": "Sensible", "st.Balanced": "Equilibrada",
-  "twins.eyebrow": "Tus gemelos de piel", "twins.title": "{n} personas comparten tu piel", "twins.sub": "Según 8 puntuaciones medidas · {n} perfiles", "twins.search": "Busca personas, ciudades, tipos de piel o productos", "twins.working": "Lo que funciona a gente como tú", "twins.forYou": "Para ti", "twins.following": "Siguiendo · {n}", "twins.trust": "Resultados medidos con dos escaneos, con 3+ semanas de diferencia", "twins.post": "Publicar un resultado", "twins.circles": "Círculos", "twins.popularRisky": "Popular, pero no para ti",
+  "twins.eyebrow": "Tus gemelos de piel", "twins.title": "{n} personas comparten tu piel", "twins.closest": "Tus {n} coincidencias más cercanas", "twins.closestSub": "Tu combinación de puntuaciones es poco común, así que estas son las personas más parecidas que tenemos. Sus resultados siguen siendo tu mejor guía.", "twins.sub": "Según 8 puntuaciones medidas · {n} perfiles", "twins.search": "Busca personas, ciudades, tipos de piel o productos", "twins.working": "Lo que funciona a gente como tú", "twins.forYou": "Para ti", "twins.following": "Siguiendo · {n}", "twins.trust": "Resultados medidos con dos escaneos, con 3+ semanas de diferencia", "twins.post": "Publicar un resultado", "twins.circles": "Círculos", "twins.popularRisky": "Popular, pero no para ti",
   "prod.eyebrow": "Productos", "prod.title": "Lo que funciona para piel como la tuya", "prod.mark": "tuya", "prod.quick": "¿Dudas? Elección rápida", "prod.search": "Busca productos, marcas o ingredientes (prueba “niacinamida”)",
   "prod.all": "Todo", "prod.treat": "Sérums y tratamientos", "prod.basics": "Hidratación y SPF", "prod.makeup": "Maquillaje", "prod.free": "Sin fragancia", "prod.under": "Menos de 25 $",
   "prod.byConcern": "Por necesidad", "prod.forYou": "Para ti", "prod.you": "Tú: {n}", "prod.worked": "Funcionó a tus gemelos", "prod.risky": "Popular, pero arriesgado para ti", "prod.trending": "Tendencia esta semana", "prod.gentle": "Sin fragancia y suaves", "prod.budget": "Menos de 25 $", "prod.everything": "Todo", "prod.count": "{n} productos", "prod.clear": "Borrar filtros",
@@ -87,11 +91,12 @@ export const EXTRA_ES: Partial<Record<ExtraKey, string>> = {
 };
 
 export const EXTRA_AR: Partial<Record<ExtraKey, string>> = {
+  "cal.add": "أضيفي الفحص الأسبوعي إلى تقويمي", "cal.hint": "يعمل مع تقويم Google وApple وOutlook حتى عند إغلاق SkinTwin",
   "c.moisture": "الترطيب", "c.oiliness": "توازن الدهون", "c.redness": "الهدوء", "c.texture": "النعومة", "c.pore": "المسام", "c.acne": "الصفاء", "c.radiance": "الإشراقة", "c.wrinkle": "الخطوط الرفيعة",
   "cl.moisture": "جافة الترطيب", "cl.oiliness": "دهنية", "cl.redness": "معرّضة للاحمرار", "cl.texture": "ملمس غير متساوٍ", "cl.pore": "مسام ظاهرة", "cl.acne": "معرّضة للحبوب", "cl.radiance": "باهتة", "cl.wrinkle": "خطوط ظاهرة",
   "ch.moisture": "مرطّبة جيدًا", "ch.oiliness": "متوازنة", "ch.redness": "هادئة", "ch.texture": "ناعمة", "ch.pore": "مسام دقيقة", "ch.acne": "صافية", "ch.radiance": "مشرقة", "ch.wrinkle": "خطوط ناعمة",
   "st.Oily": "دهنية", "st.Combination": "مختلطة", "st.Dry & sensitive": "جافة وحساسة", "st.Dry": "جافة", "st.Sensitive": "حساسة", "st.Balanced": "متوازنة",
-  "twins.eyebrow": "توائم بشرتك", "twins.title": "{n} شخصًا يشاركونك بشرتك", "twins.sub": "مطابقة على 8 نتائج مقاسة · {n} ملفًا", "twins.search": "ابحثي عن أشخاص أو مدن أو أنواع بشرة أو منتجات", "twins.working": "ما ينجح مع أشخاص مثلك", "twins.forYou": "لكِ", "twins.following": "تتابعين · {n}", "twins.trust": "نتائج مقاسة بفحصين بينهما 3 أسابيع أو أكثر", "twins.post": "شاركي نتيجة", "twins.circles": "الدوائر", "twins.popularRisky": "شائع، لكن ليس لكِ",
+  "twins.eyebrow": "توائم بشرتك", "twins.title": "{n} شخصًا يشاركونك بشرتك", "twins.closest": "أقرب {n} شخصًا إلى بشرتك", "twins.closestSub": "مزيج نتائجك غير شائع، لذا هؤلاء أقرب الأشخاص إليك لدينا. نتائجهم تبقى أفضل دليل لك.", "twins.sub": "مطابقة على 8 نتائج مقاسة · {n} ملفًا", "twins.search": "ابحثي عن أشخاص أو مدن أو أنواع بشرة أو منتجات", "twins.working": "ما ينجح مع أشخاص مثلك", "twins.forYou": "لكِ", "twins.following": "تتابعين · {n}", "twins.trust": "نتائج مقاسة بفحصين بينهما 3 أسابيع أو أكثر", "twins.post": "شاركي نتيجة", "twins.circles": "الدوائر", "twins.popularRisky": "شائع، لكن ليس لكِ",
   "prod.eyebrow": "المنتجات", "prod.title": "ما ينجح مع بشرة مثل بشرتك", "prod.mark": "بشرتك", "prod.quick": "محتارة؟ اختيار سريع", "prod.search": "ابحثي عن منتجات أو علامات أو مكونات (جرّبي «النياسيناميد»)",
   "prod.all": "الكل", "prod.treat": "سيروم وعلاجات", "prod.basics": "ترطيب وواقي شمس", "prod.makeup": "مكياج", "prod.free": "بدون عطر", "prod.under": "أقل من 25$",
   "prod.byConcern": "حسب الاحتياج", "prod.forYou": "لكِ", "prod.you": "أنتِ: {n}", "prod.worked": "نجح مع توائمك", "prod.risky": "شائع لكنه محفوف بالمخاطر لكِ", "prod.trending": "رائج هذا الأسبوع", "prod.gentle": "لطيف وبدون عطر", "prod.budget": "أقل من 25$", "prod.everything": "كل المنتجات", "prod.count": "{n} منتجات", "prod.clear": "مسح الكل",
@@ -99,19 +104,20 @@ export const EXTRA_AR: Partial<Record<ExtraKey, string>> = {
   "prod.where": "أين تشترين", "prod.whereSub": "SkinTwin لا يبيع شيئًا. نرشدك إلى المتاجر وإلى روابط من جرّبوه.", "prod.compare": "قارني المتاجر", "prod.stores": "متاجر قريبة", "prod.reviewerLinks": "روابط من مراجعات موثّقة",
   "prod.yourTwins": "توائم بشرتك", "prod.everyone": "الجميع", "prod.reviewsLike": "مراجعات من أشخاص مثلك", "prod.allReviews": "كل المراجعات",
   "plan.eyebrow": "خطتك", "plan.ready": "روتينك جاهز", "plan.use": "استخدمي هذا الروتين", "plan.owned": "استخدمي ما اشتريته", "plan.later": "يمكنك تبديل أي خطوة أو حذفها لاحقًا.", "plan.today": "اليوم", "plan.done": "{d} من {t} خطوات تمت", "plan.allDone": "انتهيتِ لهذا اليوم", "plan.edit": "عدّلي الروتين", "plan.editDone": "تم", "plan.addOwn": "أضيفي ما لديك", "plan.week": "أسبوعك", "plan.rest": "راحة", "plan.active": "فعّال", "plan.preview": "عاينِي روتيني على وجهي", "plan.twinRoutines": "روتينات من أشخاص مثلك", "plan.adopt": "اعتمدي الروتين",
-  "me.map": "خريطة بشرتي", "me.working": "أعمل على {a}", "me.photo": "اعرضيها على صورتي", "me.journal": "المذكرات · {n} فحوصات", "me.mirror": "المرآة الحية", "me.report": "التقرير الكامل", "me.following": "تتابعين · {n}", "me.wishlist": "المفضلة · {n}", "me.shelf": "رفّي · {n}", "me.reviews": "مراجعاتي · {n}", "me.checkin": "الفحص الأسبوعي", "me.share": "مشاركة", "me.name": "أضيفي اسمك",
+  "me.map": "خريطة بشرتي", "me.working": "أعمل على {a}", "me.photo": "اعرضيها على صورتي", "me.journal": "اليوميات · {n} فحوصات", "me.journal1": "اليوميات · فحص واحد", "me.mirror": "المرآة الحية", "me.report": "التقرير الكامل", "me.following": "تتابعين · {n}", "me.wishlist": "المفضلة · {n}", "me.shelf": "رفّي · {n}", "me.reviews": "مراجعاتي · {n}", "me.checkin": "الفحص الأسبوعي", "me.share": "مشاركة", "me.name": "أضيفي اسمك",
   "circ.eyebrow": "الدوائر", "circ.title": "اسألي من لديهم بشرتك.", "circ.mark": "بشرتك.", "circ.sub": "أسئلة وتقدّم من أشخاص تشبه قياسات بشرتهم بشرتك. كل شيء هنا عام، أما صور الفحص فلا.", "circ.yours": "دائرتك", "circ.members": "{n} عضوًا", "circ.ask": "اطرحي سؤالًا", "circ.progress": "شاركي تقدّمي", "circ.everything": "الكل", "circ.questions": "أسئلة", "circ.progressTab": "التقدّم", "circ.metoo": "أنا أيضًا", "circ.helpful": "مفيد", "circ.answers": "{n} إجابات", "circ.replies": "{n} ردود", "circ.join": "انضمّي إلى النقاش.", "circ.joinSub": "حساب مجاني يتيح لك السؤال ومشاركة تقدّمك.", "circ.post": "انشري في {c}", "circ.question": "سؤال", "circ.progressBadge": "تقدّم · الأسبوع {n}",
   "set.title": "الإعدادات", "set.account": "الحساب", "set.appearance": "المظهر", "set.source": "مصدر التحليل (للعرض)", "set.reminders": "التذكيرات", "set.privacy": "الخصوصية والبيانات", "set.tour": "اعرضي الجولة مرة أخرى",
   "n.today": "اليوم", "n.reminders": "التذكيرات", "n.caught": "لا جديد الآن.", "n.start.t": "ابدئي بفحص لمدة 10 ثوانٍ", "n.start.b": "شاهدي خريطة بشرتك وتعرّفي على أشخاص ببشرتك.", "n.checkin.t": "يوم الفحص", "n.checkin.b": "صورة واحدة تُظهر ما يتغيّر هذا الأسبوع.", "n.missed.t": "فاتك فحص", "n.missed.b": "صورة واحدة تعيد سلسلتك وتُظهر ما تغيّر.", "n.am.t": "روتين الصباح", "n.pm.t": "روتين المساء", "n.left": "تبقّت {n} خطوات اليوم.", "n.sleep.t": "استعدّي للنوم", "n.sleep.b": "موعد نومك {time}. البشرة تتجدد أثناء النوم.", "n.rest.t": "خذي استراحة", "n.rest.b": "استراحة قصيرة وكوب ماء. التوتر يظهر على البشرة أيضًا.", "n.water.t": "وقت شرب الماء", "n.water.b": "البشرة المرطّبة تبدأ من الداخل.", "n.journal.t": "كيف كانت بشرتك هذا الأسبوع؟", "n.journal.b": "أضيفي ملاحظة قصيرة: النوم، التوتر، أي جديد.", "n.review.t": "كيف حال {p}؟", "n.review.b": "{n} أسابيع من الفحوصات. نتيجتك تساعد أشخاصًا ببشرتك.", "n.goal.t": "اقتربتِ من هدفك", "n.goal.b": "تبقّت {n} نقاط على {c}.",
-  "foot.settings": "الإعدادات والخصوصية", "foot.journal": "المذكرات", "foot.brands": "للعلامات التجارية", "foot.note": "تحليل البشرة بواسطة YouCam AI · كتالوج تجريبي بعلامات خيالية · نتائج المجتمع نموذجية · إرشادات تجميلية وليست تشخيصًا طبيًا.",
+  "foot.settings": "الإعدادات والخصوصية", "foot.journal": "اليوميات", "foot.brands": "للعلامات التجارية", "foot.note": "تحليل البشرة بواسطة YouCam AI · كتالوج تجريبي بعلامات خيالية · نتائج المجتمع نموذجية · إرشادات تجميلية وليست تشخيصًا طبيًا.",
 };
 
 export const EXTRA_ZH: Partial<Record<ExtraKey, string>> = {
+  "cal.add": "把每週檢測加入我的行事曆", "cal.hint": "支援 Google、Apple 與 Outlook 行事曆，即使 SkinTwin 未開啟",
   "c.moisture": "保濕", "c.oiliness": "油脂平衡", "c.redness": "穩定度", "c.texture": "平滑度", "c.pore": "毛孔", "c.acne": "淨透度", "c.radiance": "光澤", "c.wrinkle": "細紋",
   "cl.moisture": "缺水", "cl.oiliness": "偏油", "cl.redness": "容易泛紅", "cl.texture": "粗糙不均", "cl.pore": "毛孔明顯", "cl.acne": "容易長痘", "cl.radiance": "暗沉", "cl.wrinkle": "細紋明顯",
   "ch.moisture": "水潤", "ch.oiliness": "平衡", "ch.redness": "穩定", "ch.texture": "平滑", "ch.pore": "細緻", "ch.acne": "淨透", "ch.radiance": "透亮", "ch.wrinkle": "紋路平順",
   "st.Oily": "油性", "st.Combination": "混合性", "st.Dry & sensitive": "乾性敏感", "st.Dry": "乾性", "st.Sensitive": "敏感性", "st.Balanced": "中性",
-  "twins.eyebrow": "你的膚質雙胞胎", "twins.title": "{n} 人和你膚質相同", "twins.sub": "依 8 項測量分數配對 · 共 {n} 份檔案", "twins.search": "搜尋人、城市、膚質或產品", "twins.working": "對和你相似的人有效", "twins.forYou": "為你推薦", "twins.following": "追蹤中 · {n}", "twins.trust": "結果由相隔 3 週以上的兩次掃描測得", "twins.post": "分享結果", "twins.circles": "膚質圈", "twins.popularRisky": "很熱門，但不適合你",
+  "twins.eyebrow": "你的膚質雙胞胎", "twins.title": "{n} 人和你膚質相同", "twins.closest": "與你最接近的 {n} 人", "twins.closestSub": "你的分數組合比較少見，這些是我們資料中最接近你的人。他們的結果仍是你最好的參考。", "twins.sub": "依 8 項測量分數配對 · 共 {n} 份檔案", "twins.search": "搜尋人、城市、膚質或產品", "twins.working": "對和你相似的人有效", "twins.forYou": "為你推薦", "twins.following": "追蹤中 · {n}", "twins.trust": "結果由相隔 3 週以上的兩次掃描測得", "twins.post": "分享結果", "twins.circles": "膚質圈", "twins.popularRisky": "很熱門，但不適合你",
   "prod.eyebrow": "產品", "prod.title": "對和你一樣的肌膚有效的產品", "prod.mark": "有效", "prod.quick": "拿不定主意？快速挑選", "prod.search": "搜尋產品、品牌或成分（試試「菸鹼醯胺」）",
   "prod.all": "全部", "prod.treat": "精華與保養", "prod.basics": "保濕與防曬", "prod.makeup": "彩妝", "prod.free": "無香料", "prod.under": "25 美元以下",
   "prod.byConcern": "依肌膚需求", "prod.forYou": "推薦給你", "prod.you": "你：{n}", "prod.worked": "對你的雙胞胎有效", "prod.risky": "很熱門，但對你有風險", "prod.trending": "本週熱門", "prod.gentle": "無香料・溫和", "prod.budget": "25 美元以下", "prod.everything": "所有產品", "prod.count": "{n} 項產品", "prod.clear": "清除全部",

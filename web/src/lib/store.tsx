@@ -1,7 +1,20 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { canonicalId } from "./products";
+import { canonicalId, productById } from "./products";
+
+// A routine never holds the same product twice in one slot, or two products of a
+// kind you only use once per slot (cleanser, moisturiser, sunscreen). The newest wins.
+const ONE_PER_SLOT = new Set(["cleanser", "moisturizer", "sunscreen"]);
+export function cleanRoutine(items: RoutineItem[]): RoutineItem[] {
+  const out: RoutineItem[] = [];
+  for (const item of [...items].reverse()) {
+    const cat = productById(item.productId)?.category;
+    const clash = out.some((r) => r.slot === item.slot && (r.productId === item.productId || (cat && ONE_PER_SLOT.has(cat) && productById(r.productId)?.category === cat)));
+    if (!clash && productById(item.productId)) out.push(item);
+  }
+  return out.reverse();
+}
 import type { ConcernKey, RoutineItem, SkinProfile } from "./types";
 
 // Gentle daily habits that help skin: bedtime, a rest break, water, a weekly note.
@@ -25,6 +38,8 @@ export interface SkinGoal {
   target: number;
   by: string; // ISO date
   setAt: string;
+  reachedAt?: string; // ticked off on the journal's goal page
+  weeksTaken?: number;
 }
 
 interface State {
@@ -117,9 +132,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const saved = { ...EMPTY, ...JSON.parse(raw) } as State;
         // Product ids from an earlier catalogue map onto the current one.
-        saved.routine = saved.routine.map((r) => ({ ...r, productId: canonicalId(r.productId) }));
+        saved.routine = cleanRoutine(saved.routine.map((r) => ({ ...r, productId: canonicalId(r.productId) })));
         saved.savedProducts = saved.savedProducts.map(canonicalId);
         saved.shelf = saved.shelf.map(canonicalId);
+        // Older scans averaged YouCam's display scores; use the scores shown on every page.
+        saved.scans = saved.scans.map((s) => ({ ...s, overall: Math.round(Object.values(s.scores).reduce((a, b) => a + b, 0) / Object.keys(s.scores).length) }));
         saved.wellness = { ...DEFAULT_WELLNESS, ...(saved.wellness ?? {}) };
         saved.done = Object.fromEntries(Object.entries(saved.done).map(([k, ids]) => [k, ids.map(canonicalId)]));
         setState(saved);
@@ -142,7 +159,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setState((s) =>
         s.routine.some((r) => r.productId === productId && r.slot === slot)
           ? s
-          : { ...s, routine: [...s.routine, { productId, slot, addedAt: new Date().toISOString() }] },
+          : { ...s, routine: cleanRoutine([...s.routine, { productId, slot, addedAt: new Date().toISOString() }]) },
       ),
     [],
   );
@@ -201,7 +218,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [],
   );
   const setGoal = useCallback((goal: SkinGoal | null) => setState((s) => ({ ...s, goal })), []);
-  const replaceRoutine = useCallback((items: RoutineItem[]) => setState((s) => ({ ...s, routine: items })), []);
+  const replaceRoutine = useCallback((items: RoutineItem[]) => setState((s) => ({ ...s, routine: cleanRoutine(items) })), []);
   const hydrate = useCallback((s: Partial<SyncedState>) => setState((cur) => ({ ...cur, ...s })), []);
   const toggleSavedTwin = useCallback(
     (id: string) =>

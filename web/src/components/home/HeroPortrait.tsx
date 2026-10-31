@@ -62,7 +62,7 @@ export function HeroPortrait() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 }}
                   className={`absolute top-0 flex -translate-y-1/2 items-center gap-2 whitespace-nowrap rounded-xl border border-white/50 bg-surface/85 p-1.5 pr-3 shadow-card backdrop-blur-md ${
-                    z.side === "left" ? "right-[calc(50%+1.5rem)] flex-row-reverse pr-1.5 pl-3" : "left-[calc(50%+1.5rem)]"
+                    z.side === "left" ? "right-[calc(50%+1.5rem)] flex-row-reverse pe-1.5 ps-3" : "left-[calc(50%+1.5rem)]"
                   }`}
                 >
                   <span className="size-9 rounded-lg" style={patchStyle(PHOTO, k)} aria-hidden />

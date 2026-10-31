@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { CelebrateWhen } from "@/components/Celebrate";
+import { GoalPreview } from "@/components/GoalPreview";
+import { FirstGoalReveal } from "@/components/FirstGoal";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, RotateCcw, X } from "lucide-react";
 import { EASE } from "@/components/motion";
 import { SaveProfile } from "@/components/SaveProfile";
-import { CONCERNS, scoreTone, skinTypeLabel } from "@/lib/concerns";
+import { CONCERN_KEYS, CONCERNS, scoreTone, skinTypeLabel } from "@/lib/concerns";
 import { sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 import type { ConcernKey, SkinProfile } from "@/lib/types";
@@ -40,7 +43,7 @@ function Segments({ value, live }: { value?: number; live: boolean }) {
 
 export default function AnalysisPage() {
   const router = useRouter();
-  const { ready, pending, setPending, latest, scans, addScan, liveScans } = useStore();
+  const { ready, pending, setPending, latest, scans, setScans, addScan, liveScans } = useStore();
   const [result, setResult] = useState<SkinProfile | null>(null);
   const [revealed, setRevealed] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -87,12 +90,29 @@ export default function AnalysisPage() {
       .finally(() => clearInterval(tick));
   }, [ready, pending, latest, scans, addScan, setPending, router, liveScans]);
 
+  const fresh = Boolean(result && latest && result.id === latest.id && Date.now() - new Date(result.capturedAt).getTime() < 30 * 60_000);
+  const retake = () => {
+    if (fresh && result) {
+      setScans(scans.filter((x) => x.id !== result.id));
+      try {
+        localStorage.removeItem(`skintwin:first-goal:${result.id}`);
+      } catch {}
+    }
+    setPending(null);
+    router.push("/scan");
+  };
+  const close = () => {
+    setPending(null);
+    router.push(done ? "/" : "/scan");
+  };
+
   const photo = result?.photo ?? pending?.photo ?? (result?.sampleId ? sampleById(result.sampleId)?.image : undefined);
   const done = Boolean(result) && revealed >= ZONE_ORDER.length;
   const progress = done ? 100 : Math.min(96, Math.round((revealed / ZONE_ORDER.length) * 92));
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-ink text-white">
+      {checkIn && result && <CelebrateWhen when={result.overall - scans[scans.length - 2].overall >= 2} id={`scan-${result.id}`} title="Your skin improved!" sub={`${result.overall - scans[scans.length - 2].overall} points better since your last check-in.`} emoji="🌸" />}
       {photo && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={photo} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />
@@ -106,9 +126,16 @@ export default function AnalysisPage() {
             <Link href="/" className="font-display text-xl text-white/90">
               SkinTwin
             </Link>
-            <Link href={done ? "/report" : "/scan"} aria-label="Close" className="grid size-9 place-items-center rounded-full bg-white/10 backdrop-blur lg:hidden">
-              <X className="size-4" />
-            </Link>
+            <span className="flex items-center gap-2">
+              {(done || error) && fresh && (
+                <button onClick={retake} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-2 text-xs text-white/90 backdrop-blur hover:bg-white/20">
+                  <RotateCcw className="size-3.5" /> Retake
+                </button>
+              )}
+              <button onClick={close} aria-label="Close" title="Close" className="grid size-9 place-items-center rounded-full bg-white/10 backdrop-blur hover:bg-white/20">
+                <X className="size-4" />
+              </button>
+            </span>
           </div>
           <AnimatePresence mode="wait">
             {!done ? (
@@ -159,13 +186,30 @@ export default function AnalysisPage() {
                 <p className="mt-3 hidden text-sm leading-relaxed text-white/75 lg:block">
                   Tap any marker to see what it means, how you compare with your twins, and what helped them.
                 </p>
+                {result && scans.length === 1 && result.id === scans[0].id && <FirstGoalReveal scan={result} />}
+                {result && !(scans.length === 1 && result.id === scans[0].id) && (() => {
+                  const weakest = [...CONCERN_KEYS].sort((x, y) => result.scores[x] - result.scores[y])[0];
+                  return (
+                    <div className="mt-4 rounded-2xl bg-white/10 p-3">
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-white/70">Before and your goal</p>
+                      <p className="text-sm">{CONCERNS[weakest].label} {result.scores[weakest]} → {Math.min(100, result.scores[weakest] + 6)} in about 6 weeks</p>
+                      <GoalPreview scan={result} concern={weakest} gain={6} />
+                      <Link href="/journal?goal" className="mt-2 inline-block text-xs text-white/85 underline">Make this week&apos;s goal</Link>
+                    </div>
+                  );
+                })()}
                 <div className="mt-5 hidden flex-col gap-2 lg:flex">
                   <Link href={checkIn ? "/week" : "/twins"} className="inline-flex items-center justify-center gap-2 rounded-full bg-surface px-6 py-3.5 text-sm font-medium text-plum-deep">
-                    {checkIn ? "See this week's changes" : "Meet my skin twins"} <ArrowRight className="size-4" />
+                    {checkIn ? "See this week's changes" : "Meet my skin twins"} <ArrowRight className="rtl:-scale-x-100 size-4" />
                   </Link>
                   <Link href="/report" className="rounded-full border border-white/30 px-6 py-3.5 text-center text-sm text-white/90 hover:bg-white/10">
                     Full report
                   </Link>
+                  {fresh && (
+                    <button onClick={retake} className="text-xs text-white/70 underline hover:text-white">
+                      Bad light or angle? Retake this scan
+                    </button>
+                  )}
                   <SaveProfile tone="dark" className="mt-4" />
                 </div>
               </motion.div>
@@ -175,7 +219,8 @@ export default function AnalysisPage() {
 
         {/* Portrait with face-mapped labels */}
         <div className="relative mt-4 flex min-h-0 flex-1 items-center justify-center lg:mt-0 lg:h-[calc(100dvh-4rem)]">
-          <div className="relative aspect-[4/5] h-full max-h-full max-w-full overflow-visible">
+          {/* Markers are placed by which side of the face a zone is on, so this area stays left-to-right. */}
+          <div dir="ltr" className="relative aspect-[4/5] h-full max-h-full max-w-full overflow-visible">
             <div className="absolute inset-0 overflow-hidden lg:rounded-[2rem]">
               {photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -190,7 +235,7 @@ export default function AnalysisPage() {
             {ZONE_ORDER.map((k, i) => {
               const z = ZONES[k];
               const shown = i < revealed;
-              const value = done ? result!.display[k] : undefined;
+              const value = done ? result!.scores[k] : undefined;
               const card = (
                 <div className="w-[8.5rem] rounded-lg border border-white/25 bg-ink/35 p-2 backdrop-blur-md sm:w-44 sm:p-2.5">
                   <div className="flex items-start gap-2">
@@ -230,7 +275,7 @@ export default function AnalysisPage() {
                         }`}
                       >
                         {CONCERNS[k].label}
-                        {done && <b className="ml-1 font-medium">{result!.display[k]}</b>}
+                        {done && <b className="ms-1 font-medium">{result!.scores[k]}</b>}
                       </span>
                       <div
                         className={`absolute top-0 hidden -translate-y-1/2 items-center sm:flex ${z.side === "left" ? "right-2 flex-row-reverse" : "left-2"}`}
@@ -261,7 +306,7 @@ export default function AnalysisPage() {
                   {photo && <span className="mb-1.5 block h-14 rounded-lg" style={patchStyle(photo, k)} aria-hidden />}
                   <p className="text-[9px] uppercase tracking-[0.16em] text-white/80">{CONCERNS[k].label}</p>
                   <p className="truncate font-display text-xs italic">{status(result!, k)}</p>
-                  <Segments value={result!.display[k]} live={false} />
+                  <Segments value={result!.scores[k]} live={false} />
                 </Link>
               ))}
             </div>

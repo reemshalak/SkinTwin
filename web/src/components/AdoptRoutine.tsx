@@ -90,7 +90,7 @@ export function AdoptRoutine({ personId, productIds, open, onClose, onDone }: { 
                       <ProductThumb product={theirs} size="sm" />
                       {s.kind === "swap" && (
                         <>
-                          <ArrowRight className="size-4 shrink-0 text-muted" />
+                          <ArrowRight className="rtl:-scale-x-100 size-4 shrink-0 text-muted" />
                           <ProductThumb product={productById(s.swap.productId)!} size="sm" />
                         </>
                       )}
@@ -122,7 +122,7 @@ export function AdoptRoutine({ personId, productIds, open, onClose, onDone }: { 
                         {picking === s.productId ? (
                           <div className="flex flex-wrap gap-1.5">
                             {alternatives.map((p) => (
-                              <button key={p.id} onClick={() => { addToShelf([p.id]); setPicking(null); }} className="flex items-center gap-1.5 rounded-full border border-line bg-blush-50 py-1 pr-3 pl-1 text-[11px] hover:border-plum">
+                              <button key={p.id} onClick={() => { addToShelf([p.id]); setPicking(null); }} className="flex items-center gap-1.5 rounded-full border border-line bg-blush-50 py-1 pe-3 ps-1 text-[11px] hover:border-plum">
                                 <ProductThumb product={p} size="sm" /> {p.name}
                               </button>
                             ))}

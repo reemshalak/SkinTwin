@@ -39,6 +39,7 @@ export interface SkinProfile {
   display: Scores; // ui_score per concern
   photo?: string; // sample portrait path, or a downscaled selfie kept only in this browser
   note?: string; // private journal note
+  diary?: { worked?: string; focus?: string; did?: string[]; goal?: { concern: ConcernKey; from: number; target: number; habit?: string; image?: string } }; // guided journal page
   photoHash?: string; // to spot the same photo being scanned twice
 }
 
@@ -65,6 +66,7 @@ export interface Product {
   slot: "am" | "pm" | "both";
   actives: Active[];
   ingredients: string[];
+  key: string; // the ingredient the product is known for, shown under its name
   blurb: string;
   // Typical change per concern over ~6 weeks, in raw-score points.
   effects: Partial<Scores>;

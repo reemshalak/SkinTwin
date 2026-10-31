@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Product } from "@/lib/types";
 
 // Two colours from the product's gradient, e.g. "from-[#F6EDF3] to-[#F0C9D9]".
@@ -100,10 +103,11 @@ export function ProductArt({ product, className = "" }: { product: Product; clas
 // Real product photo when we have one, else the illustration. Multiply blending
 // lets a photo's white background melt into the coloured backdrop.
 export function ProductVisual({ product, className = "" }: { product: Product; className?: string }) {
-  if (product.image) {
+  const [broken, setBroken] = useState(false);
+  if (product.image && !broken) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={product.image} alt={`${product.brand} ${product.name}`} className={`rounded-2xl object-contain mix-blend-multiply ${className}`} loading="lazy" />
+      <img src={product.image} alt={`${product.brand} ${product.name}`} onError={() => setBroken(true)} className={`object-contain drop-shadow-[0_8px_10px_rgba(90,40,70,0.18)] ${className}`} loading="lazy" />
     );
   }
   return <ProductArt product={product} className={className} />;

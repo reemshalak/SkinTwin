@@ -1,21 +1,24 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Eye, EyeOff, Lock, ScanFace, Trash2 } from "lucide-react";
-import { GoalCard } from "@/components/GoalCard";
+import { Wind, AlertTriangle, Eye, EyeOff, Lock, ScanFace, Trash2 } from "lucide-react";
+import { JournalBook } from "@/components/JournalBook";
+import { CalmMinute } from "@/components/CalmMinute";
+import { MyLooks } from "@/components/MyLooks";
 import { EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
 import { Page, PageTitle } from "@/components/Page";
-import { Delta } from "@/components/ui";
+import { Delta, TrendMark } from "@/components/ui";
 import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { sampleById } from "@/lib/samples";
 import { mockYouCamResponse, profileFromYouCam, progressedScores } from "@/lib/skin-analysis";
 import { useStore } from "@/lib/store";
 import type { SkinProfile } from "@/lib/types";
 
-const DATE = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
+const DATE = dateFormat({ weekday: "short", day: "numeric", month: "short" });
 const TILTS = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2"];
 
 function Trend({ scans }: { scans: SkinProfile[] }) {
@@ -39,6 +42,8 @@ function Trend({ scans }: { scans: SkinProfile[] }) {
 export default function JournalPage() {
   const { ready, scans, deleteScan, updateScan, setScans } = useStore();
   const [reveal, setReveal] = useState(false);
+  const [calm, setCalm] = useState(false);
+  useEffect(() => setCalm(new URLSearchParams(window.location.search).has("calm")), []);
   const [confirm, setConfirm] = useState<string | null>(null);
   // Demo helpers only appear with ?demo in the URL (for recordings), never for shoppers.
   const [demo, setDemo] = useState(false);
@@ -71,13 +76,20 @@ export default function JournalPage() {
         title="Your skin journal"
         subtitle="One check-in a week, same light, same spot. Small changes add up here even when the mirror can't show them."
         right={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setCalm(true)} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-plum">
+              <Wind className="size-4" /> Calm minute
+            </button>
             <button
+              role="switch"
               onClick={() => setReveal((v) => !v)}
-              aria-pressed={reveal}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-plum"
+              aria-checked={reveal}
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-2.5 ps-4 pe-3 text-sm text-plum"
             >
-              {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />} {reveal ? "Hide photos" : "Show photos"}
+              {reveal ? <Eye className="size-4" /> : <EyeOff className="size-4" />} Show photos
+              <span aria-hidden className={`relative h-5 w-9 rounded-full transition ${reveal ? "bg-plum" : "bg-blush-200"}`}>
+                <span className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition-all ${reveal ? "start-[1.125rem]" : "start-0.5"}`} />
+              </span>
             </button>
             <Link href="/scan" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-5 py-2.5 text-sm font-medium text-white">
               <ScanFace className="size-4" /> Weekly check-in
@@ -97,15 +109,14 @@ export default function JournalPage() {
         </Link>
       )}
 
-      <GoalCard />
+
 
       {scans.length > 1 && (
         <section className="glow-card mb-10 flex flex-wrap items-center justify-between gap-6 rounded-[2rem] p-6 text-white shadow-soft">
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] opacity-80">Since your first check-in</p>
             <p className="font-display text-4xl">
-              {change >= 0 ? "+" : ""}
-              {change} <span className="text-xl opacity-90">points</span>
+              <TrendMark up={change >= 0} tone="onDark" /> {Math.abs(change)} <span className="text-xl opacity-90">points {change >= 0 ? "better" : "worse"}</span>
             </p>
             <p className="text-sm opacity-90">
               {scans.length} check-ins · {first.overall} → {last.overall}
@@ -117,6 +128,12 @@ export default function JournalPage() {
         </section>
       )}
 
+      <AnimatePresence>{calm && <CalmMinute onClose={() => setCalm(false)} />}</AnimatePresence>
+      <JournalBook scans={scans} reveal={reveal} onSave={(id, patch) => updateScan(id, patch)} />
+
+      <div id="looks" className="scroll-mt-24"><MyLooks /></div>
+
+      <h2 className="mb-2 font-display text-2xl text-ink">All pages</h2>
       <p className="mb-6 flex items-center gap-2 text-xs text-muted">
         <Lock className="size-3.5" /> Only you can see this journal. Photos stay on this device.
       </p>
@@ -151,8 +168,8 @@ export default function JournalPage() {
                     ) : (
                       <span className="grid h-full place-items-center text-xs text-muted">Photo removed</span>
                     )}
-                    <span className="absolute bottom-2 left-2 rounded-full bg-surface/90 px-2.5 py-1 font-display text-lg text-plum-deep">{s.overall}</span>
-                    {!reveal && photo && <span className="absolute top-2 right-2 rounded-full bg-ink/40 px-2 py-0.5 text-[10px] text-white backdrop-blur">Private</span>}
+                    <span className="absolute bottom-2 start-2 rounded-full bg-surface/90 px-2.5 py-1 font-display text-lg text-plum-deep">{s.overall}</span>
+                    {!reveal && photo && <span className="absolute top-2 end-2 rounded-full bg-ink/40 px-2 py-0.5 text-[10px] text-white backdrop-blur">Private</span>}
                   </Link>
                   <div className="mt-3 flex items-baseline justify-between px-1">
                     <p className="font-display text-lg">{i === entries.length - 1 ? "First scan" : `Week ${entries.length - 1 - i}`}</p>

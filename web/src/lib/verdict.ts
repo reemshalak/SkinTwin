@@ -3,7 +3,7 @@ import { fitScore, type Outcome } from "./twins";
 // One plain-language call per product for *your* skin, with how sure we are.
 // Under 5 twins we don't pretend: we say so and use everyone's results.
 
-export type VerdictKind = "good" | "mixed" | "risky" | "few" | "noscan";
+export type VerdictKind = "good" | "mixed" | "risky" | "few" | "basic" | "tryon" | "noscan";
 
 export interface Verdict {
   kind: VerdictKind;
@@ -13,7 +13,14 @@ export interface Verdict {
   basis: "twins" | "everyone";
 }
 
+// Makeup isn't measured by skin scans: the honest call is to try it on.
+export const TRYON_VERDICT: Verdict = { kind: "tryon", title: "Try it on your face", detail: "Makeup isn't judged by skin scans. Try the shades live on your own face, matched to your skin tone.", short: "Try it on", basis: "everyone" };
+
 export function verdictFor(twins: Outcome | null, all: Outcome): Verdict {
+  // Plain cleansers and the like aren't meant to move scores. "0% improved" would read as a failure.
+  if (all.n > 0 && all.improvedPct < 15 && all.worsenedPct < 10) {
+    return { kind: "basic", title: "An everyday basic", detail: `It keeps skin comfortable rather than changing your scores. ${all.worsenedPct ? `Only ${all.worsenedPct}% of people got worse on it.` : "Nobody got worse on it."}`, short: "Everyday basic", basis: "everyone" };
+  }
   if (!twins) {
     return { kind: "noscan", title: "Will it suit you?", detail: `Scan your skin to see results from people like you. Everyone: ${all.improvedPct}% improved.`, short: `${all.improvedPct}% improved`, basis: "everyone" };
   }
@@ -41,5 +48,7 @@ export const VERDICT_STYLE: Record<VerdictKind, { chip: string; banner: string }
   mixed: { chip: "bg-surface/95 text-ink", banner: "bg-blush-100 text-plum-deep border-blush-200" },
   risky: { chip: "bg-warn text-white", banner: "bg-warn-soft text-warn border-warn-line" },
   few: { chip: "bg-surface/95 text-muted", banner: "bg-blush-50 text-ink border-line" },
+  basic: { chip: "bg-surface/95 text-ink", banner: "bg-blush-50 text-ink border-line" },
+  tryon: { chip: "bg-plum text-white", banner: "bg-blush-100 text-plum-deep border-blush-200" },
   noscan: { chip: "bg-surface/95 text-muted", banner: "bg-blush-50 text-ink border-line" },
 };

@@ -42,9 +42,13 @@ export function personAvatar(id: string) {
 }
 
 export const portraitPath = (id: string) => `/people/${id}.jpg`;
+// The same person photographed eight weeks later (AI-generated sample people).
+export const afterPath = (id: string) => `/people/${id}-after.jpg`;
+// Sample people whose week-8 photo exists.
+export const HAS_AFTER = new Set<string>(["elaine"]);
 
 // Members whose sample photo exists, so their reviews can show skin-patch proof.
-export const HAS_PORTRAIT = new Set(["amara"]);
+export const HAS_PORTRAIT = new Set(["amara", "diego", "priya", "jordan", "lena", "hannah", "yuki", "sofia", "mei", "leila", "chloe", "marcus", "rosa", "grace", "nadia", "elaine"]);
 
 export const PHOTO_STYLE =
   "Photorealistic head-and-shoulders portrait, front-facing, neutral expression, mouth closed, eyes open, forehead visible, even soft daylight, plain warm light pink-beige studio background, no makeup, natural unretouched skin texture, sharp focus, 4:5 portrait framing.";

@@ -60,7 +60,7 @@ export function NotificationBell() {
       >
         <Bell className="size-[18px]" />
         {unread > 0 && (
-          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-1 right-1 grid min-w-4 place-items-center rounded-full bg-rose px-1 text-[9px] font-semibold leading-4 text-white">
+          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-1 end-1 grid min-w-4 place-items-center rounded-full bg-rose px-1 text-[9px] font-semibold leading-4 text-white">
             {unread}
           </motion.span>
         )}
@@ -71,7 +71,7 @@ export function NotificationBell() {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="absolute top-12 right-0 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-line bg-surface shadow-soft"
+            className="absolute top-12 end-0 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-line bg-surface shadow-soft"
           >
             <p className="flex items-center justify-between border-b border-line px-4 py-3 text-sm font-medium">
               {t("n.today")}

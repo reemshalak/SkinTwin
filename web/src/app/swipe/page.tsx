@@ -186,8 +186,8 @@ function Card({
 
         {!behind && (
           <>
-            <motion.span style={{ opacity: yesOpacity }} className="absolute top-6 left-6 -rotate-12 rounded-xl border-4 border-good px-3 py-1 font-display text-2xl text-good">SAVE</motion.span>
-            <motion.span style={{ opacity: noOpacity }} className="absolute top-6 right-6 rotate-12 rounded-xl border-4 border-bad px-3 py-1 font-display text-2xl text-bad">SKIP</motion.span>
+            <motion.span style={{ opacity: yesOpacity }} className="absolute top-6 start-6 -rotate-12 rounded-xl border-4 border-good px-3 py-1 font-display text-2xl text-good">SAVE</motion.span>
+            <motion.span style={{ opacity: noOpacity }} className="absolute top-6 end-6 rotate-12 rounded-xl border-4 border-bad px-3 py-1 font-display text-2xl text-bad">SKIP</motion.span>
           </>
         )}
 

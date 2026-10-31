@@ -1,19 +1,22 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
-import { ArrowRight, CalendarHeart, Check, Coffee, Droplet, Flame, Lightbulb, MessagesSquare, Moon, ScanFace, Sun, Users } from "lucide-react";
-import { circleOf } from "@/lib/circles";
-import { tr, type TKey } from "@/lib/i18n";
+import { ArrowRight, CalendarHeart, CalendarPlus, Check, Flame, Moon, ScanFace, Sun, Users } from "lucide-react";
+import { downloadCheckinIcs } from "@/lib/calendar";
+import { type TKey } from "@/lib/i18n";
 import { useMyIdentity } from "../MyAvatar";
 import { WriteOn } from "../WriteOn";
+import { TipBubble } from "./TipBubble";
+import { DailyCare } from "./DailyCare";
+import { SkinCard } from "./SkinCard";
 import { useT } from "@/lib/i18n";
-import { FaceDiagram } from "../report/Visuals";
 import { PostTile } from "../SocialFeed";
 import { ProductThumb } from "../ui";
 import { SAMPLE_POSTS } from "@/lib/community";
-import { CONCERN_KEYS, CONCERNS, skinTypeLabel } from "@/lib/concerns";
+import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { itemsFor, planWeek, weekday } from "@/lib/planner";
 import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
@@ -22,8 +25,8 @@ import { useTwins } from "@/lib/use-twins";
 import { productCalls, streak } from "@/lib/week";
 import type { ConcernKey } from "@/lib/types";
 
-const DAY = new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" });
-const SHORT = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
+const DAY = dateFormat({ weekday: "long", day: "numeric", month: "long" });
+const SHORT = dateFormat({ weekday: "short", day: "numeric", month: "short" });
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 // One practical tip a day, aimed at your weakest score.
@@ -42,7 +45,7 @@ const CALL_LABEL = { working: "Working", keep: "Keep going", early: "Too early",
 // Home for someone who has scanned: what to do today, at a glance.
 export function Today() {
   const router = useRouter();
-  const { latest, scans, routine, done, toggleDone, goal, wellness } = useStore();
+  const { latest, scans, routine, done, toggleDone, wellness, reminderTimes } = useStore();
   const { twins } = useTwins();
   const me = useMyIdentity();
   const { t } = useT();
@@ -61,13 +64,8 @@ export function Today() {
   const key = (slot: "am" | "pm") => `${todayKey()}:${slot}`;
   const doneCount = steps.filter((r) => done[key(r.slot)]?.includes(r.productId)).length;
   const calls = productCalls(routine, scans, twins);
-  const dayNo = Math.floor(Date.now() / 86_400_000);
-  const tip = TIPS[focus[0]][dayNo % TIPS[focus[0]].length];
 
-  const circle = circleOf(latest.scores);
   const lead = calls.find((c) => c.call === "working") ?? calls[0];
-  const goalNow = goal ? latest.scores[goal.concern] : 0;
-  const goalPct = goal ? Math.max(0, Math.min(1, (goalNow - goal.from) / ((goal.target - goal.from) || 1))) : 0;
 
   // One next action, whichever matters most right now.
   const nextStep = st.due
@@ -85,23 +83,7 @@ export function Today() {
 
       {/* 1 + 2: your skin, and the one thing to do next */}
       <div className="mt-6 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <Link href="/me" data-tour="skin" className="glow-card group flex items-center gap-5 rounded-[2rem] p-5 text-white shadow-soft">
-          <div className="h-32 w-28 shrink-0 rounded-2xl bg-white/90 p-1 text-ink">
-            <FaceDiagram scores={latest.scores} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-white/80">{t("today.mySkin")}</p>
-            <p className="font-display text-4xl">{latest.overall}<span className="text-lg text-white/70">/100</span>{latest.source !== "live" && <span className="ms-2 rounded-full bg-white/15 px-2 py-0.5 align-middle font-sans text-[10px] uppercase tracking-wider text-white/85">{latest.sampleId ? "Sample" : "Demo"}</span>}</p>
-            <p className="text-xs text-white/85">{skinTypeLabel(latest.scores)} · {focus.map((k) => CONCERNS[k].label.toLowerCase()).join(" & ")}</p>
-            {goal ? (
-              <div className="mt-3">
-                <p className="text-[11px] text-white/85">{CONCERNS[goal.concern].label}: {goal.from} → {goal.target} · {goalNow}</p>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/25"><div className="h-full rounded-full bg-white" style={{ width: `${goalPct * 100}%` }} /></div>
-              </div>
-            ) : null}
-            <p className="mt-3 flex items-center gap-1 text-xs">{t("today.open")} <ArrowRight className="size-3.5 transition group-hover:translate-x-1 rtl:rotate-180" /></p>
-          </div>
-        </Link>
+        <SkinCard latest={latest} prev={scans[scans.length - 2]} />
 
         <section className={`flex flex-col justify-between rounded-[2rem] border p-5 ${st.due ? "border-rose bg-blush-100" : "border-line bg-surface"}`}>
           <div>
@@ -112,12 +94,20 @@ export function Today() {
           <Link href={nextStep.href} className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-plum-deep py-3 text-sm text-white hover:bg-plum">
             {nextStep.cta} <ArrowRight className="size-4 rtl:rotate-180" />
           </Link>
+          <button
+            type="button"
+            onClick={() => downloadCheckinIcs(latest.capturedAt, reminderTimes.am)}
+            title={t("cal.hint" as TKey)}
+            className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-line bg-surface py-2.5 text-xs text-plum hover:border-plum"
+          >
+            <CalendarPlus className="size-3.5" /> {t("cal.add" as TKey)}
+          </button>
         </section>
       </div>
 
       {/* 3: today, routine and habits together */}
       <section id="today" className="mt-6 scroll-mt-24 rounded-[2rem] border border-line bg-surface p-5">
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <div>
           <div>
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-sm font-medium"><CalendarHeart className="size-4 text-plum" /> {t("today.routine")}</h2>
@@ -146,9 +136,10 @@ export function Today() {
               </Link>
             )}
           </div>
-          <Habits dayKey={`${todayKey()}:habits`} done={done} toggle={toggleDone} bedtime={wellness.sleep.time} />
         </div>
       </section>
+
+      <DailyCare dayKey={`${todayKey()}:habits`} done={done} toggle={toggleDone} bedtime={wellness.sleep.time} scores={latest.scores} />
 
       {/* 4: your community, twins and circle together */}
       <section className="mt-6 rounded-[2rem] border border-line bg-surface p-5">
@@ -158,10 +149,7 @@ export function Today() {
             <p className="text-xs text-muted">{twins.length} {t("today.twinsSub")}</p>
           </div>
           <div className="flex gap-2">
-            <Link href="/circles" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2 text-xs text-white hover:bg-plum">
-              <MessagesSquare className="size-3.5" /> {t("circ.eyebrow")} · {tr(`st.${circle}` as TKey)}
-            </Link>
-            <Link href="/twins" className="inline-flex items-center gap-1 rounded-full border border-line px-4 py-2 text-xs text-plum">
+            <Link href="/twins" className="inline-flex items-center gap-1 rounded-full bg-plum-deep px-4 py-2 text-xs text-white hover:bg-plum">
               {t("today.openTwins")} <ArrowRight className="size-3.5 rtl:rotate-180" />
             </Link>
           </div>
@@ -175,63 +163,7 @@ export function Today() {
         )}
       </section>
 
-      <p className="mt-6 flex items-start gap-2 text-sm text-muted">
-        <Lightbulb className="mt-0.5 size-4 shrink-0 text-plum" />
-        <span><b className="font-medium text-ink">{t("today.tip")}:</b> {tip}</span>
-      </p>
+      <TipBubble tips={[0, 1].flatMap((n) => focus.map((k) => ({ concern: k, label: CONCERNS[k].label, text: TIPS[k][n] })))} />
     </div>
-  );
-}
-
-// Small daily habits that show up on skin: water, sleep, a pause.
-function Habits({ dayKey, done, toggle, bedtime }: { dayKey: string; done: Record<string, string[]>; toggle: (k: string, id: string) => void; bedtime: string }) {
-  const { t } = useT();
-  const got = done[dayKey] ?? [];
-  const glasses = [1, 2, 3, 4, 5, 6].filter((n) => got.includes(`water${n}`)).length;
-  return (
-    <section className="lg:border-s lg:border-line lg:ps-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium">{t("today.habits")}</h2>
-        <Link href="/settings#reminders" className="text-[11px] text-plum">Reminders</Link>
-      </div>
-      <p className="mt-3 text-xs text-muted">Water · {glasses}/6 glasses</p>
-      <div className="mt-1.5 flex gap-1.5">
-        {[1, 2, 3, 4, 5, 6].map((n) => {
-          const on = n <= glasses;
-          return (
-            <button
-              key={n}
-              onClick={() => {
-                // Tap glass n for n glasses; tap the last full one to take it back.
-                const target = n === glasses ? n - 1 : n;
-                for (let k = 1; k <= 6; k++) if (k <= target !== got.includes(`water${k}`)) toggle(dayKey, `water${k}`);
-              }}
-              aria-label={`Glass ${n}${on ? ", drunk" : ""}`}
-              aria-pressed={on}
-              className={`grid size-8 place-items-center rounded-full transition ${on ? "bg-[#7fb7d8] text-white" : "bg-blush-50 text-blush-300 hover:text-[#7fb7d8]"}`}
-            >
-              <Droplet className={`size-4 ${on ? "fill-current" : ""}`} />
-            </button>
-          );
-        })}
-      </div>
-      <ul className="mt-4 space-y-2">
-        {[
-          { id: "sleep", icon: Moon, label: `In bed by ${bedtime}` },
-          { id: "rest", icon: Coffee, label: "A 5-minute break" },
-        ].map(({ id, icon: Icon, label }) => {
-          const on = got.includes(id);
-          return (
-            <li key={id}>
-              <button onClick={() => toggle(dayKey, id)} aria-pressed={on} className="flex w-full items-center gap-3 rounded-2xl bg-blush-50 p-2.5 text-left text-sm">
-                <span className={`grid size-7 place-items-center rounded-full border-2 ${on ? "border-good bg-good text-white" : "border-blush-300 text-transparent"}`}><Check className="size-3.5" /></span>
-                <Icon className="size-4 text-plum" />
-                <span className={on ? "text-muted line-through" : ""}>{label}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }

@@ -13,6 +13,8 @@ interface Auth {
   enabled: boolean;
   ready: boolean;
   user: User | null;
+  // Signed in, and the account's saved scans are still being loaded.
+  syncing: boolean;
   name?: string;
   signUp: (name: string, email: string, password: string) => Promise<{ error?: string; needsConfirm?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
@@ -115,13 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
     const meta = user.user_metadata?.[KEY] as SyncedState | undefined;
     (async () => {
-      const { data, error } = await supabase!.from("user_state").select("data").eq("user_id", user.id).maybeSingle();
-      table.current = !error;
-      const remote = (data?.data as SyncedState | undefined) ?? meta;
-      if (remote?.scans?.length) store.hydrate(mergeStates(remote, syncedFrom(store)));
-      // Moved to the table: drop the old copy from the sign-in token.
-      if (table.current && meta) supabase!.auth.updateUser({ data: { [KEY]: null } });
-      setSynced(user.id);
+      try {
+        const { data, error } = await supabase!.from("user_state").select("data").eq("user_id", user.id).maybeSingle();
+        table.current = !error;
+        const remote = (data?.data as SyncedState | undefined) ?? meta;
+        if (remote?.scans?.length) store.hydrate(mergeStates(remote, syncedFrom(store)));
+        // Moved to the table: drop the old copy from the sign-in token.
+        if (table.current && meta) supabase!.auth.updateUser({ data: { [KEY]: null } });
+      } finally {
+        // Even if loading fails, stop waiting so the home page never hangs.
+        setSynced(user.id);
+      }
     })();
   }, [user, store]);
 
@@ -181,8 +187,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Auth>(
-    () => ({ enabled: Boolean(supabase), ready, user, name: user?.user_metadata?.name, signUp, signIn, signOut, updateName, updatePassword }),
-    [ready, user, signUp, signIn, signOut, updateName, updatePassword],
+    () => ({ enabled: Boolean(supabase), ready, user, syncing: Boolean(user) && synced !== user!.id, name: user?.user_metadata?.name, signUp, signIn, signOut, updateName, updatePassword }),
+    [ready, user, synced, signUp, signIn, signOut, updateName, updatePassword],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

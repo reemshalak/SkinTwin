@@ -1,5 +1,7 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
+import { TrendMark } from "@/components/ui";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -18,7 +20,7 @@ import { useStore } from "@/lib/store";
 import type { ConcernKey } from "@/lib/types";
 import { useTwins } from "@/lib/use-twins";
 
-const DATE = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
+const DATE = dateFormat({ weekday: "short", day: "numeric", month: "short" });
 
 const ACTIONS: Record<ConcernKey, { title: string; text: string; icon: typeof Droplets }> = {
   moisture: { title: "Hydrate", text: "Hyaluronic acid on damp skin, sealed with a moisturiser.", icon: Droplets },
@@ -61,7 +63,7 @@ export default function ReportPage() {
             <ScanFace className="size-4" /> Skin map
           </Link>
           <Link href="/twins" className="inline-flex items-center gap-1.5 rounded-full bg-plum-deep px-4 py-2.5 text-sm font-medium text-white">
-            Meet my twins <ArrowRight className="size-4" />
+            Meet my twins <ArrowRight className="rtl:-scale-x-100 size-4" />
           </Link>
         </div>
       </div>
@@ -77,14 +79,14 @@ export default function ReportPage() {
               <div className="h-full w-full bg-gradient-to-b from-blush-100 to-blush-200" />
             )}
             {heat && <Heatmap scores={latest.scores} keys={CONCERN_KEYS} />}
-            <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1 text-[11px] font-medium text-plum shadow-card">
+            <span className="absolute top-4 start-4 inline-flex items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1 text-[11px] font-medium text-plum shadow-card">
               <span className={`size-1.5 rounded-full ${latest.source === "live" ? "bg-good" : "bg-rose"}`} />
               {latest.source === "live" ? "YouCam AI analysis" : "Demo analysis"}
             </span>
             <button
               onClick={() => setHeat((v) => !v)}
               aria-pressed={heat}
-              className="absolute top-4 right-4 rounded-full bg-surface/90 px-3 py-1 text-[11px] text-plum shadow-card"
+              className="absolute top-4 end-4 rounded-full bg-surface/90 px-3 py-1 text-[11px] text-plum shadow-card"
             >
               {heat ? "Hide heatmap" : "Show heatmap"}
             </button>
@@ -109,7 +111,7 @@ export default function ReportPage() {
             <div className="mt-5 grid grid-cols-3 gap-4 sm:grid-cols-5">
               <Ring value={latest.overall} label="Overall" i={0} />
               {RING_KEYS.map((k, i) => (
-                <Ring key={k} value={latest.display[k]} label={CONCERNS[k].label} i={i + 1} />
+                <Ring key={k} value={latest.scores[k]} label={CONCERNS[k].label} i={i + 1} />
               ))}
             </div>
           </Reveal>
@@ -128,11 +130,11 @@ export default function ReportPage() {
                         <div className="mb-1.5 flex items-baseline justify-between text-sm">
                           <span className="group-hover:text-plum">{CONCERNS[k].label}</span>
                           <span className="text-xs">
-                            <span className={s.tone}>{s.label}</span> <span className="tabular-nums text-muted">{latest.display[k]}</span>
+                            <span className={s.tone}>{s.label}</span> <span className="tabular-nums text-muted">{latest.scores[k]}</span>
                           </span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-blush-100">
-                          <GrowBar value={latest.display[k]} delay={i * 0.05} className="h-full rounded-full bg-gradient-to-r from-[#8b7ae0] via-[#e37ea5] to-[#f4c27a]" />
+                          <GrowBar value={latest.scores[k]} delay={i * 0.05} className="h-full rounded-full bg-gradient-to-r from-[#8b7ae0] via-[#e37ea5] to-[#f4c27a]" />
                         </div>
                       </Link>
                     </li>
@@ -187,7 +189,7 @@ export default function ReportPage() {
               <Link href="/journal" className="block h-full rounded-[2rem] border border-line bg-surface p-5 transition hover:shadow-card">
                 <p className="text-xs text-muted">Your progress</p>
                 <p className={`mt-2 font-display text-3xl ${progress >= 0 ? "text-good" : "text-bad"}`}>
-                  {scans.length > 1 ? `${progress >= 0 ? "+" : ""}${progress}` : "Start"}
+                  {scans.length > 1 ? <span className="inline-flex items-center gap-1.5"><TrendMark up={progress >= 0} /> {Math.abs(progress)}</span> : "Start"}
                 </p>
                 <p className="text-[11px] text-muted">{scans.length > 1 ? `since your first scan · ${scans.length} check-ins` : "Check in weekly to see change"}</p>
               </Link>

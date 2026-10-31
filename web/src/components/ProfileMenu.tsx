@@ -59,7 +59,7 @@ export function ProfileMenu() {
         data-tour="skin"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="ml-1 block shrink-0 rounded-full ring-2 ring-blush-200 ring-offset-2 ring-offset-blush-50 transition hover:ring-plum"
+        className="ms-1 block shrink-0 rounded-full ring-2 ring-blush-200 ring-offset-2 ring-offset-blush-50 transition hover:ring-plum"
       >
         <MyAvatar className="size-9" />
       </button>
@@ -72,7 +72,7 @@ export function ProfileMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: EASE }}
-            className="absolute right-0 z-50 mt-3 w-72 origin-top-right overflow-hidden rounded-3xl border border-line bg-surface shadow-soft"
+            className="absolute end-0 z-50 mt-3 w-72 origin-top-right overflow-hidden rounded-3xl border border-line bg-surface shadow-soft"
           >
             <div className="flex items-center gap-3 border-b border-line p-4">
               <MyAvatar className="size-11" />

@@ -92,7 +92,7 @@ describe("cart import", () => {
   it("matches generic cart lines to the closest products", () => {
     const ids = matchProducts("Salicylic Acid 2% Exfoliating Toner $18.00\nInvisible Fluid Sunscreen SPF 50\nSubtotal $95.00").map((m) => m.productId);
     expect(ids).toContain("aura-bha-toner");
-    expect(ids).toContain("solis-shield-spf");
+    expect(ids).toContain("sunmere-shield-spf");
     expect(ids).toHaveLength(2);
   });
 });

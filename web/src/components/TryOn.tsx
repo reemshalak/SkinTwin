@@ -99,7 +99,7 @@ export function TryOn({ product }: { product: Product }) {
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-blush-100">
                   <span className="block h-full rounded-full bg-plum" style={{ width: `${(n / most) * 100}%` }} />
                 </span>
-                <span className="w-4 text-right text-muted">{n}</span>
+                <span className="w-4 text-end text-muted">{n}</span>
               </li>
             ))}
           </ul>

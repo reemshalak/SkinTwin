@@ -1,6 +1,8 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, HelpCircle, Loader2, MessageCircle, Send, ThumbsUp, TrendingUp, Users } from "lucide-react";
@@ -20,7 +22,7 @@ import type { ConcernKey } from "@/lib/types";
 import { useEngagement } from "@/lib/use-engagement";
 import { tr, useT, type TKey } from "@/lib/i18n";
 
-const DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+const DATE = dateFormat({ day: "numeric", month: "short" });
 const WEEK = 7 * 86_400_000;
 
 export default function CirclesPage() {
@@ -32,6 +34,10 @@ export default function CirclesPage() {
   const [real, setReal] = useState<CirclePost[]>([]);
   const [filter, setFilter] = useState<"all" | "question" | "progress">("all");
   const active = circle ?? mine ?? "Oily";
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("c");
+    if (c && (CIRCLES as readonly string[]).includes(c)) setCircle(c as Circle);
+  }, []);
 
   useEffect(() => {
     fetchCirclePosts(active).then(setReal);
@@ -49,15 +55,13 @@ export default function CirclesPage() {
   const order = [mine!, ...CIRCLES.filter((c) => c !== mine)];
 
   return (
-    <Page className="!max-w-4xl">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">{t("circ.eyebrow")}</p>
-      <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">
-        <WriteOn text={t("circ.title")} mark={t("circ.mark")} />
-      </h1>
-      <p className="mt-1 text-sm text-muted">{t("circ.sub")}</p>
-
-      {/* Circle chips */}
-      <ul className="-mx-5 mt-5 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0">
+    <Page>
+      <BackLink href="/twins" className="mb-3 inline-flex items-center gap-1 text-sm text-plum">Twins</BackLink>
+      <div className="gap-8 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+      <h1 className="font-display text-3xl text-ink"><WriteOn text={t("circ.title")} mark={t("circ.mark")} /></h1>
+      {/* Groups */}
+      <ul className="-mx-5 mt-4 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 lg:mx-0 lg:flex-col lg:gap-2 lg:overflow-visible lg:px-0">
         {order.map((c) => {
           const on = c === active;
           return (
@@ -65,7 +69,7 @@ export default function CirclesPage() {
               <button
                 onClick={() => setCircle(c)}
                 aria-pressed={on}
-                className={`flex w-40 flex-col rounded-[1.5rem] bg-gradient-to-br p-4 text-left text-[#3a2430] transition ${CIRCLE_INFO[c].hue} ${on ? "ring-2 ring-plum ring-offset-2 ring-offset-blush-50" : "hover:-translate-y-0.5"}`}
+                className={`flex w-40 flex-col rounded-[1.5rem] bg-gradient-to-br p-4 text-start text-[#3a2430] transition lg:w-full lg:p-3 ${CIRCLE_INFO[c].hue} ${on ? "ring-2 ring-plum ring-offset-2 ring-offset-blush-50" : "hover:-translate-y-0.5"}`}
               >
                 {c === mine && <span className="mb-1 w-fit rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#7a3f5c]">{t("circ.yours")}</span>}
                 <span className="font-display text-lg leading-tight">{tr(`st.${c}` as TKey)}</span>
@@ -76,19 +80,26 @@ export default function CirclesPage() {
           );
         })}
       </ul>
+      </aside>
+
+      <div className="min-w-0">
+      <header className={`mb-4 rounded-[1.75rem] bg-gradient-to-br p-5 text-[#3a2430] ${CIRCLE_INFO[active].hue}`}>
+        <p className="font-display text-2xl">{tr(`st.${active}` as TKey)}</p>
+        <p className="text-xs opacity-80">{CIRCLE_INFO[active].blurb} · {t("circ.members", { n: memberCount(active).toLocaleString() })}</p>
+      </header>
 
       {/* Composer */}
       {active === mine ? (
         auth.user ? (
           <Composer circle={active} onPosted={(p) => setReal((r) => [p, ...r])} />
         ) : (
-          <Link href="/signup?next=/circles" className="mt-5 flex items-center justify-between rounded-[1.75rem] border border-line bg-surface p-4 text-sm hover:shadow-card">
+          <Link href="/signup?next=/circles" className="flex items-center justify-between rounded-[1.75rem] border border-line bg-surface p-4 text-sm hover:shadow-card">
             <span><b className="font-medium">{t("circ.join")}</b> <span className="text-muted">{t("circ.joinSub")}</span></span>
-            <ArrowRight className="size-4 text-plum" />
+            <ArrowRight className="rtl:-scale-x-100 size-4 text-plum" />
           </Link>
         )
       ) : (
-        <p className="mt-5 rounded-[1.75rem] bg-blush-100 p-4 text-xs text-muted">You can read any circle. Posting is in your own circle, so answers come from people with your skin.</p>
+        <p className="rounded-[1.75rem] bg-blush-100 p-4 text-xs text-muted">You can read any circle. Posting is in your own circle, so answers come from people with your skin.</p>
       )}
 
       {/* Filter */}
@@ -121,6 +132,8 @@ export default function CirclesPage() {
           Check in again next week and you can share your own week-by-week progress here. <Link href="/scan" className="text-plum underline">Check in</Link>
         </p>
       )}
+      </div>
+      </div>
     </Page>
   );
 }
@@ -270,7 +283,7 @@ function CircleCard({ post, helpful, onHelpful }: { post: CirclePost; helpful: {
             <span className="block font-display text-2xl text-muted">{post.startScore}</span>
             <span className="text-[9px] uppercase tracking-wider text-muted">Week 1</span>
           </span>
-          <ArrowRight className="size-4 text-plum" />
+          <ArrowRight className="rtl:-scale-x-100 size-4 text-plum" />
           <span className="text-center">
             <span className="block font-display text-2xl text-ink">{post.nowScore}</span>
             <span className="text-[9px] uppercase tracking-wider text-muted">Week {post.weeks}</span>

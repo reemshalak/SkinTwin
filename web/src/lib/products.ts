@@ -1,4 +1,5 @@
 import RAW from "@/data/catalog.json";
+import PACKSHOTS from "@/data/packshots.json";
 import type { Active, ConcernKey, Product, Scores } from "./types";
 
 // Demo catalogue with fictional brands (no third-party trademarks). Ingredient
@@ -70,7 +71,20 @@ const CONCERN_WORD: Record<ConcernKey, string> = {
   wrinkle: "fine lines",
 };
 
-const titleCase = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\w/g, (m) => m.toUpperCase()) : s);
+const KEY_BOTANICALS: [RegExp, string][] = [
+  [/centella|madecassoside/i, "Centella"],
+  [/artemisia/i, "Mugwort"],
+  [/camellia sinensis/i, "Green tea"],
+  [/aloe barbadensis/i, "Aloe"],
+  [/melaleuca/i, "Tea tree"],
+  [/rosa canina/i, "Rosehip oil"],
+  [/tripeptide|tetrapeptide/i, "Peptides"],
+  [/caffeine/i, "Caffeine"],
+  [/kaolin|bentonite/i, "Clay"],
+  [/oryza sativa/i, "Rice extract"],
+];
+
+const titleCase =(s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/(^|[\s-])\w/g, (m) => m.toUpperCase()) : s);
 
 function build(raw: (typeof RAW)[number], i: number): Product {
   const text = raw.ingredients.join(", ");
@@ -91,7 +105,14 @@ function build(raw: (typeof RAW)[number], i: number): Product {
   const blurb = lead.length
     ? `${lead.join(" + ")} to target ${top.join(" and ")}.`
     : `A daily ${raw.category === "makeup" ? "lip and skin" : "skin"} essential.`;
-  const isTint = raw.id === "solis-silk-foundation";
+  const isTint = raw.id === "sunmere-silk-foundation";
+  // Sunscreens are known for their filters; calming products for their botanicals.
+  const botanical = KEY_BOTANICALS.find(([re]) => re.test(text))?.[1];
+  const key =
+    raw.category === "sunscreen" ? (/zinc oxide|titanium dioxide/i.test(text) ? "Mineral filters" : "UV filters")
+    : raw.category === "makeup" ? "Colour"
+    : lead[0] && !(botanical && lead[0] === "Hyaluronic acid") ? lead[0]
+    : botanical ?? (actives.includes("occlusive") ? "Nourishing oils" : "Gentle basic");
   return {
     id: raw.id,
     name: raw.name,
@@ -101,8 +122,10 @@ function build(raw: (typeof RAW)[number], i: number): Product {
     size: raw.size || "—",
     slot: raw.slot as Product["slot"],
     actives,
+    key,
     ingredients: raw.ingredients.map((s) => titleCase(s.replace(/\s+/g, " ").replace(/^ingredients\/?\s*\w*:\s*/i, ""))),
     blurb,
+    image: PACKSHOTS.includes(raw.id) ? `/packshots/${raw.id}.webp` : undefined,
     effects,
     risks,
     hue: HUES[i % HUES.length],
@@ -114,7 +137,7 @@ function build(raw: (typeof RAW)[number], i: number): Product {
           { name: "Medium-deep", hex: "#9A6A48" },
           { name: "Deep", hex: "#6B452F" },
         ]
-      : raw.id === "solis-silk-lip"
+      : raw.id === "sunmere-silk-lip"
         ? [
             { name: "Bare", hex: "#C98B7A" },
             { name: "Rose", hex: "#C0566F" },

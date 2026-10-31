@@ -1,5 +1,8 @@
 "use client";
 
+import { useAuth } from "@/lib/auth";
+import { HomeLoading, Welcome } from "@/components/home/Welcome";
+import { TrendMark } from "@/components/ui";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, BadgeCheck, Check, ScanFace, Star, Users } from "lucide-react";
@@ -14,14 +17,12 @@ import { CONCERN_KEYS, CONCERNS } from "@/lib/concerns";
 import { CountUp, EASE, Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { ProductVisual } from "@/components/ProductArt";
 import { COHORT_SIZE, FEATURED } from "@/lib/cohort";
-import { PEOPLE, personAvatar, portraitPath } from "@/lib/people";
+import { PEOPLE, personAvatar, afterPath, portraitPath } from "@/lib/people";
 import { productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
 import { everyone, findTwins, outcomeFor } from "@/lib/twins";
 
-const AMARA = portraitPath("amara");
 // Placeholder "after" until a YouCam Skin Simulation render is generated.
-const AFTER_STYLE = { filter: "saturate(1.04) brightness(1.04) contrast(0.96)" };
 
 const amara = FEATURED.find((m) => m.personId === "amara")!;
 const amaraTwins = findTwins(amara.scores, "amara");
@@ -42,8 +43,12 @@ const STATS = [
 
 export default function Home() {
   const { latest, ready } = useStore();
+  const auth = useAuth();
   const { t } = useT();
   if (ready && latest) return <Today />;
+  // Signed in: wait for the account's saved scans, then show their home, never the sales page.
+  if (auth.user && (!ready || auth.syncing)) return <HomeLoading />;
+  if (auth.user) return <Welcome />;
   return (
     <div className="overflow-hidden">
       {/* Hero: portrait with scan frames, headline left, stats right */}
@@ -73,9 +78,6 @@ export default function Home() {
               <Link href="/scan" className="inline-flex items-center gap-2 rounded-full bg-plum-deep px-7 py-3.5 text-sm font-medium text-white shadow-soft transition hover:bg-plum">
                 <ScanFace className="size-4" /> {t("hero.cta")}
               </Link>
-              <Link href="/scan#samples" className="rounded-full border border-line bg-surface px-6 py-3.5 text-sm text-plum">
-                {t("hero.sample")}
-              </Link>
             </motion.div>
             <div className="mt-8 flex items-center gap-3">
               <div className="flex -space-x-2">
@@ -93,7 +95,7 @@ export default function Home() {
 
           <Stagger as="ul" className="grid grid-cols-3 gap-4 lg:order-3 lg:grid-cols-1 lg:gap-8">
             {STATS.map((s) => (
-              <StaggerItem key={s.label} className="border-l-2 border-blush-200 pl-3">
+              <StaggerItem key={s.label} className="border-s-2 border-blush-200 ps-3">
                 <p className="font-display text-3xl text-plum-deep">
                   <CountUp value={s.value} />
                   {s.suffix}
@@ -224,7 +226,7 @@ export default function Home() {
       <section className="py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-2 lg:px-8">
           <Reveal>
-            <BeforeAfter before={AMARA} after={AMARA} afterStyle={AFTER_STYLE} labels={["Today", "Week 8"]} className="aspect-[4/5] rounded-[2.5rem] shadow-soft" />
+            <BeforeAfter before={portraitPath("elaine")} after={afterPath("elaine")} labels={["Week 1", "Week 8"]} className="aspect-[4/5] rounded-[2.5rem] shadow-soft" />
           </Reveal>
           <div>
             <Reveal>
@@ -236,18 +238,19 @@ export default function Home() {
             </Reveal>
             <Stagger as="div" className="mt-8 grid grid-cols-2 gap-3">
               {[
-                ["Clarity", "+12"],
-                ["Pores", "+9"],
-                ["Oil balance", "+8"],
-                ["Glow", "+6"],
-              ].map(([k, v]) => (
-                <StaggerItem as="div" key={k} className="rounded-3xl border border-line bg-surface p-5">
+                ["Hydration", 6, "skin feels supple, not tight"],
+                ["Glow", 5, "brighter, more even tone"],
+                ["Smoothness", 4, "fewer dry patches"],
+                ["Fine lines", 2, "slightly softer, still natural"],
+              ].map(([k, v, what]) => (
+                <StaggerItem as="div" key={k as string} className="rounded-3xl border border-line bg-surface p-5">
                   <p className="text-xs text-muted">{k}</p>
-                  <p className="font-display text-3xl text-good">{v}</p>
+                  <p className="flex items-center gap-1.5 font-display text-3xl text-good"><TrendMark up /> {v} <span className="text-base">better</span></p>
+                  <p className="text-xs text-muted">{what}</p>
                 </StaggerItem>
               ))}
             </Stagger>
-            <p className="mt-3 text-[11px] text-muted">Illustrative 8-week result on a sample face.</p>
+            <p className="mt-3 text-[11px] text-muted">Illustrative 8-week result on an AI-generated sample person. Scores are out of 100, and higher is always healthier.</p>
           </div>
         </div>
       </section>
@@ -266,7 +269,7 @@ export default function Home() {
             ))}
           </ul>
           <Link href="/scan" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-medium text-plum-deep">
-            {t("close.cta")} <ArrowRight className="size-4" />
+            {t("close.cta")} <ArrowRight className="rtl:-scale-x-100 size-4" />
           </Link>
         </Reveal>
       </section>

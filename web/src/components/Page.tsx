@@ -26,7 +26,7 @@ export function PageTitle({
       <div className="max-w-2xl">
         {back && (
           <Link href={back.href} className="mb-3 inline-flex items-center gap-1 text-sm text-plum">
-            <ChevronLeft className="size-4" /> {back.label}
+            <ChevronLeft className="rtl:-scale-x-100 size-4" /> {back.label}
           </Link>
         )}
         {eyebrow && <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">{eyebrow}</p>}

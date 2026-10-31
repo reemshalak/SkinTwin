@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendMark } from "@/components/ui";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, type PanInfo } from "motion/react";
@@ -49,7 +50,7 @@ function MixLab() {
   const tried = useMemo(() => (ids.length >= 2 ? twinsWhoTried(ids, twins) : null), [ids, twins]);
 
   if (!ready) return null;
-  if (!latest) return <NeedScan what="Mix Lab" />;
+  if (!latest) return <NeedScan what="combo previews" />;
 
   // Your own scan photo; a sample face if it was removed or never generated.
   const ownPhoto = latest.photo?.startsWith("data:") || (latest.photo && HAS_PORTRAIT.has(latest.photo.replace(/^\/people\/|\.jpg$/g, "")));
@@ -100,7 +101,7 @@ function MixLab() {
     <Page>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Mix Lab</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-plum">Preview a combo · YouCam Skin Simulation</p>
           <h1 className="mt-1 font-display text-3xl text-ink lg:text-4xl">Drop products on your face</h1>
           <p className="mt-1 text-sm text-muted">See what a combo could do in 6 weeks, before you buy.</p>
         </div>
@@ -168,7 +169,7 @@ function MixLab() {
                   {p ? (
                     <>
                       <ProductVisual product={p} className="absolute inset-[12%] h-[76%] w-[76%]" />
-                      <button onClick={() => remove(p.id)} aria-label={`Remove ${p.name}`} className="absolute -top-1 -right-1 grid size-6 place-items-center rounded-full bg-surface text-muted shadow-card hover:text-bad">
+                      <button onClick={() => remove(p.id)} aria-label={`Remove ${p.name}`} className="absolute -top-1 -end-1 grid size-6 place-items-center rounded-full bg-surface text-muted shadow-card hover:text-bad">
                         <X className="size-3.5" />
                       </button>
                     </>
@@ -192,13 +193,12 @@ function MixLab() {
                   <div className="flex-1">
                     <p className="font-display text-2xl">{v.label}</p>
                     <p className="text-xs opacity-90">
-                      {mix.net >= 0 ? "+" : ""}
-                      {mix.net} points across your skin
+                      {Math.abs(mix.net)} points {mix.net >= 0 ? "better" : "worse"} across your skin
                     </p>
                   </div>
                   {tried && tried.n >= 3 && mix.verdict !== "clash" && (
-                    <p className="text-right text-xs">
-                      <Users className="ml-auto size-4" />
+                    <p className="text-end text-xs">
+                      <Users className="ms-auto size-4" />
                       <span className="font-display text-lg">{tried.improvedPct}%</span>
                       <span className="block opacity-90">of {tried.n} twins who used these</span>
                     </p>
@@ -279,7 +279,7 @@ function MixLab() {
                       className={`relative block aspect-square w-full touch-none rounded-2xl bg-gradient-to-br ${p.hue} ${on ? "ring-2 ring-plum" : ""}`}
                     >
                       <ProductVisual product={p} className="pointer-events-none absolute inset-[10%] h-[80%] w-[80%]" />
-                      {on && <span className="absolute top-1 right-1 grid size-5 place-items-center rounded-full bg-plum text-white"><Check className="size-3" /></span>}
+                      {on && <span className="absolute top-1 end-1 grid size-5 place-items-center rounded-full bg-plum text-white"><Check className="size-3" /></span>}
                     </motion.button>
                     <p className="mt-1 line-clamp-1 text-center text-[10px] text-muted">{p.name}</p>
                   </li>
@@ -332,7 +332,7 @@ function Markers({ delta }: { delta: Scores }) {
             style={{ left: `${z.x}%`, top: `${z.y}%` }}
           >
             <span className={`flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-medium text-white shadow-card ${d > 0 ? "bg-good/90" : "bg-bad/90"}`}>
-              {d > 0 ? "+" : "−"}
+              <TrendMark up={d > 0} tone="bare" />
               {Math.abs(Math.round(d))} {CONCERNS[k].label}
             </span>
           </motion.span>
@@ -350,13 +350,12 @@ function ConcernTile({ k, now, d }: { k: ConcernKey; now: number; d: number }) {
       <p className="text-[10px] uppercase tracking-wider text-muted">{CONCERNS[k].label}</p>
       <p className="mt-1 flex items-baseline gap-1.5">
         <span className="font-display text-xl text-ink">{after}</span>
-        <span className={`text-xs font-medium ${tone}`}>
-          {d > 0 ? "+" : ""}
-          {d.toFixed(0)}
+        <span className={`inline-flex items-center gap-1 text-xs font-medium ${tone}`}>
+          {Math.round(d) !== 0 && <TrendMark up={d > 0} />} {Math.abs(Math.round(d))}
         </span>
       </p>
       <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-blush-100">
-        <div className="absolute inset-y-0 left-0 rounded-full bg-blush-300" style={{ width: `${now}%` }} />
+        <div className="absolute inset-y-0 start-0 rounded-full bg-blush-300" style={{ width: `${now}%` }} />
         <motion.div
           className={`absolute inset-y-0 rounded-full ${d >= 0 ? "bg-good" : "bg-bad"}`}
           initial={{ width: 0 }}

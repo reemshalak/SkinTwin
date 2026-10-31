@@ -141,3 +141,11 @@ button:not(:disabled):active {
 @media (prefers-reduced-motion: reduce) {
   .animate-page-wash { animation: none; opacity: 0; }
 }
+
+/* Headline words fade and sharpen in (WriteOn). */
+@keyframes writeon {
+  from { opacity: 0; transform: translateY(0.35em); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.writeon-word { animation: writeon 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) { .writeon-word { animation: none; } }

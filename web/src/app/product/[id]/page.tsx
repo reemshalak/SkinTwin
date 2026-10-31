@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { BackLink } from "@/components/BackLink";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AlertTriangle, BadgeCheck, ChevronLeft, ExternalLink, HelpCircle, MapPin, Moon, Search, Sparkles, Sun, Users } from "lucide-react";
+import { AlertTriangle, BadgeCheck, ExternalLink, HelpCircle, MapPin, Moon, Search, Sparkles, Sun, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { ProductVisual, productColors } from "@/components/ProductArt";
 import { CountUp, EASE } from "@/components/motion";
@@ -16,7 +17,7 @@ import { CONCERNS } from "@/lib/concerns";
 import { conflictsIfAdded } from "@/lib/conflicts";
 import { ACTIVE_LABELS, productById } from "@/lib/products";
 import { useStore } from "@/lib/store";
-import { VERDICT_STYLE, verdictFor } from "@/lib/verdict";
+import { TRYON_VERDICT, VERDICT_STYLE, verdictFor } from "@/lib/verdict";
 import { useT, type TKey } from "@/lib/i18n";
 import { everyone, findTwins, outcomeFor } from "@/lib/twins";
 import type { ConcernKey, Product } from "@/lib/types";
@@ -38,7 +39,7 @@ function Gallery({ product }: { product: Product }) {
     <div key="k" className="absolute top-[44%] left-1/2 grid aspect-square h-[56%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface/85 text-center shadow-card">
       <div>
         <p className="text-[10px] uppercase tracking-[0.2em] text-muted">Hero active</p>
-        <p className="mt-1 font-display text-2xl text-plum-deep">{product.actives[0] ? ACTIVE_LABELS[product.actives[0]] : "Pigment"}</p>
+        <p className="mt-1 font-display text-2xl text-plum-deep">{product.key}</p>
       </div>
     </div>,
   ];
@@ -101,7 +102,7 @@ export default function ProductPage() {
     );
   }
 
-  const verdict = verdictFor(latest ? outcomes.twins : null, outcomes.all);
+  const verdict = product.category === "makeup" ? TRYON_VERDICT : verdictFor(latest ? outcomes.twins : null, outcomes.all);
   const vs = VERDICT_STYLE[verdict.kind];
   const VIcon = verdict.kind === "good" ? BadgeCheck : verdict.kind === "risky" ? AlertTriangle : verdict.kind === "mixed" ? Users : HelpCircle;
   // Under 5 twins, the numbers below show everyone's results instead.
@@ -114,9 +115,7 @@ export default function ProductPage() {
 
   return (
     <Page>
-      <Link href="/shop" className="mb-6 inline-flex items-center gap-1 text-sm text-plum">
-        <ChevronLeft className="size-4" /> {t("prod.back")}
-      </Link>
+      <BackLink href="/shop" className="mb-6 inline-flex items-center gap-1 text-sm text-plum">{t("prod.back")}</BackLink>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="self-start lg:sticky lg:top-24">
         <Gallery product={product} />
@@ -126,10 +125,10 @@ export default function ProductPage() {
             <div className="min-w-0">
               <h1 className="font-display text-2xl leading-tight lg:text-3xl">{product.name}</h1>
               <p className="mt-1 text-xs text-muted">
-                {product.brand} · {product.actives[0] ? ACTIVE_LABELS[product.actives[0]] : "Colour"} · {product.size}
+                {product.brand} · {product.key} · {product.size}
               </p>
             </div>
-            <div className="shrink-0 text-right">
+            <div className="shrink-0 text-end">
               <Stars value={outcomes.all.avgRating} />
               <p className="text-[10px] text-muted">({outcomes.all.n} reviews)</p>
             </div>
@@ -275,7 +274,7 @@ export default function ProductPage() {
                         transition={{ duration: 0.7, ease: EASE }}
                       />
                     </div>
-                    <span className="text-right"><Delta value={v} /></span>
+                    <span className="text-end"><Delta value={v} /></span>
                   </li>
                 ))}
               </ul>

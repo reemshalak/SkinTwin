@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Camera, Droplet, ImageUp, RefreshCw, Scissors, ShieldCheck, Smile, Sun } from "lucide-react";
-import { FaceAvatar } from "@/components/FaceAvatar";
 import { Page, PageTitle } from "@/components/Page";
 import { downscale } from "@/lib/image";
 import { hashString } from "@/lib/random";
-import { SCANNABLE_FACES, sampleById } from "@/lib/samples";
+import { sampleById } from "@/lib/samples";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
@@ -197,7 +196,7 @@ export default function ScanPage() {
             )}
           </div>
           {camera === "on" && !preview && lastPhoto && (
-            <button onClick={() => setGhost((g) => !g)} className="absolute right-4 bottom-24 rounded-full bg-black/35 px-3 py-1.5 text-[11px] text-white backdrop-blur">
+            <button onClick={() => setGhost((g) => !g)} className="absolute end-4 bottom-24 rounded-full bg-black/35 px-3 py-1.5 text-[11px] text-white backdrop-blur">
               {ghost ? "Hide" : "Show"} last week&apos;s outline
             </button>
           )}
@@ -256,7 +255,7 @@ export default function ScanPage() {
           </button>
         </div>
         {camera === "denied" && (
-          <p className="mt-3 text-center text-xs text-bad">Camera access was blocked. Upload a photo or try the sample face instead.</p>
+          <p className="mt-3 text-center text-xs text-bad">Camera access was blocked. Upload a photo instead.</p>
         )}
         {error && <p className="mt-3 text-center text-xs text-bad">{error}</p>}
         {repeat && (
@@ -284,45 +283,28 @@ export default function ScanPage() {
             type="button"
             onClick={startCamera}
             disabled={busy || camera === "starting" || camera === "on"}
-            className="group flex items-center gap-4 rounded-[1.75rem] bg-gradient-to-r from-rose to-plum p-4 text-left text-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70"
+            className="group flex items-center gap-4 rounded-[1.75rem] bg-gradient-to-r from-rose to-plum p-4 text-start text-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70"
           >
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/20"><Camera className="size-6" /></span>
             <span className="flex-1">
               <span className="block text-base font-medium">{camera === "on" ? t("scan.camOn") : t("scan.cam")}</span>
               <span className="text-xs text-white/85">{t("scan.camSub")}</span>
             </span>
-            <ArrowRight className="size-5 transition group-hover:translate-x-1" />
+            <ArrowRight className="rtl:-scale-x-100 size-5 transition group-hover:translate-x-1" />
           </button>
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={busy}
-            className="group flex items-center gap-4 rounded-[1.75rem] border border-line bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5 hover:border-plum hover:shadow-soft disabled:opacity-60"
+            className="group flex items-center gap-4 rounded-[1.75rem] border border-line bg-surface p-4 text-start shadow-card transition hover:-translate-y-0.5 hover:border-plum hover:shadow-soft disabled:opacity-60"
           >
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-blush-100 text-plum"><ImageUp className="size-6" /></span>
             <span className="flex-1">
               <span className="block text-base font-medium">{t("scan.upload")}</span>
               <span className="text-xs text-muted">{t("scan.uploadSub")}</span>
             </span>
-            <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
+            <ArrowRight className="rtl:-scale-x-100 size-5 text-plum transition group-hover:translate-x-1" />
           </button>
-          {SCANNABLE_FACES.map((f) => (
-            <button
-              id="samples"
-              key={f.id}
-              type="button"
-              disabled={busy}
-              onClick={() => analyze({ sampleId: f.id })}
-              className="group flex scroll-mt-24 items-center gap-4 rounded-[1.75rem] border border-line bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5 hover:border-plum hover:shadow-soft disabled:opacity-60"
-            >
-              <FaceAvatar src={f.image} tone={f.tone} alt={`Sample face: ${f.name}`} className="size-14 shrink-0 rounded-2xl" />
-              <span className="flex-1">
-                <span className="block text-base font-medium">{t("scan.sample")}</span>
-                <span className="text-xs text-muted">{t("scan.sampleSub", { name: f.name })}</span>
-              </span>
-              <ArrowRight className="size-5 text-plum transition group-hover:translate-x-1" />
-            </button>
-          ))}
         </div>
 
         <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{t("scan.tips")}</p>

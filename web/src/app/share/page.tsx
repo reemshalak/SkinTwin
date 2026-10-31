@@ -1,5 +1,6 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -20,7 +21,7 @@ import { useDictation } from "@/lib/use-dictation";
 import type { ConcernKey } from "@/lib/types";
 import { measureProduct, MIN_WEEKS } from "@/lib/verify";
 
-const DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+const DATE = dateFormat({ day: "numeric", month: "short" });
 
 function ShareForm() {
   const router = useRouter();
@@ -98,7 +99,7 @@ function ShareForm() {
         <section className="rounded-[2rem] border border-line bg-surface p-5">
           <p className="flex items-center justify-between text-xs font-medium">
             Product
-            <Link href="/import" className="font-normal text-plum underline">Not here? Add from cart</Link>
+            <Link href="/import?next=/share" className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1 font-normal text-plum hover:border-plum">+ Not listed? Add it from a cart screenshot or link</Link>
           </p>
           <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
             {mineFirst.slice(0, 14).map((id) => {
@@ -179,7 +180,7 @@ function ShareForm() {
                 maxLength={500}
                 rows={3}
                 placeholder="e.g. Cleared my forehead in 4 weeks, a little dry at first."
-                className={`w-full resize-none rounded-2xl border bg-blush-50 px-4 py-3 pr-16 text-sm outline-none focus:border-plum focus:bg-surface ${voice.listening ? "border-rose" : "border-line"}`}
+                className={`w-full resize-none rounded-2xl border bg-blush-50 px-4 py-3 pe-16 text-sm outline-none focus:border-plum focus:bg-surface ${voice.listening ? "border-rose" : "border-line"}`}
               />
               {voice.supported && (
                 <button
@@ -187,7 +188,7 @@ function ShareForm() {
                   onClick={voice.listening ? voice.stop : voice.start}
                   aria-pressed={voice.listening}
                   aria-label={voice.listening ? "Stop voice input" : "Talk your review"}
-                  className={`absolute right-3 bottom-3 grid size-11 place-items-center rounded-full text-white shadow-card transition ${voice.listening ? "bg-bad" : "bg-gradient-to-br from-rose to-plum hover:scale-105"}`}
+                  className={`absolute end-3 bottom-3 grid size-11 place-items-center rounded-full text-white shadow-card transition ${voice.listening ? "bg-bad" : "bg-gradient-to-br from-rose to-plum hover:scale-105"}`}
                 >
                   {voice.listening && <span className="absolute inset-0 animate-ping rounded-full bg-bad/40" />}
                   {voice.listening ? <Square className="relative size-4 fill-current" /> : <Mic className="size-5" />}

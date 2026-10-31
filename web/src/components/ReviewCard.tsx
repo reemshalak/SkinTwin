@@ -1,5 +1,6 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -15,7 +16,7 @@ import { productById } from "@/lib/products";
 import { similarity } from "@/lib/twins";
 import type { ConcernKey, Scores } from "@/lib/types";
 
-const DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+const DATE = dateFormat({ day: "numeric", month: "short" });
 
 export function VerifiedBadge({ post }: { post: ReviewPost }) {
   const [open, setOpen] = useState(false);
@@ -36,7 +37,7 @@ export function VerifiedBadge({ post }: { post: ReviewPost }) {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute top-7 left-0 z-20 w-64 rounded-2xl border border-line bg-surface p-3 text-[11px] leading-relaxed text-ink shadow-soft"
+            className="absolute top-7 start-0 z-20 w-64 rounded-2xl border border-line bg-surface p-3 text-[11px] leading-relaxed text-ink shadow-soft"
           >
             {post.verified
               ? "These numbers weren't typed. They come from two of the reviewer's own live skin scans, before starting the product and at least 3 weeks later."
@@ -147,7 +148,7 @@ export function ReviewCard({
             .slice(0, 4)
             .map(([k, v]) => (
               <span key={k} className="rounded-full bg-blush-50 px-2.5 py-1 text-[11px]">
-                {CONCERNS[k].label} <Delta value={v} />
+                {CONCERNS[k].label} <Delta value={v} words />
               </span>
             ))}
         </p>
@@ -185,7 +186,7 @@ export function ReviewCard({
               await deleteReview(post.key);
               onDeleted?.();
             }}
-            className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-muted hover:text-bad"
+            className="ms-auto inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-muted hover:text-bad"
           >
             <Trash2 className="size-3.5" /> Delete
           </button>

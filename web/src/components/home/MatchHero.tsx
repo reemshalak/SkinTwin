@@ -99,7 +99,7 @@ export function MatchHero() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
               transition={{ duration: 0.5, ease: EASE }}
-              className="flex items-center gap-3 rounded-[1.5rem] bg-gradient-to-r from-blush-100 to-surface p-2.5 pr-4 shadow-card"
+              className="flex items-center gap-3 rounded-[1.5rem] bg-gradient-to-r from-blush-100 to-surface p-2.5 pe-4 shadow-card"
             >
               <ProductThumb product={WORKED} size="sm" />
               <p className="min-w-0 flex-1 text-xs">

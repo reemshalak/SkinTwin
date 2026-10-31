@@ -1,5 +1,6 @@
 "use client";
 
+import { dateFormat } from "@/lib/i18n-core";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
@@ -8,7 +9,7 @@ import { GoalCard } from "@/components/GoalCard";
 import { EASE } from "@/components/motion";
 import { NeedScan } from "@/components/NeedScan";
 import { Page } from "@/components/Page";
-import { ProductThumb } from "@/components/ui";
+import { ProductThumb, TrendMark } from "@/components/ui";
 import { CONCERNS } from "@/lib/concerns";
 import { productById } from "@/lib/products";
 import { sampleById } from "@/lib/samples";
@@ -17,7 +18,7 @@ import type { RoutineItem, SkinProfile } from "@/lib/types";
 import { useTwins } from "@/lib/use-twins";
 import { productCalls, streak, twinPace, weekMoves, type Call } from "@/lib/week";
 
-const DATE = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+const DATE = dateFormat({ day: "numeric", month: "short" });
 const photoOf = (s: SkinProfile) => s.photo ?? (s.sampleId ? sampleById(s.sampleId)?.image : undefined);
 
 const CALL: Record<Call, { label: string; cls: string; icon: typeof Check }> = {
@@ -86,7 +87,7 @@ export default function WeekPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt="" className={`h-full w-full object-cover transition duration-500 ${reveal ? "" : "scale-110 blur-lg"}`} />
                   )}
-                  <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/40 px-2 py-0.5 text-[10px] backdrop-blur">{i ? "This week" : "Last week"}</span>
+                  <span className="absolute bottom-1.5 start-1.5 rounded-full bg-black/40 px-2 py-0.5 text-[10px] backdrop-blur">{i ? "This week" : "Last week"}</span>
                 </button>
               );
             })}
@@ -101,8 +102,7 @@ export default function WeekPage() {
             )}
             <p className="mt-1 text-sm opacity-90">
               {top?.by && top.d > 0 ? `Likely from your ${productById(top.by)?.name}. ` : ""}
-              Overall {overall >= 0 ? "+" : ""}
-              {overall} · {prev.overall} → {cur.overall}
+              Overall <TrendMark up={overall >= 0} tone="onDark" /> {Math.abs(overall)} {overall >= 0 ? "better" : "worse"} · {prev.overall} → {cur.overall}
             </p>
           </div>
           <button onClick={() => setReveal((v) => !v)} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs backdrop-blur">
@@ -114,8 +114,7 @@ export default function WeekPage() {
           {moves.slice(0, 6).map((m, i) => (
             <motion.li key={m.k} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }} className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs backdrop-blur">
               {m.d > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-              {CONCERNS[m.k].label} {m.d > 0 ? "+" : ""}
-              {m.d}
+              {CONCERNS[m.k].label} {Math.abs(m.d)} {m.d > 0 ? "better" : "worse"}
             </motion.li>
           ))}
         </ul>
@@ -129,7 +128,7 @@ export default function WeekPage() {
             <p className="mt-2 font-display text-3xl text-ink">
               Ahead of <span className="text-plum">{pace.ahead}%</span>
             </p>
-            <p className="text-xs text-muted">of {pace.n} twins at week {pace.weeks}, by measured change ({pace.mine >= 0 ? "+" : ""}{pace.mine} points)</p>
+            <p className="text-xs text-muted">of {pace.n} twins at week {pace.weeks}, by measured change ({Math.abs(pace.mine)} points {pace.mine >= 0 ? "better" : "worse"})</p>
             <div className="relative mt-4 h-3 rounded-full bg-gradient-to-r from-blush-100 via-blush-200 to-blush-400">
               <motion.span
                 className="absolute top-1/2 grid size-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-4 border-surface bg-plum-deep shadow-card"
@@ -203,7 +202,7 @@ export default function WeekPage() {
                     <Link href={`/product/${swap.id}`} className="mt-3 flex items-center gap-2 rounded-2xl bg-blush-50 p-2 text-xs hover:bg-blush-100">
                       <ProductThumb product={swap} size="sm" />
                       <span className="flex-1">Worked better for your twins: <b className="font-medium">{swap.name}</b></span>
-                      <ArrowRight className="size-4 text-plum" />
+                      <ArrowRight className="rtl:-scale-x-100 size-4 text-plum" />
                     </Link>
                   )}
                 </motion.li>

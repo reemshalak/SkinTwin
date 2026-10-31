@@ -42,6 +42,20 @@ export function useSuggestedPlan() {
       product.actives.filter((a) => STRONG.includes(a)).forEach((a) => actives.add(a));
       improved[product.id] = o.improvedPct;
     }
+    // Every routine needs a cleanser and a moisturiser. If too few close twins tried one,
+    // take the gentlest well-rated one from everyone's results.
+    for (const cat of ["cleanser", "moisturizer"] as const) {
+      if (used.has(cat)) continue;
+      const pick = PRODUCTS.filter((p) => p.category === cat && !p.actives.some((a) => STRONG.includes(a) && actives.has(a)))
+        .map((product) => ({ product, o: outcomeFor(product.id, twins.length ? twins : []) }))
+        .sort((a, b) => Number(b.o.n >= 3) - Number(a.o.n >= 3) || fitScore(b.o) - fitScore(a.o))
+        .find((r) => fitScore(r.o) >= 0 && !conflictsIfAdded(plan, r.product.id, "pm").length);
+      if (!pick) continue;
+      plan.push({ productId: pick.product.id, slot: "pm", addedAt: now });
+      plan.push({ productId: pick.product.id, slot: "am", addedAt: now });
+      used.add(cat);
+      improved[pick.product.id] = pick.o.improvedPct;
+    }
     if (findConflicts(plan).some((c) => c.kind === "missing_spf")) {
       plan.push({ productId: firstSunscreen().id, slot: "am", addedAt: new Date().toISOString() });
     }

@@ -147,14 +147,14 @@ export function AuthForm({ mode }: { mode: "signup" | "login" }) {
                       onChange={(e) => setPassword(e.target.value)}
                       autoComplete={mode === "signup" ? "new-password" : "current-password"}
                       minLength={6}
-                      className="w-full rounded-2xl border border-line bg-blush-50 px-4 py-3 pr-12 text-sm outline-none transition focus:border-plum focus:bg-surface"
+                      className="w-full rounded-2xl border border-line bg-blush-50 px-4 py-3 pe-12 text-sm outline-none transition focus:border-plum focus:bg-surface"
                       placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
                     />
                     <button
                       type="button"
                       onClick={() => setShow((v) => !v)}
                       aria-label={show ? "Hide password" : "Show password"}
-                      className="absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center rounded-full text-muted hover:text-plum"
+                      className="absolute top-1/2 end-3 grid size-8 -translate-y-1/2 place-items-center rounded-full text-muted hover:text-plum"
                     >
                       {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>

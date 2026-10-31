@@ -34,7 +34,7 @@ export default function MerchantPage() {
     <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-12">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/shop" className="flex items-center gap-1.5 text-sm text-plum">
-          <ArrowLeft className="size-4" /> Back to app
+          <ArrowLeft className="rtl:-scale-x-100 size-4" /> Back to app
         </Link>
         <p className="font-display text-xl text-plum-deep">SkinTwin for brands</p>
       </header>
@@ -86,12 +86,12 @@ export default function MerchantPage() {
           <h2 className="text-sm font-medium">Who this product works for</h2>
           <p className="text-[11px] text-muted">Measured before/after change by skin segment</p>
           <table className="mt-3 w-full text-xs">
-            <thead className="text-left text-[10px] text-muted">
+            <thead className="text-start text-[10px] text-muted">
               <tr>
                 <th className="py-1 font-normal">Segment</th>
-                <th className="py-1 text-right font-normal">Improved</th>
-                <th className="py-1 text-right font-normal">Got worse</th>
-                <th className="py-1 text-right font-normal">Stars</th>
+                <th className="py-1 text-end font-normal">Improved</th>
+                <th className="py-1 text-end font-normal">Got worse</th>
+                <th className="py-1 text-end font-normal">Stars</th>
               </tr>
             </thead>
             <tbody>
@@ -101,9 +101,9 @@ export default function MerchantPage() {
                     {SEGMENTS[seg]}
                     <div className="mt-0.5"><ConfidenceBadge level={o.confidence} n={o.n} /></div>
                   </td>
-                  <td className="py-2 text-right font-medium text-good">{o.improvedPct}%</td>
-                  <td className={`py-2 text-right font-medium ${o.worsenedPct >= 25 ? "text-bad" : "text-muted"}`}>{o.worsenedPct}%</td>
-                  <td className="py-2 text-right">{o.avgRating}</td>
+                  <td className="py-2 text-end font-medium text-good">{o.improvedPct}%</td>
+                  <td className={`py-2 text-end font-medium ${o.worsenedPct >= 25 ? "text-bad" : "text-muted"}`}>{o.worsenedPct}%</td>
+                  <td className="py-2 text-end">{o.avgRating}</td>
                 </tr>
               ))}
             </tbody>

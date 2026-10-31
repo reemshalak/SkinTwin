@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendMark } from "./ui";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, CheckCircle2, PenLine, Star } from "lucide-react";
@@ -137,7 +138,7 @@ function ResultBar({ posts }: { posts: ReviewPost[] }) {
 function ReviewTile({ post, match, onOpen }: { post: ReviewPost; match: number | null; onOpen: () => void }) {
   const [k, d] = (Object.entries(post.delta) as [ConcernKey, number][]).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0] ?? [];
   return (
-    <button onClick={onOpen} className="flex h-full w-full flex-col rounded-[1.5rem] border border-line bg-surface p-4 text-left transition hover:-translate-y-0.5 hover:shadow-card">
+    <button onClick={onOpen} className="flex h-full w-full flex-col rounded-[1.5rem] border border-line bg-surface p-4 text-start transition hover:-translate-y-0.5 hover:shadow-card">
       <div className="flex w-full items-center gap-2.5">
         <Avatar config={avatarFromSeed(post.authorSeed, post.authorName, post.authorAvatar)} className="size-9 text-sm" />
         <span className="min-w-0 flex-1">
@@ -148,9 +149,9 @@ function ReviewTile({ post, match, onOpen }: { post: ReviewPost; match: number |
           </span>
         </span>
         {k && (
-          <span className="text-right">
-            <span className={`block font-display text-2xl leading-none ${d > 0 ? "text-good" : "text-bad"}`}>
-              {d > 0 ? "+" : "−"}
+          <span className="text-end">
+            <span className={`flex items-center justify-end gap-1 font-display text-2xl leading-none ${d > 0 ? "text-good" : "text-bad"}`}>
+              <TrendMark up={d > 0} />
               {Math.abs(Math.round(d))}
             </span>
             <span className="text-[9px] uppercase tracking-wider text-muted">{CONCERNS[k].label}</span>

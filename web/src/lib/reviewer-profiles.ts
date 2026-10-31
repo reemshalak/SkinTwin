@@ -21,7 +21,7 @@ const HERO: Record<string, ReviewerProfile["productCategory"]> = {
   "aura-bha-toner": "exfoliator_toner",
   "ceramide-labs-barrier": "barrier_cream",
   "botanical-glow-c": "vitamin_c_serum",
-  "solis-silk-foundation": "liquid_foundation",
+  "sunmere-silk-foundation": "liquid_foundation",
 };
 
 // YouCam doesn't score "sensitivity" directly; it's derived from the two scores that
