@@ -6,7 +6,7 @@ export type ThemePref = "light" | "dark" | "system";
 const KEY = "skintwin:theme";
 
 // Runs before paint (inlined in <head>) so the page never flashes the wrong theme.
-export const THEME_SCRIPT = `(function(){try{var p=localStorage.getItem("${KEY}")||"system";var d=p==="dark"||(p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}})()`;
+export const THEME_SCRIPT = `(function(){try{var p=localStorage.getItem("${KEY}")||"light";var d=p==="dark"||(p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}})()`;
 
 function apply(pref: ThemePref) {
   const dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
@@ -16,11 +16,12 @@ function apply(pref: ThemePref) {
 const Ctx = createContext<{ theme: ThemePref; setTheme: (t: ThemePref) => void } | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemePref>("system");
+  // Light by default; dark and "match device" are opt-in in Settings.
+  const [theme, setThemeState] = useState<ThemePref>("light");
 
   useEffect(() => {
     try {
-      setThemeState((localStorage.getItem(KEY) as ThemePref) || "system");
+      setThemeState((localStorage.getItem(KEY) as ThemePref) || "light");
     } catch {}
   }, []);
 
