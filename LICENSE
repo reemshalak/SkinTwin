@@ -1,0 +1,65 @@
+SkinTwin — Proprietary License (Evaluation Only)
+
+Copyright (c) 2026 Reem Chalak. All rights reserved.
+
+This license covers everything in this repository and everything published from it,
+including the source code, the deployed application at https://skintwin-app.vercel.app,
+the SkinTwin name, logo and visual design, the user interface, the written content,
+the screenshots and demo video, the product concept and its features (together,
+"the Work").
+
+1. Limited permission for judging
+
+   The organizers, judges and sponsors of the "YouCam API Skin AI & eCommerce VTO
+   Hackathon" on Devpost (including Devpost and Perfect Corp.) may view, run and test
+   the Work, only for the purpose of evaluating and judging this hackathon submission.
+   This permission is non-exclusive, non-transferable and non-sublicensable. It ends
+   automatically when judging of the hackathon is complete.
+
+   Where the hackathon's Official Rules require the entrant to grant a specific right
+   (for example, to display the submission's name, description, screenshots or video
+   on the hackathon gallery), that right is granted only as far as, and only for as
+   long as, those Official Rules require. Nothing in this license grants more.
+
+2. No other rights
+
+   Except for section 1, no right or license is granted, whether express, implied,
+   by estoppel or otherwise. Without the prior written permission of the copyright
+   holder, you may not:
+
+   - copy, reproduce, fork for reuse, modify, translate or create derivative works
+     of the Work or any part of it;
+   - distribute, publish, sublicense, sell, rent or otherwise make the Work
+     available to anyone;
+   - use the Work, or any part of it, in any product, service, prototype or
+     commercial or non-commercial project;
+   - reuse the SkinTwin name, logo, branding, design or product concept, or present
+     a substantially similar product as your own;
+   - use the Work, or any part of it, to train, fine-tune or evaluate machine
+     learning or AI models, or as input to dataset building.
+
+   Viewing this repository on GitHub does not grant any of the rights above.
+   GitHub's Terms of Service allow others to view and fork public repositories on
+   GitHub; that platform permission does not grant any right to use, modify or
+   reuse the Work.
+
+3. Third-party material
+
+   Third-party software, libraries, fonts, APIs and data used by the Work (for
+   example Next.js, React, MediaPipe, Supabase and YouCam / Perfect Corp. APIs and
+   SDKs, and data adapted from Open Beauty Facts under the ODbL) remain under their
+   own licenses and terms. This license does not change those terms, and claims no
+   ownership of them.
+
+4. No warranty
+
+   The Work is provided "as is", without warranty of any kind, express or implied,
+   including fitness for a particular purpose and non-infringement. In no event shall
+   the copyright holder be liable for any claim, damages or other liability arising
+   from the Work or its use. Skin results shown by the Work are cosmetic guidance,
+   not medical advice.
+
+5. Contact
+
+   For any permission beyond section 1, contact the copyright holder through
+   https://github.com/reemshalak.
