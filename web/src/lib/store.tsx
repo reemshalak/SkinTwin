@@ -82,7 +82,7 @@ const EMPTY: State = {
   reminderTimes: { am: "08:00", pm: "21:00" },
   identity: { displayName: "" },
   done: {},
-  liveScans: false,
+  liveScans: true,
   shelf: [],
   goal: null,
   wellness: DEFAULT_WELLNESS,

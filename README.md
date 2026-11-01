@@ -80,10 +80,14 @@ SkinTwin is **not a store**. It tells you what to use and why, then links out to
 | **AI Makeup Virtual Try-On** | The mirror's *Capture*: the product's real shade rendered on your snapshot |
 | **Camera Kit** (web SDK) | Live try-on on your own face |
 
-All calls are server-side (the key never reaches the browser), cached per photo and settings, capped per day and per
-visitor, and opt-in: the public app runs in **Demo** mode by default and only calls YouCam when live mode is enabled.
-Any failure falls back to demo results. Live face tracking in the mirror and shade matching run in the browser
-(MediaPipe), so they cost no units.
+**For judges: the live app uses the real YouCam APIs by default.** Scanning your face (or a sample face) sends the
+photo to YouCam AI Skin Analysis, and the goal preview and makeup capture use Skin Simulation and Makeup Try-On.
+To protect API units, live calls are capped (25 scans, 15 goal previews and 20 makeup renders per day, and 4 per person
+per hour). When a cap is reached, or if a call fails, the app shows clearly labelled demo results in the same format, so
+it never breaks. You can switch between **YouCam live** and **Demo** in *Settings → Analysis source*.
+
+All calls are server-side (the key never reaches the browser) and cached per photo and settings. Live face tracking in
+the mirror and shade matching run in the browser (MediaPipe), so they cost no units.
 
 ## How twin matching works
 
