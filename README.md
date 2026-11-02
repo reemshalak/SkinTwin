@@ -8,11 +8,10 @@
 
 <p align="center">
   <a href="https://skintwin-app.vercel.app"><b>Live app</b></a> ·
-  <a href="https://www.youtube.com/watch?v=VIDEO_ID"><b>▶ Demo video</b></a> ·
+  <a href="https://www.youtube.com/watch?v=mbwyOhXZcpw"><b>▶ Demo video</b></a> ·
   Built for the YouCam API Skin AI &amp; eCommerce VTO Hackathon
 </p>
 
-<!-- Demo video: replace VIDEO_ID above with the YouTube video id. -->
 
 Star ratings tell you little when the reviewer's skin is nothing like yours. SkinTwin scans your face with YouCam AI,
 matches you to "skin twins" whose 8 measured scores sit close to yours, and shows what their before/after scans proved
